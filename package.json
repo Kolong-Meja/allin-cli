@@ -1,0 +1,39 @@
+{
+  "name": "allin",
+  "version": "1.0.0",
+  "description": "A full stack CLI that speeds up your framework creation in one go.",
+  "main": "dist/index.js",
+  "bin": {
+    "allin": "./dist/index.js"
+  },
+  "scripts": {
+    "start": "npx ts-node src/index.ts",
+    "build": "npx tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "cli",
+    "npmtool"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/figlet": "^1.7.0",
+    "@types/node": "^22.15.21",
+    "jest": "^29.7.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0",
+    "dotenv": "^16.5.0",
+    "execa": "^9.5.3",
+    "figlet": "^1.8.1",
+    "fs-extra": "^11.3.0",
+    "inquirer": "^12.6.1",
+    "ora": "^8.2.0",
+    "picocolors": "^1.1.1",
+    "rxjs": "^7.8.2"
+  }
+}
