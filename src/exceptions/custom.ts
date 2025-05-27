@@ -4,3 +4,10 @@ export class PathNotExistError extends Error {
     this.name = "PathNotExistError";
   }
 }
+
+export class PathIsExistError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = "PathIsExistError";
+  }
+}

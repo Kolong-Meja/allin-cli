@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { runner } from "./core/runner";
-import "tsconfig-paths/register";
+import { runner } from "./core/runner.js";
+import "tsconfig-paths/register.js";
 
 function executable() {
   runner();

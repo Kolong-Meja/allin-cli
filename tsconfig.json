@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
-    "module": "CommonJS",
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "lib": ["ESNext"],
     "allowJs": true,
     "skipDefaultLibCheck": true,
+    "noImplicitThis": true,
+    "strictPropertyInitialization": true,
     "noEmit": false,
     "rootDir": "src",
-    "outDir": "./dist",
+    "outDir": "dist",
     "baseUrl": ".",
     "types": ["jest", "node"],
     "sourceMap": true,
@@ -20,7 +24,8 @@
   },
   "ts-node": {
     "transpileOnly": true,
-    "require": ["tsconfig-paths/register"]
+    "require": ["tsconfig-paths/register"],
+    "esm": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "src/templates/**"]

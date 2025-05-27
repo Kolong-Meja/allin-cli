@@ -1,16 +1,22 @@
-import { _basePath, _program } from "../constants/default";
+import { _basePath, _program } from "../constants/default.js";
 import inquirer from "inquirer";
-import { _selectedPrompts } from "./prompt";
-import fs from "fs";
-import path from "path";
-import { _scanPath } from "../generated/files";
-import { titleCase } from "../utils/string";
-import { _printAscii } from "../utils/ascii";
+import { _selectedPrompts } from "./prompt.js";
+import {
+  _scanPath,
+  _getProjects,
+  _getProjectsByName,
+  _generateUseOption,
+  _generateCreateOption,
+} from "../generated/files.js";
+import { _printAscii } from "../utils/ascii.js";
+import chalk from "chalk";
 
 export async function runner() {
   _printAscii({
     name: "Allin",
-    desc: "Full Stack CLI that speeds up your development in one go.",
+    desc: `${chalk.bold(
+      chalk.green("Full Stack CLI")
+    )} that speeds up your development in one go.`,
   });
 
   _program
@@ -22,65 +28,56 @@ export async function runner() {
 
   _program
     .command("create")
-    .option("-t, --template <template>", "desired template model", "backend")
+    .option(
+      "-d, --dir <directory>",
+      "destination directory to save the created project",
+      process.cwd()
+    )
+    .option("-t, --template <template>", "desired template model")
     .helpOption("-h, --help", "get some information about create command")
     .summary("create new template")
-    .description("Create new template")
+    .description("create new template on your own")
     .action(async (options) => {
       const _answers = await inquirer.prompt(
         _selectedPrompts(options.template)
       );
-      console.log(_answers);
+
+      _generateCreateOption(_answers, options);
     });
 
   _program
     .command("list")
-    .option("-t, --template", "list projects by template name", "backend")
+    .option(
+      "-t, --template <template>",
+      "show list of projects by template name"
+    )
     .helpOption("-h, --help", "get some information about list command")
     .summary("show all templates")
-    .description("Showing a list of available templates")
-    .action(() => {
-      const _targetPath = "src/templates";
-      const _dirPath = path.join(_basePath, _targetPath);
-      _scanPath(_dirPath);
-
-      const _files = fs.readdirSync(_dirPath, {
-        withFileTypes: true,
-        recursive: false,
-      });
-      const _mainFolders = _files.filter((v) => v.isDirectory());
-
-      console.group("Available Templates:");
-
-      for (const f of _mainFolders) {
-        console.groupCollapsed(`${titleCase(f.name)} Projects:`);
-
-        const _targetSubPath = path.join(_dirPath, f.name);
-        const _subFiles = fs.readdirSync(_targetSubPath, {
-          withFileTypes: true,
-          recursive: false,
-        });
-        const _mainSubFolders = _subFiles.filter((w) => w.isDirectory());
-
-        for (const g of _mainSubFolders) {
-          console.log(g.name, "\n");
-        }
-
-        console.groupEnd();
+    .description("showing all of available templates")
+    .action((options) => {
+      if (!options.template) {
+        _getProjects("src/templates");
+      } else {
+        _getProjectsByName("src/templates", options.template);
       }
-
-      console.groupEnd();
     });
 
   _program
     .command("use")
+    .option("-t, --template <template>", "desired template model")
+    .option("-p, --project <project>", "desired project model")
+    .option(
+      "-d, --dir <directory>",
+      "destination directory to save the project used",
+      process.cwd()
+    )
     .helpOption("-h, --help", "get some information about use command")
     .summary("use selected template")
-    .argument("<template>", "Selected templates")
-    .argument("<project>", "Selected project")
-    .description("Use selected template project as a project")
-    .action((t, p) => {
-      console.log(t, p);
+    .description(
+      "Use selected template project as a project. [NOTE]: Please do allin list to see all of available templates"
+    )
+    .action((options) => {
+      _generateUseOption(options);
     });
 
   _program.helpOption("-h, --help", "get some more information");

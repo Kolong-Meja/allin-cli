@@ -1,17 +1,25 @@
-import { UnnamedDistinctQuestion } from "inquirer/dist/commonjs/types";
-import { PrintAsciiProps, PromptAnswersProps } from "../types/general";
 import {
   _defaultBackendFrameworks,
   _defaultFrontendFrameworks,
   _defaultFullStackFrameworks,
   _defaultProjectTypes,
-} from "../constants/default";
-import figlet from "figlet";
-import picocolors from "picocolors";
+} from "../constants/default.js";
+import { UnnamedDistinctQuestion } from "node_modules/inquirer/dist/esm/types.js";
+
+type _PromptAnswersProps = {
+  projectName: string;
+  projectType: string;
+  chooseBackendFramework: string;
+  chooseFrontendFramework: string;
+  chooseFullStackFramework: string;
+  addDocker: boolean;
+  addDockerBake: boolean;
+  addTests: boolean;
+};
 
 export function _selectedPrompts(
   selectedTemplate: string
-): (UnnamedDistinctQuestion<PromptAnswersProps & object> & {
+): (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
   name: string;
 })[] {
   switch (selectedTemplate) {
@@ -27,7 +35,7 @@ export function _selectedPrompts(
           name: "chooseBackendFramework",
           type: "select",
           message: "Choose backend framework:",
-          choices: _defaultBackendFrameworks,
+          choices: _defaultBackendFrameworks.frameworks.filter((f) => f.name),
           default: "NestJS",
           when: () => selectedTemplate === "backend",
         },
@@ -51,7 +59,7 @@ export function _selectedPrompts(
           message: "Do you want to add Unit & End-to-end tests?",
           default: false,
         },
-      ] as (UnnamedDistinctQuestion<PromptAnswersProps & object> & {
+      ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
         name: string;
       })[];
     case "frontend":
@@ -66,7 +74,7 @@ export function _selectedPrompts(
           name: "chooseFrontendFramework",
           type: "select",
           message: "Choose frontend framework:",
-          choices: _defaultFrontendFrameworks,
+          choices: _defaultFrontendFrameworks.frameworks.filter((f) => f.name),
           default: "Next.js",
           when: () => selectedTemplate === "frontend",
         },
@@ -90,7 +98,7 @@ export function _selectedPrompts(
           message: "Do you want to add Unit & End-to-end tests?",
           default: false,
         },
-      ] as (UnnamedDistinctQuestion<PromptAnswersProps & object> & {
+      ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
         name: string;
       })[];
     case "fullstack":
@@ -105,7 +113,7 @@ export function _selectedPrompts(
           name: "chooseFullStackFramework",
           type: "select",
           message: "Choose full stack framework:",
-          choices: _defaultFullStackFrameworks,
+          choices: _defaultFullStackFrameworks.frameworks.filter((f) => f.name),
           default: "Next.js + NestJS",
           when: () => selectedTemplate === "fullstack",
         },
@@ -129,7 +137,7 @@ export function _selectedPrompts(
           message: "Do you want to add Unit & End-to-end tests?",
           default: false,
         },
-      ] as (UnnamedDistinctQuestion<PromptAnswersProps & object> & {
+      ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
         name: string;
       })[];
     default:
@@ -145,31 +153,31 @@ export function _selectedPrompts(
           type: "select",
           message: "Choose your project type:",
           choices: _defaultProjectTypes,
-          default: "Backend",
+          default: "backend",
         },
         {
           name: "chooseBackendFramework",
           type: "select",
           message: "Choose backend framework:",
-          choices: _defaultBackendFrameworks,
+          choices: _defaultBackendFrameworks.frameworks.filter((f) => f.name),
           default: "NestJS",
-          when: (q) => q.projectType === "Backend",
+          when: (q) => q.projectType === "backend",
         },
         {
           name: "chooseFrontendFramework",
           type: "select",
           message: "Choose frontend framework:",
-          choices: _defaultFrontendFrameworks,
+          choices: _defaultFrontendFrameworks.frameworks.filter((f) => f.name),
           default: "Next.js",
-          when: (q) => q.projectType === "Frontend",
+          when: (q) => q.projectType === "frontend",
         },
         {
           name: "chooseFullStackFramework",
           type: "select",
           message: "Choose full stack framework:",
-          choices: _defaultFullStackFrameworks,
+          choices: _defaultFullStackFrameworks.frameworks.filter((f) => f.name),
           default: "Next.js + NestJS",
-          when: (q) => q.projectType === "Full Stack",
+          when: (q) => q.projectType === "fullstack",
         },
         {
           name: "addDocker",
@@ -191,7 +199,7 @@ export function _selectedPrompts(
           message: "Do you want to add Unit & End-to-end tests?",
           default: false,
         },
-      ] as (UnnamedDistinctQuestion<PromptAnswersProps & object> & {
+      ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
         name: string;
       })[];
   }

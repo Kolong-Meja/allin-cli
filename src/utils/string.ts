@@ -1,8 +1,8 @@
-export const titleCase = <T extends string>(s: T) =>
+export const _titleCase = <T extends string>(s: T) =>
   (s.charAt(0).toLocaleUpperCase("en-US") +
     s.slice(1).toLocaleLowerCase("en-US")) as Capitalize<typeof s>;
 
-export const renewalProjectName = <T extends string>(s: T) => {
+export const _renewalProjectName = <T extends string>(s: T) => {
   let result: string;
 
   if (s.trim().indexOf(" ") !== -1) {
@@ -17,18 +17,18 @@ export const renewalProjectName = <T extends string>(s: T) => {
   return result;
 };
 
-export const renewalStringIntoTitleCase = <T extends string>(s: T) => {
+export const _renewalStringIntoTitleCase = <T extends string>(s: T) => {
   return s
     .split(" ")
-    .map((a) => titleCase(a))
+    .map((a) => _titleCase(a))
     .join(" ");
 };
 
-export const renewalStringsIntoTitleCase = <T extends string[]>(s: T) => {
+export const _renewalStringsIntoTitleCase = <T extends string[]>(s: T) => {
   return s.map((a) => {
     return a
       .split(" ")
-      .map((b) => titleCase(b))
+      .map((b) => _titleCase(b))
       .join(" ");
   });
 };
