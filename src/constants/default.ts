@@ -1,15 +1,21 @@
-const DEFAULT_PROJECT_TYPES: string[] = ["Backend", "Frontend", "Full Stack"];
-const DEFAULT_BACKEND_FRAMEWORKS: string[] = ["NestJS", "Express.js"];
-const DEFAULT_FRONTEND_FRAMEWORKS: string[] = ["Next.js", "Vue.js"];
-const DEFAULT_FULL_STACK_FRAMEWORKS: string[] = [
+import { Command } from "commander";
+
+const _defaultProjectTypes: string[] = ["Backend", "Frontend", "Full Stack"];
+const _defaultBackendFrameworks: string[] = ["NestJS", "Express.js"];
+const _defaultFrontendFrameworks: string[] = ["Next.js", "Vue.js"];
+const _defaultFullStackFrameworks: string[] = [
   "Vue.js + NestJS",
   "Sveltekit",
   "Next.js",
 ];
+const _program = new Command();
+const _basePath = process.cwd();
 
 export {
-  DEFAULT_PROJECT_TYPES,
-  DEFAULT_BACKEND_FRAMEWORKS,
-  DEFAULT_FRONTEND_FRAMEWORKS,
-  DEFAULT_FULL_STACK_FRAMEWORKS,
+  _defaultProjectTypes,
+  _defaultBackendFrameworks,
+  _defaultFrontendFrameworks,
+  _defaultFullStackFrameworks,
+  _program,
+  _basePath,
 };

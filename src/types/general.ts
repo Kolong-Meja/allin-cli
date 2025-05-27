@@ -1,4 +1,4 @@
-export type PromptAnswers = {
+export type PromptAnswersProps = {
   projectName: string;
   projectType: string;
   chooseBackendFramework: string;
@@ -7,4 +7,9 @@ export type PromptAnswers = {
   addDocker: boolean;
   addDockerBake: boolean;
   addTests: boolean;
+};
+
+export type PrintAsciiProps = {
+  name: string;
+  desc: string;
 };

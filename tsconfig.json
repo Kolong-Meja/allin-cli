@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2019",
+    "target": "ES2019",
     "module": "CommonJS",
     "allowJs": true,
     "skipDefaultLibCheck": true,
     "noEmit": false,
     "rootDir": "src",
     "outDir": "./dist",
-    "types": ["node"],
+    "baseUrl": ".",
+    "types": ["jest", "node"],
     "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
@@ -17,6 +18,10 @@
       "@/*": ["./src/*"]
     }
   },
+  "ts-node": {
+    "transpileOnly": true,
+    "require": ["tsconfig-paths/register"]
+  },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/templates/**"]
 }
