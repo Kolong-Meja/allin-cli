@@ -1,3 +1,4 @@
+import { OptionValues } from "commander";
 import {
   _defaultBackendFrameworks,
   _defaultFrontendFrameworks,
@@ -17,12 +18,12 @@ type _PromptAnswersProps = {
   addTests: boolean;
 };
 
-export function _selectedPrompts(
-  selectedTemplate: string
+export function _generateCreatePrompts(
+  template: string
 ): (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
   name: string;
 })[] {
-  switch (selectedTemplate) {
+  switch (template) {
     case "backend":
       return [
         {
@@ -37,7 +38,7 @@ export function _selectedPrompts(
           message: "Choose backend framework:",
           choices: _defaultBackendFrameworks.frameworks.filter((f) => f.name),
           default: "NestJS",
-          when: () => selectedTemplate === "backend",
+          when: () => template === "backend",
         },
         {
           name: "addDocker",
@@ -76,7 +77,7 @@ export function _selectedPrompts(
           message: "Choose frontend framework:",
           choices: _defaultFrontendFrameworks.frameworks.filter((f) => f.name),
           default: "Next.js",
-          when: () => selectedTemplate === "frontend",
+          when: () => template === "frontend",
         },
         {
           name: "addDocker",
@@ -115,7 +116,7 @@ export function _selectedPrompts(
           message: "Choose full stack framework:",
           choices: _defaultFullStackFrameworks.frameworks.filter((f) => f.name),
           default: "Next.js + NestJS",
-          when: () => selectedTemplate === "fullstack",
+          when: () => template === "fullstack",
         },
         {
           name: "addDocker",
@@ -198,6 +199,87 @@ export function _selectedPrompts(
           type: "confirm",
           message: "Do you want to add Unit & End-to-end tests?",
           default: false,
+        },
+      ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
+        name: string;
+      })[];
+  }
+}
+
+export function _generateUsePrompts(template: string): (UnnamedDistinctQuestion<
+  _PromptAnswersProps & object
+> & {
+  name: string;
+})[] {
+  switch (template) {
+    case "backend":
+      return [
+        {
+          name: "chooseBackendFramework",
+          type: "select",
+          message: "Choose backend framework:",
+          choices: _defaultBackendFrameworks.frameworks.filter((f) => f.name),
+          default: "NestJS",
+        },
+      ] as unknown as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
+        name: string;
+      })[];
+    case "frontend":
+      return [
+        {
+          name: "chooseFrontendFramework",
+          type: "select",
+          message: "Choose frontend framework:",
+          choices: _defaultFrontendFrameworks.frameworks.filter((f) => f.name),
+          default: "Next.js",
+        },
+      ] as unknown as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
+        name: string;
+      })[];
+    case "fullstack":
+      return [
+        {
+          name: "chooseFullStackFramework",
+          type: "select",
+          message: "Choose full stack framework:",
+          choices: _defaultFullStackFrameworks.frameworks.filter((f) => f.name),
+          default: "Next.js + NestJS",
+        },
+      ] as unknown as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
+        name: string;
+      })[];
+    default:
+      return [
+        {
+          name: "projectType",
+          type: "select",
+          message: "Choose your project type:",
+          choices: _defaultProjectTypes,
+          default: "backend",
+        },
+        {
+          name: "chooseBackendFramework",
+          type: "select",
+          message: "Choose backend framework:",
+          choices: _defaultBackendFrameworks.frameworks.filter((f) => f.name),
+          default: "NestJS",
+          when: (q) => q.projectType === "backend",
+        },
+        {
+          name: "chooseFrontendFramework",
+          type: "select",
+          message: "Choose frontend framework:",
+          choices: _defaultFrontendFrameworks.frameworks.filter((f) => f.name),
+          default: "Next.js",
+          when: (q) => q.projectType === "frontend",
+        },
+        {
+          name: "chooseFullStackFramework",
+          type: "select",
+          message: "Choose full stack framework:",
+          choices: _defaultFullStackFrameworks.frameworks.filter((f) => f.name),
+          default: "Next.js + NestJS",
+          when: (q) => q.projectType === "fullstack",
         },
       ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
         name: string;

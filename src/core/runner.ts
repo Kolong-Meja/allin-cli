@@ -1,12 +1,20 @@
-import { _basePath, _program } from "../constants/default.js";
-import inquirer from "inquirer";
-import { _selectedPrompts } from "./prompt.js";
 import {
-  _scanPath,
+  _basePath,
+  _currentVersion,
+  _defaultBackendFrameworks,
+  _defaultFrontendFrameworks,
+  _defaultFullStackFrameworks,
+  _defaultProjectTypes,
+  _program,
+} from "../constants/default.js";
+import inquirer from "inquirer";
+import { _generateCreatePrompts, _generateUsePrompts } from "./prompt.js";
+import {
+  _generateCreateCommand,
+  _generateListCommand,
+  _generateUseCommand,
   _getProjects,
   _getProjectsByName,
-  _generateUseOption,
-  _generateCreateOption,
 } from "../generated/files.js";
 import { _printAscii } from "../utils/ascii.js";
 import chalk from "chalk";
@@ -15,73 +23,100 @@ export async function runner() {
   _printAscii({
     name: "Allin",
     desc: `${chalk.bold(
-      chalk.green("Full Stack CLI")
-    )} that speeds up your development in one go.`,
+      `${chalk.green(
+        "Full Stack CLI"
+      )} that speeds up your development in one go.`
+    )}`,
   });
 
   _program
     .name("allin")
     .description(
       "A full stack CLI that speeds up your framework creation in one go."
-    )
-    .version("1.0.0");
+    );
+
+  _program.option(
+    "-v, --version",
+    "Action to get information about the current version of this tool.",
+    () => {
+      console.log(`${chalk.bold("Allin CLI Tool")}: v${_currentVersion}`);
+      process.exit(0);
+    }
+  );
 
   _program
     .command("create")
     .option(
       "-d, --dir <directory>",
-      "destination directory to save the created project",
+      "Path destination directory to save the project template that you've created.",
       process.cwd()
     )
-    .option("-t, --template <template>", "desired template model")
-    .helpOption("-h, --help", "get some information about create command")
-    .summary("create new template")
-    .description("create new template on your own")
+    .option(
+      "-t, --template <template>",
+      "Template model that you want to used."
+    )
+    .helpOption(
+      "-h, --help",
+      `Action to get more information about ${chalk.bold("use")} command.`
+    )
+    .summary("Create new project template.")
+    .description("Create new project template by yourself.")
     .action(async (options) => {
-      const _answers = await inquirer.prompt(
-        _selectedPrompts(options.template)
-      );
+      const _answers = await inquirer.prompt(_generateCreatePrompts(options));
 
-      _generateCreateOption(_answers, options);
+      _generateCreateCommand(_answers, options);
     });
 
   _program
     .command("list")
     .option(
       "-t, --template <template>",
-      "show list of projects by template name"
+      "Show all of projects that existed by template model that you've insert."
     )
-    .helpOption("-h, --help", "get some information about list command")
-    .summary("show all templates")
-    .description("showing all of available templates")
-    .action((options) => {
-      if (!options.template) {
-        _getProjects("src/templates");
-      } else {
-        _getProjectsByName("src/templates", options.template);
-      }
+    .option("-a, --all", "Show all project templates that existed.", false)
+    .helpOption(
+      "-h, --help",
+      `Action to get more information about ${chalk.bold("list")} command.`
+    )
+    .summary("Show all project templates.")
+    .description("Showing all of available project templates.")
+    .action(async (options) => {
+      _generateListCommand(options);
     });
 
   _program
     .command("use")
-    .option("-t, --template <template>", "desired template model")
-    .option("-p, --project <project>", "desired project model")
     .option(
       "-d, --dir <directory>",
-      "destination directory to save the project used",
+      "Path destination directory to save the project template that you've choose.",
       process.cwd()
     )
-    .helpOption("-h, --help", "get some information about use command")
-    .summary("use selected template")
-    .description(
-      "Use selected template project as a project. [NOTE]: Please do allin list to see all of available templates"
+    .option(
+      "-t, --template <template>",
+      "Template model that you want to used."
     )
-    .action((options) => {
-      _generateUseOption(options);
+    .helpOption(
+      "-h, --help",
+      `Action to get more information about ${chalk.bold("use")} command.`
+    )
+    .summary("Using an existing project template.")
+    .description("Using an existing project template as your project.")
+    .action(async (options) => {
+      const _answers = await inquirer.prompt(
+        _generateUsePrompts(options.template)
+      );
+
+      _generateUseCommand(_answers, options);
     });
 
-  _program.helpOption("-h, --help", "get some more information");
-  _program.helpCommand("help [command]", "get some more information");
+  _program.helpOption(
+    "-h, --help",
+    `Action to get more information about ${chalk.bold("Allin CLI")}.`
+  );
+  _program.helpCommand(
+    "help [command]",
+    `Action to get more information about ${chalk.bold("Allin CLI")} commands.`
+  );
 
   _program.parse();
 }
