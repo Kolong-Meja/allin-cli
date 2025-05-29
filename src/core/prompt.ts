@@ -1,4 +1,3 @@
-import { OptionValues } from "commander";
 import {
   _defaultBackendFrameworks,
   _defaultFrontendFrameworks,
@@ -15,7 +14,6 @@ type _PromptAnswersProps = {
   chooseFullStackFramework: string;
   addDocker: boolean;
   addDockerBake: boolean;
-  addTests: boolean;
 };
 
 export function _generateCreatePrompts(
@@ -54,12 +52,6 @@ export function _generateCreatePrompts(
           default: false,
           when: (q) => q.addDocker !== false,
         },
-        {
-          name: "addTests",
-          type: "confirm",
-          message: "Do you want to add Unit & End-to-end tests?",
-          default: false,
-        },
       ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
         name: string;
       })[];
@@ -93,12 +85,6 @@ export function _generateCreatePrompts(
           default: false,
           when: (q) => q.addDocker !== false,
         },
-        {
-          name: "addTests",
-          type: "confirm",
-          message: "Do you want to add Unit & End-to-end tests?",
-          default: false,
-        },
       ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
         name: string;
       })[];
@@ -131,12 +117,6 @@ export function _generateCreatePrompts(
             "Do you want to add Docker Bake for building process of docker images?",
           default: false,
           when: (q) => q.addDocker !== false,
-        },
-        {
-          name: "addTests",
-          type: "confirm",
-          message: "Do you want to add Unit & End-to-end tests?",
-          default: false,
         },
       ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
         name: string;
@@ -193,12 +173,6 @@ export function _generateCreatePrompts(
             "Do you want to add Docker Bake for building process of docker images?",
           default: false,
           when: (q) => q.addDocker !== false,
-        },
-        {
-          name: "addTests",
-          type: "confirm",
-          message: "Do you want to add Unit & End-to-end tests?",
-          default: false,
         },
       ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
         name: string;

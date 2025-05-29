@@ -9,17 +9,17 @@ import {
 } from "../constants/default.js";
 import inquirer from "inquirer";
 import { _generateCreatePrompts, _generateUsePrompts } from "./prompt.js";
-import {
-  _generateCreateCommand,
-  _generateListCommand,
-  _generateUseCommand,
-  _getProjects,
-  _getProjectsByName,
-} from "../generated/files.js";
+import { _getProjects, _getProjectsByName } from "../generators/files.js";
 import { _printAscii } from "../utils/ascii.js";
 import chalk from "chalk";
+import { _createCommand, _listCommand, _useCommand } from "./command.js";
+import { execa } from "execa";
+import ora from "ora";
+import path from "path";
+import fs from "fs";
+import { _renewalProjectName } from "@/utils/string.js";
 
-export async function runner() {
+export async function runner(): Promise<void> {
   _printAscii({
     name: "Allin",
     desc: `${chalk.bold(
@@ -64,7 +64,7 @@ export async function runner() {
     .action(async (options) => {
       const _answers = await inquirer.prompt(_generateCreatePrompts(options));
 
-      _generateCreateCommand(_answers, options);
+      _createCommand(_answers, options);
     });
 
   _program
@@ -81,7 +81,7 @@ export async function runner() {
     .summary("Show all project templates.")
     .description("Showing all of available project templates.")
     .action(async (options) => {
-      _generateListCommand(options);
+      _listCommand(options);
     });
 
   _program
@@ -106,7 +106,54 @@ export async function runner() {
         _generateUsePrompts(options.template)
       );
 
-      _generateUseCommand(_answers, options);
+      _useCommand(_answers, options);
+    });
+
+  // need more updates on this command.
+  _program
+    .command("update")
+    .option(
+      "-t, --template <template>",
+      "Template model that you want to update to the newest version."
+    )
+    .helpOption(
+      "-h, --help",
+      `Action to get more information about ${chalk.bold("update")} command.`
+    )
+    .summary("Automate update of project templates version.")
+    .description("Updating a available project template version automatically.")
+    .action(async (options) => {
+      const _dirPath = path.join(_basePath, "src/templates", options.template);
+      const _files = fs.readdirSync(_dirPath, {
+        withFileTypes: true,
+      });
+      const _getResource = _defaultBackendFrameworks.frameworks.filter(
+        (f) => f.name === "NestJS"
+      )[0];
+      const _folder = _files.filter(
+        (f) => f.name === _getResource.templateName && f.isDirectory()
+      )[0];
+
+      const spinner = ora({
+        text: "Start updating NestJS dependecies ✨...",
+        spinner: "dots9",
+        color: "green",
+        interval: 100,
+      });
+
+      const start = performance.now();
+      spinner.start();
+
+      const _sourcePath = path.join(_folder.parentPath, _folder.name);
+
+      const { stdout } = await execa("pnpm", ["update"], {
+        cwd: _sourcePath,
+      });
+
+      console.log({ stdout });
+
+      const end = performance.now();
+      spinner.succeed(`✅ All done! ${(end - start).toFixed(3)} ms`);
     });
 
   _program.helpOption(

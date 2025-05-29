@@ -2,12 +2,8 @@
 import { runner } from "./core/runner.js";
 import "tsconfig-paths/register.js";
 
-function executable() {
+function main(): void {
   runner();
-}
-
-function main() {
-  executable();
 }
 
 main();

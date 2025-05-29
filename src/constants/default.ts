@@ -63,10 +63,6 @@ export const _defaultFullStackFrameworks: __DefaultFrameworkProps = {
       name: "Vue.js + NestJS",
       templateName: "vue-nest-project",
     },
-    {
-      name: "Sveltekit",
-      templateName: "sveltekit-project",
-    },
   ],
   rootPath: "src/templates/fullstack",
   type: "fullstack",
