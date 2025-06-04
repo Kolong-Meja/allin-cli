@@ -1,43 +1,7 @@
-import { Command } from "commander";
-import path from "path";
-import { fileURLToPath } from "url";
-
-type __FrameworkProps = {
-  name: string;
-  templateName: string;
-  origin: string;
-};
-
-type __FullStackFrameworkProps = {
-  name: string;
-  templateName: string;
-  detail: {
-    backend: {
-      name: string;
-      templateName: string;
-      origin: string;
-    };
-    frontend: {
-      name: string;
-      templateName: string;
-      origin: string;
-    };
-  };
-};
-
-type __DefaultFrameworkProps = {
-  uid: string;
-  frameworks: __FrameworkProps[];
-  rootPath: string;
-  type: string;
-};
-
-type __DefaultFullStackFrameworkProps = {
-  uid: string;
-  frameworks: __FullStackFrameworkProps[];
-  rootPath: string;
-  type: string;
-};
+import {
+  __DefaultFrameworkProps,
+  __DefaultFullStackFrameworkProps,
+} from "../types/default.js";
 
 export const _defaultProjectTypes: string[] = [
   "backend",
@@ -120,11 +84,3 @@ export const _defaultFullStackFrameworks: __DefaultFullStackFrameworkProps = {
   rootPath: "src/templates/fullstack",
   type: "fullstack",
 };
-
-export const _program = new Command();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-export const _basePath = path.resolve(__dirname, "..", "..");
-
-export const _currentVersion = "1.0.0";

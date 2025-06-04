@@ -1,6 +1,5 @@
 import { PathNotFoundError } from "../exceptions/custom.js";
 import {
-  _basePath,
   _defaultBackendFrameworks,
   _defaultFrontendFrameworks,
   _defaultFullStackFrameworks,
@@ -12,6 +11,7 @@ import { _renewalProjectName, _titleCase } from "../utils/string.js";
 import chalk from "chalk";
 import { table } from "table";
 import { _isPathExist } from "../exceptions/trigger.js";
+import { _basePath } from "../config.js";
 
 export async function _getProjectTemplates(targetPath: string): Promise<void> {
   try {

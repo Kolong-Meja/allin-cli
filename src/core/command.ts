@@ -1,5 +1,4 @@
 import {
-  _basePath,
   _defaultBackendFrameworks,
   _defaultFrontendFrameworks,
   _defaultFullStackFrameworks,
@@ -14,7 +13,11 @@ import {
   _getProjectTemplatesByName,
 } from "../generators/files.js";
 import { _isPathExist, _isProjectExist } from "../exceptions/trigger.js";
-import { _DockerResources, _ProjectResourcePath } from "../types/default.js";
+import {
+  __DockerResourcesProps,
+  __FrameworkProps,
+  __ProjectResourcePathProps,
+} from "../types/default.js";
 import { _renewalProjectName } from "../utils/string.js";
 import chalk from "chalk";
 import { OptionValues } from "commander";
@@ -23,8 +26,9 @@ import fse from "fs-extra";
 import inquirer from "inquirer";
 import ora from "ora";
 import path from "path";
-import { _generateUpdatePrompts } from "./prompt.js";
+import { _generateUpdatePrompts, _generateUsePrompts } from "./prompt.js";
 import { execa } from "execa";
+import { _basePath } from "../config.js";
 
 export async function _listCommand(options: OptionValues): Promise<void> {
   let _answers: { [x: string]: any } = {};
@@ -54,28 +58,29 @@ export async function _listCommand(options: OptionValues): Promise<void> {
   }
 }
 
-export async function _useCommand(
-  answers: { [x: string]: any },
-  options: OptionValues
-): Promise<void> {
-  let _resource: { folder: Dirent<string> } = { folder: new Dirent<string>() };
-  let _sourcePath: string = "";
+export async function _useCommand(options: OptionValues): Promise<void> {
   let _desPath: string = "";
 
+  const _projectTemplateQuestions = await inquirer.prompt(
+    _generateUsePrompts(options.template)
+  );
+
   const spinner = ora({
-    text: "Start generating ✨...",
     spinner: "dots",
     color: "green",
     interval: 100,
   });
 
   const start = performance.now();
-  spinner.start();
 
   try {
     const _dirPath = options.template
       ? path.join(_basePath, "src/templates", options.template)
-      : path.join(_basePath, "src/templates", answers.projectType);
+      : path.join(
+          _basePath,
+          "src/templates",
+          _projectTemplateQuestions.projectType
+        );
     _isPathExist(_dirPath);
 
     const _files = fs.readdirSync(_dirPath, {
@@ -83,86 +88,107 @@ export async function _useCommand(
     });
 
     switch (true) {
-      case options.template === "backend" || answers.projectType === "backend":
+      case options.template === "backend" ||
+        _projectTemplateQuestions.projectType === "backend":
         spinner.start(
-          `Start generating backend project using ${answers.chooseBackendFramework} 👾...`
+          `Start generating backend project using ${_projectTemplateQuestions.chooseBackendFramework} 👾...`
         );
 
-        await new Promise(async (resolve, reject) => {
-          _resource = _getBackendFolder(answers, _files);
+        const _backendResource = _getFolders(
+          "backend",
+          _projectTemplateQuestions,
+          _files
+        );
 
-          _sourcePath = path.join(
-            _resource.folder.parentPath,
-            _resource.folder.name
-          );
-          _desPath = path.join(options.dir, _resource.folder.name);
-          _isPathExist(options.dir);
-          _isProjectExist(options.dir, _resource.folder.name);
+        const _backendSourcePath = path.join(
+          _backendResource.folder.parentPath,
+          _backendResource.folder.name
+        );
 
-          await fse.copy(_sourcePath, _desPath);
-          resolve(true);
-        });
+        const _backendDesPath = path.join(
+          options.dir,
+          _backendResource.folder.name
+        );
+        _isPathExist(options.dir);
+        _isProjectExist(options.dir, _backendResource.folder.name);
+
+        _desPath = _backendDesPath;
+
+        await fse.copy(_backendSourcePath, _backendDesPath);
 
         spinner.succeed(
-          `Create ${answers.chooseBackendFramework} project succeed ✅`
+          `Generating ${_projectTemplateQuestions.chooseBackendFramework} project succeed ✅`
         );
         break;
       case options.template === "frontend" ||
-        answers.projectType === "frontend":
+        _projectTemplateQuestions.projectType === "frontend":
         spinner.start(
-          `Start generating frontend project using ${answers.chooseFrontendFramework} 👾...`
+          `Start generating frontend project using ${_projectTemplateQuestions.chooseFrontendFramework} 👾...`
         );
 
-        await new Promise(async (resolve, reject) => {
-          _resource = _getFrontendFolder(answers, _files);
+        const _frontendResource = _getFolders(
+          "frontend",
+          _projectTemplateQuestions,
+          _files
+        );
 
-          _sourcePath = path.join(
-            _resource.folder.parentPath,
-            _resource.folder.name
-          );
-          _desPath = path.join(options.dir, _resource.folder.name);
-          _isPathExist(options.dir);
-          _isProjectExist(options.dir, _resource.folder.name);
+        const _frontendSourcePath = path.join(
+          _frontendResource.folder.parentPath,
+          _frontendResource.folder.name
+        );
 
-          await fse.copy(_sourcePath, _desPath);
-          resolve(true);
-        });
+        const _frontendDesPath = path.join(
+          options.dir,
+          _frontendResource.folder.name
+        );
+        _isPathExist(options.dir);
+        _isProjectExist(options.dir, _frontendResource.folder.name);
+
+        _desPath = _frontendDesPath;
+
+        await fse.copy(_frontendSourcePath, _frontendDesPath);
 
         spinner.succeed(
-          `Create ${answers.chooseFrontendFramework} project succeed ✅`
+          `Generating ${_projectTemplateQuestions.chooseFrontendFramework} project succeed ✅`
         );
         break;
       case options.template === "fullstack" ||
-        answers.projectType === "fullstack":
+        _projectTemplateQuestions.projectType === "fullstack":
         spinner.start(
-          `Start generating fullstack project using ${answers.chooseFullStackFramework} 👾...`
+          `Start generating fullstack project using ${_projectTemplateQuestions.chooseFullStackFramework} 👾...`
         );
 
-        await new Promise(async (resolve, reject) => {
-          _resource = _getFullStackFolder(answers, _files);
+        const _fullstackResource = _getFolders(
+          "fullstack",
+          _projectTemplateQuestions,
+          _files
+        );
 
-          _sourcePath = path.join(
-            _resource.folder.parentPath,
-            _resource.folder.name
-          );
-          _desPath = path.join(options.dir, _resource.folder.name);
-          _isPathExist(options.dir);
-          _isProjectExist(options.dir, _resource.folder.name);
+        const _fullstackSourcePath = path.join(
+          _fullstackResource.folder.parentPath,
+          _fullstackResource.folder.name
+        );
 
-          await fse.copy(_sourcePath, _desPath);
-          resolve(true);
-        });
+        const _fullstackDesPath = path.join(
+          options.dir,
+          _fullstackResource.folder.name
+        );
+        _isPathExist(options.dir);
+        _isProjectExist(options.dir, _fullstackResource.folder.name);
+
+        _desPath = _fullstackDesPath;
+
+        await fse.copy(_fullstackSourcePath, _fullstackDesPath);
 
         spinner.succeed(
-          `Create ${answers.chooseFullStackFramework} project succeed ✅`
+          `Generating ${_projectTemplateQuestions.chooseFullStackFramework} project succeed ✅`
         );
         break;
     }
 
     const end = performance.now();
     spinner.succeed(`All done! ${(end - start).toFixed(3)} ms`);
-
-    console.log(`You can check the project on ${chalk.bold(_desPath)}`);
+    spinner.info(`You can check the project on ${chalk.bold(_desPath)}`);
   } catch (error: any) {
     let errorMessage =
       error instanceof Error ? error.message : "⛔️ An unknown error occurred.";
@@ -186,9 +212,12 @@ export async function _createCommand(
   answers: { [x: string]: any },
   options: OptionValues
 ): Promise<void> {
-  let _resource: _ProjectResourcePath = { sourcePath: "", desPath: "" };
-  let _dockerResource: _ProjectResourcePath = { sourcePath: "", desPath: "" };
-  let _dockerBakeResource: _ProjectResourcePath = {
+  let _resource: __ProjectResourcePathProps = { sourcePath: "", desPath: "" };
+  let _dockerResource: __ProjectResourcePathProps = {
+    sourcePath: "",
+    desPath: "",
+  };
+  let _dockerBakeResource: __ProjectResourcePathProps = {
     sourcePath: "",
     desPath: "",
   };
@@ -1620,59 +1649,55 @@ async function _checkPackageUpdatesInfo(
   }
 }
 
-function _getBackendFolder(
+function _getFolders(
+  type: "backend" | "frontend" | "fullstack",
   answers: { [x: string]: any },
   files: fs.Dirent<string>[]
 ) {
-  const _getResource = _defaultBackendFrameworks.frameworks.filter(
-    (f) => f.name === answers.chooseBackendFramework
-  )[0];
-  const _folder = files.filter(
-    (f) => f.name === _getResource.templateName && f.isDirectory()
-  )[0];
+  let _folder: fs.Dirent<string>;
 
-  return {
-    folder: _folder,
-  };
-}
+  switch (type) {
+    case "backend":
+      const _backendResource = _defaultBackendFrameworks.frameworks.filter(
+        (f) => f.name === answers.chooseBackendFramework
+      )[0];
+      _folder = files.filter(
+        (f) => f.name === _backendResource.templateName && f.isDirectory()
+      )[0];
 
-function _getFrontendFolder(
-  answers: { [x: string]: any },
-  files: fs.Dirent<string>[]
-) {
-  const _getResource = _defaultFrontendFrameworks.frameworks.filter(
-    (f) => f.name === answers.chooseFrontendFramework
-  )[0];
-  const _folders = files.filter(
-    (f) => f.name === _getResource.templateName && f.isDirectory()
-  )[0];
+      return {
+        folder: _folder,
+      };
+    case "frontend":
+      const _frontendResource = _defaultFrontendFrameworks.frameworks.filter(
+        (f) => f.name === answers.chooseFrontendFramework
+      )[0];
+      _folder = files.filter(
+        (f) => f.name === _frontendResource.templateName && f.isDirectory()
+      )[0];
 
-  return {
-    folder: _folders,
-  };
-}
+      return {
+        folder: _folder,
+      };
+    case "fullstack":
+      const _fullstackResource = _defaultFullStackFrameworks.frameworks.filter(
+        (f) => f.name === answers.chooseFullStackFramework
+      )[0];
+      _folder = files.filter(
+        (f) => f.name === _fullstackResource.templateName && f.isDirectory()
+      )[0];
 
-function _getFullStackFolder(
-  answers: { [x: string]: any },
-  files: fs.Dirent<string>[]
-) {
-  const _getResource = _defaultFullStackFrameworks.frameworks.filter(
-    (f) => f.name === answers.chooseFullStackFramework
-  )[0];
-  const _folders = files.filter(
-    (f) => f.name === _getResource.templateName && f.isDirectory()
-  )[0];
-
-  return {
-    folder: _folders,
-  };
+      return {
+        folder: _folder,
+      };
+  }
 }
 
 function _getBackendResourcePath(
   answers: { [x: string]: any },
   files: fs.Dirent<string>[],
   dir: string
-): _ProjectResourcePath {
+): __ProjectResourcePathProps {
   const _getResource = _defaultBackendFrameworks.frameworks.filter(
     (f) => f.name === answers.chooseBackendFramework
   )[0];
@@ -1693,7 +1718,7 @@ function _getFrontendResourcePath(
   answers: { [x: string]: any },
   files: fs.Dirent<string>[],
   dir: string
-): _ProjectResourcePath {
+): __ProjectResourcePathProps {
   const _getResource = _defaultFrontendFrameworks.frameworks.filter(
     (f) => f.name === answers.chooseFrontendFramework
   )[0];
@@ -1714,7 +1739,7 @@ function _getFullStackResourcePath(
   answers: { [x: string]: any },
   files: fs.Dirent<string>[],
   dir: string
-): _ProjectResourcePath {
+): __ProjectResourcePathProps {
   const _getResource = _defaultFullStackFrameworks.frameworks.filter(
     (f) => f.name === answers.chooseFullStackFramework
   )[0];
@@ -1731,7 +1756,7 @@ function _getFullStackResourcePath(
   };
 }
 
-function _getDockerResources(): _DockerResources {
+function _getDockerResources(): __DockerResourcesProps {
   const _templatesPath = path.join(_basePath, "src/templates");
   _isPathExist(_templatesPath);
 
@@ -1754,8 +1779,8 @@ function _getDockerResources(): _DockerResources {
 
 function _getDockerComposePath(
   templates: fs.Dirent<string>[],
-  resource: _ProjectResourcePath
-): _ProjectResourcePath {
+  resource: __ProjectResourcePathProps
+): __ProjectResourcePathProps {
   const _dockerComposeFile = templates.filter(
     (f) => f.name === "compose.template.yml"
   )[0];
@@ -1777,8 +1802,8 @@ function _getDockerComposePath(
 
 function _getDockerBakePath(
   templates: fs.Dirent<string>[],
-  resource: _ProjectResourcePath
-): _ProjectResourcePath {
+  resource: __ProjectResourcePathProps
+): __ProjectResourcePathProps {
   const _dockerBakeFile = templates.filter(
     (f) => f.name === "docker-bake.template.hcl"
   )[0];
@@ -1798,8 +1823,8 @@ function _getDockerBakePath(
 function _getNodeDockerfileResourcePathForBackend(
   answers: { [x: string]: any },
   dockerfiles: fs.Dirent<string>[],
-  resource: _ProjectResourcePath
-): _ProjectResourcePath {
+  resource: __ProjectResourcePathProps
+): __ProjectResourcePathProps {
   let _dockerfileSourcePath: string = "";
   let _dockerfileDesPath: string = "";
   let _nodeDockerfile: fs.Dirent<string> = new Dirent<string>();
@@ -1852,8 +1877,8 @@ function _getNodeDockerfileResourcePathForBackend(
 function _getNodeDockerfileResourcePathForFrontend(
   answers: { [x: string]: any },
   dockerfiles: fs.Dirent<string>[],
-  resource: _ProjectResourcePath
-): _ProjectResourcePath {
+  resource: __ProjectResourcePathProps
+): __ProjectResourcePathProps {
   let _dockerfileSourcePath: string = "";
   let _dockerfileDesPath: string = "";
   let _nodeDockerfile: fs.Dirent<string> = new Dirent<string>();
@@ -1906,9 +1931,9 @@ function _getNodeDockerfileResourcePathForFrontend(
 function _getNodeDockerfileResourcePathForFullStack(
   answers: { [x: string]: any },
   dockerfiles: fs.Dirent<string>[],
-  resource: _ProjectResourcePath
+  resource: __ProjectResourcePathProps
 ) {
-  let _dockerfileFullStackResourcePath: Array<_ProjectResourcePath> = [];
+  let _dockerfileFullStackResourcePath: Array<__ProjectResourcePathProps> = [];
   let _dockerfileSourcePath: string = "";
   let _dockerfileDesPath: string = "";
 
@@ -2027,8 +2052,8 @@ function _getNodeDockerfileResourcePathForFullStack(
 
 function _getJavaDockerfileResourcePath(
   dockerfiles: fs.Dirent<string>[],
-  resource: _ProjectResourcePath
-): _ProjectResourcePath {
+  resource: __ProjectResourcePathProps
+): __ProjectResourcePathProps {
   const _javaDockerfile = dockerfiles.filter(
     (f) => f.name === "java.template.Dockerfile"
   )[0];
@@ -2047,8 +2072,8 @@ function _getJavaDockerfileResourcePath(
 
 function _getPhpDockerfileResourcePath(
   dockerfiles: fs.Dirent<string>[],
-  resource: _ProjectResourcePath
-): _ProjectResourcePath {
+  resource: __ProjectResourcePathProps
+): __ProjectResourcePathProps {
   const _phpDockerfile = dockerfiles.filter(
     (f) => f.name === "php.template.Dockerfile"
   )[0];

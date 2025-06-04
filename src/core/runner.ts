@@ -1,11 +1,8 @@
 import {
-  _basePath,
-  _currentVersion,
   _defaultBackendFrameworks,
   _defaultFrontendFrameworks,
   _defaultFullStackFrameworks,
   _defaultProjectTypes,
-  _program,
 } from "../constants/default.js";
 import inquirer from "inquirer";
 import {
@@ -22,6 +19,7 @@ import {
   _useCommand,
 } from "./command.js";
 import { _renewalProjectName } from "../utils/string.js";
+import { _currentVersion, _program } from "../config.js";
 
 export async function runner(): Promise<void> {
   _printAscii({
@@ -29,7 +27,7 @@ export async function runner(): Promise<void> {
     desc: `${chalk.bold(
       `${chalk.green(
         "Full Stack CLI"
-      )} that speeds up your development in one go.`
+      )} that speeds up your development in one go.\n`
     )}`,
   });
 
@@ -84,7 +82,7 @@ export async function runner(): Promise<void> {
     )
     .summary("Show all project templates.")
     .description("Showing all of available project templates.")
-    .action(async (options) => {
+    .action((options) => {
       _listCommand(options);
     });
 
@@ -105,12 +103,8 @@ export async function runner(): Promise<void> {
     )
     .summary("Using an existing project template.")
     .description("Using an existing project template as your project.")
-    .action(async (options) => {
-      const _answers = await inquirer.prompt(
-        _generateUsePrompts(options.template)
-      );
-
-      _useCommand(_answers, options);
+    .action((options) => {
+      _useCommand(options);
     });
 
   // need more updates on this command.
