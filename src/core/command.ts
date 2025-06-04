@@ -19,11 +19,13 @@ import { _DockerResources, _ProjectResourcePath } from "../types/default.js";
 import { _renewalProjectName } from "../utils/string.js";
 import chalk from "chalk";
 import { OptionValues } from "commander";
-import fs, { Dir, Dirent } from "fs";
+import fs, { Dirent } from "fs";
 import fse from "fs-extra";
 import inquirer from "inquirer";
 import ora from "ora";
 import path from "path";
+import { _generateUpdatePrompts } from "./prompt.js";
+import { execa } from "execa";
 
 export async function _listCommand(options: OptionValues): Promise<void> {
   let _answers: { [x: string]: any } = {};
@@ -67,7 +69,7 @@ export async function _useCommand(
   let _desPath: string = "";
 
   const spinner = ora({
-    text: "Start generating...",
+    text: "Start generating ✨...",
     spinner: "dots",
     color: "green",
     interval: 100,
@@ -75,6 +77,7 @@ export async function _useCommand(
 
   const start = performance.now();
   spinner.start();
+
   try {
     const _dirPath = options.template
       ? path.join(_basePath, "src/templates", options.template)
@@ -87,50 +90,83 @@ export async function _useCommand(
 
     switch (true) {
       case options.template === "backend" || answers.projectType === "backend":
-        _resource = _getBackendFolder(answers, _files);
-
-        _sourcePath = path.join(
-          _resource.folder.parentPath,
-          _resource.folder.name
+        spinner.start(
+          `Start generating backend project using ${answers.chooseBackendFramework} 👾...`
         );
-        _desPath = path.join(options.dir, _resource.folder.name);
-        _isPathExist(options.dir);
-        _isProjectExist(options.dir, _resource.folder.name);
 
-        await fse.copy(_sourcePath, _desPath);
+        await new Promise(async (resolve, reject) => {
+          _resource = _getBackendFolder(answers, _files);
+
+          _sourcePath = path.join(
+            _resource.folder.parentPath,
+            _resource.folder.name
+          );
+          _desPath = path.join(options.dir, _resource.folder.name);
+          _isPathExist(options.dir);
+          _isProjectExist(options.dir, _resource.folder.name);
+
+          await fse.copy(_sourcePath, _desPath);
+          resolve(true);
+        });
+
+        spinner.succeed(
+          `Create ${answers.chooseBackendFramework} project succeed ✅`
+        );
         break;
       case options.template === "frontend" ||
         answers.projectType === "frontend":
-        _resource = _getFrontendFolder(answers, _files);
-
-        _sourcePath = path.join(
-          _resource.folder.parentPath,
-          _resource.folder.name
+        spinner.start(
+          `Start generating frontend project using ${answers.chooseFrontendFramework} 👾...`
         );
-        _desPath = path.join(options.dir, _resource.folder.name);
-        _isPathExist(options.dir);
-        _isProjectExist(options.dir, _resource.folder.name);
 
-        await fse.copy(_sourcePath, _desPath);
+        await new Promise(async (resolve, reject) => {
+          _resource = _getFrontendFolder(answers, _files);
+
+          _sourcePath = path.join(
+            _resource.folder.parentPath,
+            _resource.folder.name
+          );
+          _desPath = path.join(options.dir, _resource.folder.name);
+          _isPathExist(options.dir);
+          _isProjectExist(options.dir, _resource.folder.name);
+
+          await fse.copy(_sourcePath, _desPath);
+          resolve(true);
+        });
+
+        spinner.succeed(
+          `Create ${answers.chooseFrontendFramework} project succeed ✅`
+        );
         break;
       case options.template === "fullstack" ||
         answers.projectType === "fullstack":
-        _resource = _getFullStackFolder(answers, _files);
-
-        _sourcePath = path.join(
-          _resource.folder.parentPath,
-          _resource.folder.name
+        spinner.start(
+          `Start generating fullstack project using ${answers.chooseFullStackFramework} 👾...`
         );
-        _desPath = path.join(options.dir, _resource.folder.name);
-        _isPathExist(options.dir);
-        _isProjectExist(options.dir, _resource.folder.name);
 
-        await fse.copy(_sourcePath, _desPath);
+        await new Promise(async (resolve, reject) => {
+          _resource = _getFullStackFolder(answers, _files);
+
+          _sourcePath = path.join(
+            _resource.folder.parentPath,
+            _resource.folder.name
+          );
+          _desPath = path.join(options.dir, _resource.folder.name);
+          _isPathExist(options.dir);
+          _isProjectExist(options.dir, _resource.folder.name);
+
+          await fse.copy(_sourcePath, _desPath);
+          resolve(true);
+        });
+
+        spinner.succeed(
+          `Create ${answers.chooseFullStackFramework} project succeed ✅`
+        );
         break;
     }
 
     const end = performance.now();
-    spinner.succeed(`✅ All done! ${(end - start).toFixed(3)} ms`);
+    spinner.succeed(`All done! ${(end - start).toFixed(3)} ms`);
 
     console.log(`You can check the project on ${chalk.bold(_desPath)}`);
   } catch (error: any) {
@@ -171,6 +207,7 @@ export async function _createCommand(
   });
 
   const start = performance.now();
+
   try {
     const _dirPath = options.template
       ? path.join(_basePath, "src/templates", options.template)
@@ -186,7 +223,7 @@ export async function _createCommand(
         case options.template === "backend" ||
           answers.projectType === "backend":
           spinner.start(
-            `Start generating ${answers.projectType} project using ${answers.chooseBackendFramework} 👾...`
+            `Start generating backend project using ${answers.chooseBackendFramework} 👾...`
           );
 
           _resource = _getBackendResourcePath(answers, _files, options.dir);
@@ -196,13 +233,13 @@ export async function _createCommand(
           await fse.copy(_resource.sourcePath, _resource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed.`
+            `Create ${answers.chooseBackendFramework} project succeed ✅`
           );
           break;
         case options.template === "frontend" ||
           answers.projectType === "frontend":
           spinner.start(
-            `Start generating ${answers.projectType} project using ${answers.chooseFrontendFramework} 👾...`
+            `Start generating frontend project using ${answers.chooseFrontendFramework} 👾...`
           );
 
           _resource = _getFrontendResourcePath(answers, _files, options.dir);
@@ -212,13 +249,13 @@ export async function _createCommand(
           await fse.copy(_resource.sourcePath, _resource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed.`
+            `Create ${answers.chooseBackendFramework} project succeed ✅`
           );
           break;
         case options.template === "fullstack" ||
           answers.projectType === "fullstack":
           spinner.start(
-            `Start generating ${answers.projectType} project using ${answers.chooseFullStackFramework} 👾...`
+            `Start generating fullstack project using ${answers.chooseFullStackFramework} 👾...`
           );
 
           _resource = _getFullStackResourcePath(answers, _files, options.dir);
@@ -228,7 +265,7 @@ export async function _createCommand(
           await fse.copy(_resource.sourcePath, _resource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed.`
+            `Create ${answers.chooseBackendFramework} project succeed ✅`
           );
           break;
       }
@@ -251,10 +288,10 @@ export async function _createCommand(
           await fse.copy(_resource.sourcePath, _resource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed.`
+            `Create ${answers.chooseBackendFramework} project succeed ✅`
           );
 
-          spinner.start("Start copying docker 🐳...");
+          spinner.start("Start copying docker compose 🐳...");
 
           _dockerResource = _getDockerComposePath(
             _dockerResources.templates,
@@ -263,12 +300,14 @@ export async function _createCommand(
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
 
-          spinner.succeed("Adding docker compose file succeed ✅...");
+          spinner.succeed("Adding docker compose file succeed ✅");
 
           if (
             answers.chooseBackendFramework !== "Spring Boot" ||
             answers.chooseBackendFramework !== "Laravel"
           ) {
+            spinner.start("Start copying dockerfile 🐳...");
+
             const _nodeDockerfileResourcePath =
               _getNodeDockerfileResourcePathForBackend(
                 answers,
@@ -281,10 +320,12 @@ export async function _createCommand(
               _nodeDockerfileResourcePath.desPath
             );
 
-            spinner.succeed("Adding dockerfile succeed ✅...");
+            spinner.succeed("Adding dockerfile succeed ✅");
           }
 
           if (answers.chooseBackendFramework === "Spring Boot") {
+            spinner.start("Start copying dockerfile 🐳...");
+
             const _javaDockerfileResourcePath = _getJavaDockerfileResourcePath(
               _dockerResources.dockerfiles,
               _resource
@@ -295,10 +336,12 @@ export async function _createCommand(
               _javaDockerfileResourcePath.desPath
             );
 
-            spinner.succeed("Adding dockerfile succeed ✅...");
+            spinner.succeed("Adding dockerfile succeed ✅");
           }
 
           if (answers.chooseBackendFramework === "Laravel") {
+            spinner.start("Start copying dockerfile 🐳...");
+
             const _phpDockerfileResourcePath = _getPhpDockerfileResourcePath(
               _dockerResources.dockerfiles,
               _resource
@@ -309,7 +352,7 @@ export async function _createCommand(
               _phpDockerfileResourcePath.desPath
             );
 
-            spinner.succeed("Adding dockerfile succeed ✅...");
+            spinner.succeed("Adding dockerfile succeed ✅");
           }
           break;
         case options.template === "frontend" ||
@@ -325,10 +368,10 @@ export async function _createCommand(
           await fse.copy(_resource.sourcePath, _resource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseFrontendFramework} project succeed.`
+            `Create ${answers.chooseFrontendFramework} project succeed ✅`
           );
 
-          spinner.start("Start copying docker 🐳...");
+          spinner.start("Start copying docker compose 🐳...");
 
           _dockerResource = _getDockerComposePath(
             _dockerResources.templates,
@@ -337,7 +380,9 @@ export async function _createCommand(
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
 
-          spinner.succeed("Adding docker compose file succeed ✅...");
+          spinner.succeed("Adding docker compose file succeed ✅");
+
+          spinner.start("Start copying dockerfile 🐳...");
 
           const _nodeDockerfileResourcePath =
             _getNodeDockerfileResourcePathForFrontend(
@@ -351,7 +396,7 @@ export async function _createCommand(
             _nodeDockerfileResourcePath.desPath
           );
 
-          spinner.succeed("Adding dockerfile succeed ✅...");
+          spinner.succeed("Adding dockerfile succeed ✅");
           break;
         case options.template === "fullstack" ||
           answers.projectType === "fullstack":
@@ -366,10 +411,10 @@ export async function _createCommand(
           await fse.copy(_resource.sourcePath, _resource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseFullStackFramework} project succeed.`
+            `Create ${answers.chooseFullStackFramework} project succeed ✅`
           );
 
-          spinner.start("Start copying docker 🐳...");
+          spinner.start("Start copying docker compose 🐳...");
 
           _dockerResource = _getDockerComposePath(
             _dockerResources.templates,
@@ -378,7 +423,9 @@ export async function _createCommand(
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
 
-          spinner.succeed("Adding docker compose file succeed ✅...");
+          spinner.succeed("Adding docker compose file succeed ✅");
+
+          spinner.start("Start copying dockerfile 🐳...");
 
           const _dockerfileResource =
             _getNodeDockerfileResourcePathForFullStack(
@@ -391,7 +438,7 @@ export async function _createCommand(
             await fse.copy(v.sourcePath, v.desPath);
           });
 
-          spinner.succeed("Adding dockerfile succeed ✅...");
+          spinner.succeed("Adding dockerfile succeed ✅");
       }
     }
 
@@ -412,7 +459,7 @@ export async function _createCommand(
           await fse.copy(_resource.sourcePath, _resource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed.`
+            `Create ${answers.chooseBackendFramework} project succeed ✅`
           );
 
           spinner.start("Start copying docker 🐳...");
@@ -424,12 +471,14 @@ export async function _createCommand(
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
 
-          spinner.succeed("Adding docker compose file succeed ✅...");
+          spinner.succeed("Adding docker compose file succeed ✅");
 
           if (
             answers.chooseBackendFramework !== "Spring Boot" ||
             answers.chooseBackendFramework !== "Laravel"
           ) {
+            spinner.start("Start copying dockerfile 🐳...");
+
             const _dockerfileResource =
               _getNodeDockerfileResourcePathForBackend(
                 answers,
@@ -442,10 +491,12 @@ export async function _createCommand(
               _dockerfileResource.desPath
             );
 
-            spinner.succeed("Adding dockerfile succeed ✅...");
+            spinner.succeed("Adding dockerfile succeed ✅");
           }
 
           if (answers.chooseBackendFramework === "Spring Boot") {
+            spinner.start("Start copying dockerfile 🐳...");
+
             const _javaDockerfileResourcePath = _getJavaDockerfileResourcePath(
               _dockerResources.dockerfiles,
               _resource
@@ -456,10 +507,12 @@ export async function _createCommand(
               _javaDockerfileResourcePath.desPath
             );
 
-            spinner.succeed("Adding dockerfile succeed ✅...");
+            spinner.succeed("Adding dockerfile succeed ✅");
           }
 
           if (answers.chooseBackendFramework === "Laravel") {
+            spinner.start("Start copying dockerfile 🐳...");
+
             const _phpDockerfileResourcePath = _getPhpDockerfileResourcePath(
               _dockerResources.dockerfiles,
               _resource
@@ -470,7 +523,7 @@ export async function _createCommand(
               _phpDockerfileResourcePath.desPath
             );
 
-            spinner.succeed("Adding dockerfile succeed ✅...");
+            spinner.succeed("Adding dockerfile succeed ✅");
           }
 
           spinner.start("Start generate docker bake 🍞...");
@@ -485,7 +538,7 @@ export async function _createCommand(
             _dockerBakeResource.desPath
           );
 
-          spinner.succeed("Adding dockerfile succeed ✅...");
+          spinner.succeed("Adding docker bake file succeed ✅");
           break;
         case options.template === "frontend" ||
           answers.projectType === "frontend":
@@ -500,7 +553,7 @@ export async function _createCommand(
           await fse.copy(_resource.sourcePath, _resource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseFrontendFramework} project succeed.`
+            `Create ${answers.chooseFrontendFramework} project succeed ✅`
           );
 
           spinner.start("Start copying docker 🐳...");
@@ -512,7 +565,9 @@ export async function _createCommand(
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
 
-          spinner.succeed("Adding docker compose file succeed ✅...");
+          spinner.succeed("Adding docker compose file succeed ✅");
+
+          spinner.start("Start copying dockerfile 🐳...");
 
           const _nodeDockerfileResourcePath =
             _getNodeDockerfileResourcePathForFrontend(
@@ -526,7 +581,7 @@ export async function _createCommand(
             _nodeDockerfileResourcePath.desPath
           );
 
-          spinner.succeed("Adding dockerfile succeed ✅...");
+          spinner.succeed("Adding dockerfile succeed ✅");
 
           spinner.start("Start generate docker bake 🍞...");
 
@@ -540,7 +595,7 @@ export async function _createCommand(
             _dockerBakeResource.desPath
           );
 
-          spinner.succeed("Adding dockerfile succeed ✅...");
+          spinner.succeed("Adding docker bake file succeed ✅");
           break;
         case options.template === "fullstack" ||
           answers.projectType === "fullstack":
@@ -555,7 +610,7 @@ export async function _createCommand(
           await fse.copy(_resource.sourcePath, _resource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseFullStackFramework} project succeed.`
+            `Create ${answers.chooseFullStackFramework} project succeed ✅`
           );
 
           spinner.start("Start copying docker 🐳...");
@@ -567,7 +622,9 @@ export async function _createCommand(
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
 
-          spinner.succeed("Adding docker compose file succeed ✅...");
+          spinner.succeed("Adding docker compose file succeed ✅");
+
+          spinner.start("Start copying dockerfile 🐳...");
 
           const _dockerfileResource =
             _getNodeDockerfileResourcePathForFullStack(
@@ -580,7 +637,7 @@ export async function _createCommand(
             await fse.copy(v.sourcePath, v.desPath);
           });
 
-          spinner.succeed("Adding dockerfile succeed ✅...");
+          spinner.succeed("Adding dockerfile succeed ✅");
 
           spinner.start("Start generate docker bake 🍞...");
 
@@ -593,11 +650,13 @@ export async function _createCommand(
             _dockerBakeResource.sourcePath,
             _dockerBakeResource.desPath
           );
+
+          spinner.succeed("Adding docker bake file succeed ✅");
       }
     }
 
     const end = performance.now();
-    spinner.succeed(`✅ All done! ${(end - start).toFixed(3)} ms`);
+    spinner.succeed(`All done! ${(end - start).toFixed(3)} ms`);
 
     console.log(
       `You can check the project on ${chalk.bold(_resource?.desPath)}`
@@ -605,7 +664,7 @@ export async function _createCommand(
   } catch (error: any) {
     let errorMessage =
       error instanceof Error ? error.message : "⛔️ An unknown error occurred.";
-    spinner.fail("Failed to generate...\n");
+    spinner.fail("⛔️ Failed to generate...\n");
 
     if (error instanceof PathNotFoundError) {
       errorMessage = error.message;
@@ -618,6 +677,952 @@ export async function _createCommand(
     console.error(errorMessage);
   } finally {
     spinner.clear();
+  }
+}
+
+export async function _updateCommand(options: OptionValues): Promise<void> {
+  if (!options.all) {
+    const _answers = await inquirer.prompt(
+      _generateUpdatePrompts(options.template)
+    );
+
+    _checkAndUpdate(_answers, options);
+  } else {
+    const _answers = await inquirer.prompt([
+      {
+        name: "projectType",
+        type: "select",
+        message: "Choose project type you want to update:",
+        choices: _defaultProjectTypes,
+        default: "backend",
+      },
+    ]);
+
+    _updateAllTemplates(_answers, options);
+  }
+}
+
+async function _checkAndUpdate(
+  answers: { [x: string]: any },
+  options: OptionValues
+) {
+  const spinner = ora({
+    text: `Start updating project template dependencies ✨...`,
+    spinner: "dots9",
+    color: "green",
+    interval: 100,
+  });
+
+  const start = performance.now();
+
+  try {
+    const _dirPath = options.template
+      ? path.join(_basePath, "src/templates", options.template)
+      : path.join(_basePath, "src/templates", answers.projectType);
+    _isPathExist(_dirPath);
+
+    const _files = fs.readdirSync(_dirPath, {
+      withFileTypes: true,
+    });
+
+    if (options.template === "backend" || answers.projectType === "backend") {
+      spinner.start(
+        `Start checking ${answers.chooseBackendFramework} project dependencies updates ✨...\n`
+      );
+
+      const _getBackendFrameworkResource =
+        _defaultBackendFrameworks.frameworks.filter(
+          (f) => f.name === answers.chooseBackendFramework
+        )[0];
+
+      const _folder = _files.filter(
+        (f) =>
+          f.name === _getBackendFrameworkResource.templateName &&
+          f.isDirectory()
+      )[0];
+
+      if (answers.chooseBackendFramework !== "NestJS") {
+        const _sourcePath = path.join(_folder.parentPath, _folder.name);
+
+        const _tableStdout = await _checkPackageUpdatesInfo(
+          _sourcePath,
+          "npm",
+          "table"
+        );
+        const _jsonStdout = await _checkPackageUpdatesInfo(
+          _sourcePath,
+          "npm",
+          "json"
+        );
+
+        const _outdatedPackages = JSON.parse(_jsonStdout);
+
+        if (Object.keys(_outdatedPackages).length < 1) {
+          spinner.info(
+            `${answers.chooseBackendFramework} project dependencies already in current or latest version ✨...\n`
+          );
+        } else {
+          console.log(`${_tableStdout}\n`);
+
+          spinner.stop();
+
+          const _updateOptionAnswers = await inquirer.prompt([
+            {
+              name: "updatePackage",
+              type: "confirm",
+              message: "Do you want to update the project dependencies?",
+              default: false,
+            },
+          ]);
+
+          if (!_updateOptionAnswers.updatePackage) {
+            spinner.warn(
+              chalk.yellow(
+                `Well, it's okay if you don't wanna update the dependencies, but still, you should update the dependencies so that you can avoid any several issues on any further.`
+              )
+            );
+          } else {
+            spinner.start(
+              `Updating ${answers.chooseBackendFramework} project dependencies ✨...\n`
+            );
+
+            await execa("npm", ["update"], {
+              cwd: _sourcePath,
+            });
+
+            spinner.succeed(
+              `Updating ${answers.chooseBackendFramework} project template dependencies succeed ✅`
+            );
+          }
+        }
+      } else {
+        const _sourcePath = path.join(_folder.parentPath, _folder.name);
+
+        const _tableStdout = await _checkPackageUpdatesInfo(
+          _sourcePath,
+          "pnpm",
+          "table"
+        );
+        const _jsonStdout = await _checkPackageUpdatesInfo(
+          _sourcePath,
+          "pnpm",
+          "json"
+        );
+
+        const _outdatedPackages = JSON.parse(_jsonStdout);
+
+        if (Object.keys(_outdatedPackages).length < 1) {
+          spinner.info(
+            `${answers.chooseBackendFramework} project dependencies already in current or latest version ✨...\n`
+          );
+        } else {
+          console.log(`${_tableStdout}\n`);
+
+          spinner.stop();
+
+          const _updateOptionAnswers = await inquirer.prompt([
+            {
+              name: "updatePackage",
+              type: "confirm",
+              message: "Do you want to update the project dependencies?",
+              default: false,
+            },
+          ]);
+
+          if (!_updateOptionAnswers.updatePackage) {
+            spinner.warn(
+              chalk.yellow(
+                `Well, it's okay if you don't wanna update the dependencies, but still, you should update the dependencies so that you can avoid any several issues on any further.`
+              )
+            );
+          } else {
+            spinner.start(
+              `Updating ${answers.chooseBackendFramework} project dependencies ✨...\n`
+            );
+
+            await execa("pnpm", ["update"], {
+              cwd: _sourcePath,
+            });
+
+            spinner.succeed(
+              `Updating ${answers.chooseBackendFramework} project template dependencies succeed ✅`
+            );
+          }
+        }
+      }
+    }
+
+    if (options.template === "frontend" || answers.projectType === "frontend") {
+      spinner.start(
+        `Start checking ${answers.chooseFrontendFramework} project dependencies updates ✨...\n`
+      );
+
+      const _getFrontendFrameworkResource =
+        _defaultFrontendFrameworks.frameworks.filter(
+          (f) => f.name === answers.chooseFrontendFramework
+        )[0];
+
+      const _folder = _files.filter(
+        (f) =>
+          f.name === _getFrontendFrameworkResource.templateName &&
+          f.isDirectory()
+      )[0];
+
+      if (answers.chooseFrontendFramework !== "Vue.js") {
+        const _sourcePath = path.join(_folder.parentPath, _folder.name);
+
+        const _tableStdout = await _checkPackageUpdatesInfo(
+          _sourcePath,
+          "npm",
+          "table"
+        );
+        const _jsonStdout = await _checkPackageUpdatesInfo(
+          _sourcePath,
+          "npm",
+          "json"
+        );
+
+        const _outdatedPackages = JSON.parse(_jsonStdout);
+
+        if (Object.keys(_outdatedPackages).length < 1) {
+          spinner.info(
+            `${answers.chooseFrontendFramework} project dependencies already in current or latest version ✨...\n`
+          );
+        } else {
+          console.log(`${_tableStdout}\n`);
+
+          spinner.stop();
+
+          const _updateOptionAnswers = await inquirer.prompt([
+            {
+              name: "updatePackage",
+              type: "confirm",
+              message: "Do you want to update the project dependencies?",
+              default: false,
+            },
+          ]);
+
+          if (!_updateOptionAnswers.updatePackage) {
+            spinner.warn(
+              chalk.yellow(
+                `Well, it's okay if you don't wanna update the dependencies, but still, you should update the dependencies so that you can avoid any several issues on any further.`
+              )
+            );
+          } else {
+            spinner.start(
+              `Updating ${answers.chooseFrontendFramework} project dependencies ✨...\n`
+            );
+
+            await execa("npm", ["update"], {
+              cwd: _sourcePath,
+            });
+
+            spinner.succeed(
+              `Updating ${answers.chooseFrontendFramework} project template dependencies succeed ✅`
+            );
+          }
+        }
+      } else {
+        const _sourcePath = path.join(_folder.parentPath, _folder.name);
+
+        const _tableStdout = await _checkPackageUpdatesInfo(
+          _sourcePath,
+          "pnpm",
+          "table"
+        );
+        const _jsonStdout = await _checkPackageUpdatesInfo(
+          _sourcePath,
+          "pnpm",
+          "json"
+        );
+
+        const _outdatedPackages = JSON.parse(_jsonStdout);
+
+        if (Object.keys(_outdatedPackages).length < 1) {
+          spinner.info(
+            `${answers.chooseFrontendFramework} project dependencies already in current or latest version ✨...\n`
+          );
+        } else {
+          console.log(`${_tableStdout}\n`);
+
+          spinner.stop();
+
+          const _updateOptionAnswers = await inquirer.prompt([
+            {
+              name: "updatePackage",
+              type: "confirm",
+              message: "Do you want to update the project dependencies?",
+              default: false,
+            },
+          ]);
+
+          if (!_updateOptionAnswers.updatePackage) {
+            spinner.warn(
+              chalk.yellow(
+                `Well, it's okay if you don't wanna update the dependencies, but still, you should update the dependencies so that you can avoid any several issues on any further.`
+              )
+            );
+          } else {
+            spinner.start(
+              `Updating ${answers.chooseFrontendFramework} project dependencies ✨...\n`
+            );
+
+            await execa("pnpm", ["update"], {
+              cwd: _sourcePath,
+            });
+
+            spinner.succeed(
+              `Updating ${answers.chooseFrontendFramework} project template dependencies succeed ✅`
+            );
+          }
+        }
+      }
+    }
+
+    if (
+      options.template === "fullstack" ||
+      answers.projectType === "fullstack"
+    ) {
+      let _projectTemplates: string[] = [];
+
+      spinner.start(
+        `Start checking ${answers.chooseFullStackFramework} project dependencies updates ✨...\n`
+      );
+
+      const _getFullStackFrameworkResource =
+        _defaultFullStackFrameworks.frameworks.filter(
+          (f) => f.name === answers.chooseFullStackFramework
+        )[0];
+
+      const _folder = _files.filter(
+        (f) =>
+          f.name === _getFullStackFrameworkResource.templateName &&
+          f.isDirectory()
+      )[0];
+
+      const _fullstackProjectPath = path.join(
+        _folder.parentPath,
+        _folder.name,
+        "www"
+      );
+
+      const _fullstackProjectFolders = fs.readdirSync(_fullstackProjectPath, {
+        withFileTypes: true,
+      });
+
+      _fullstackProjectFolders.forEach((f) => {
+        _projectTemplates.push(f.name);
+      });
+
+      if (answers.chooseFullStackFramework !== "Next.js + NestJS") {
+        spinner.stop();
+
+        const _selectProjectTemplateQuestion = await inquirer.prompt([
+          {
+            name: "selectProjectTemplate",
+            type: "select",
+            message: "Which one project template do you want to update?",
+            choices: _projectTemplates,
+            default: _projectTemplates[0],
+          },
+        ]);
+
+        if (
+          _selectProjectTemplateQuestion.selectProjectTemplate !==
+          "nest-backend"
+        ) {
+          spinner.start(
+            `Start searching ${chalk.bold(
+              _selectProjectTemplateQuestion.selectProjectTemplate
+            )} project dependencies that need to be updated 🔍...\n`
+          );
+
+          const _vueFrontendProject = _fullstackProjectFolders.filter(
+            (v) => v.name === "vue-frontend" && v.isDirectory()
+          )[0];
+
+          const _vueFrontendSourcePath = path.join(
+            _vueFrontendProject.parentPath,
+            _vueFrontendProject.name
+          );
+
+          const _vueFrontendTableStdou = await _checkPackageUpdatesInfo(
+            _vueFrontendSourcePath,
+            "pnpm",
+            "table"
+          );
+
+          const _vueFrontendJsonStdou = await _checkPackageUpdatesInfo(
+            _vueFrontendSourcePath,
+            "pnpm",
+            "json"
+          );
+
+          const _vueFrontendOutdatedPackages = JSON.parse(
+            _vueFrontendJsonStdou
+          );
+
+          if (Object.keys(_vueFrontendOutdatedPackages).length < 1) {
+            spinner.info(
+              `${chalk.bold(
+                _vueFrontendProject.name
+              )} project dependencies already in current or latest version ✨...\n`
+            );
+          } else {
+            console.log(`${_vueFrontendTableStdou}\n`);
+
+            spinner.stop();
+
+            const _confirmUpdateQuestion = await inquirer.prompt([
+              {
+                name: "updatePackage",
+                type: "confirm",
+                message: `Do you want to update ${chalk.bold(
+                  _vueFrontendProject.name
+                )} project dependencies?`,
+                default: false,
+              },
+            ]);
+
+            if (!_confirmUpdateQuestion.updatePackage) {
+              spinner.warn(
+                chalk.yellow(
+                  `Well, it's okay if you don't wanna update the dependencies, but still, you should update the dependencies so that you can avoid any several issues on any further.`
+                )
+              );
+            } else {
+              spinner.start(
+                `Updating ${chalk.bold(
+                  _vueFrontendProject.name
+                )} project dependencies ✨...\n`
+              );
+
+              await execa("pnpm", ["update"], {
+                cwd: _vueFrontendSourcePath,
+              });
+
+              spinner.succeed(
+                `Updating ${chalk.bold(
+                  _vueFrontendProject.name
+                )} project template dependencies succeed ✅`
+              );
+            }
+          }
+        } else {
+          spinner.start(
+            `Start updating ${chalk.bold(
+              _selectProjectTemplateQuestion.selectProjectTemplate
+            )} project dependencies that need to be updated 🔍...\n`
+          );
+
+          const _nestBackendProject = _fullstackProjectFolders.filter(
+            (v) => v.name === "nest-backend" && v.isDirectory()
+          )[0];
+
+          const _nestBackendSourcePath = path.join(
+            _nestBackendProject.parentPath,
+            _nestBackendProject.name
+          );
+
+          const _nestBackendTableStdout = await _checkPackageUpdatesInfo(
+            _nestBackendSourcePath,
+            "pnpm",
+            "table"
+          );
+
+          const _nestBackendJsonStdout = await _checkPackageUpdatesInfo(
+            _nestBackendSourcePath,
+            "pnpm",
+            "json"
+          );
+
+          const _nestBackendOutdatedPackages = JSON.parse(
+            _nestBackendJsonStdout
+          );
+
+          if (Object.keys(_nestBackendOutdatedPackages).length < 1) {
+            spinner.info(
+              `${chalk.bold(
+                _nestBackendProject.name
+              )} project dependencies already in current or latest version ✨...\n`
+            );
+          } else {
+            console.log(`${_nestBackendTableStdout}\n`);
+
+            spinner.stop();
+
+            const _confirmUpdateQuestion = await inquirer.prompt([
+              {
+                name: "updatePackage",
+                type: "confirm",
+                message: `Do you want to update ${chalk.bold(
+                  _nestBackendProject.name
+                )} project dependencies?`,
+                default: false,
+              },
+            ]);
+
+            if (!_confirmUpdateQuestion.updatePackage) {
+              spinner.warn(
+                chalk.yellow(
+                  `Well, it's okay if you don't wanna update the dependencies, but still, you should update the dependencies so that you can avoid any several issues on any further.`
+                )
+              );
+            } else {
+              spinner.start(
+                `Updating ${chalk.bold(
+                  _nestBackendProject.name
+                )} project dependencies ✨...\n`
+              );
+
+              await execa("pnpm", ["update"], {
+                cwd: _nestBackendSourcePath,
+              });
+
+              spinner.succeed(
+                `Updating ${chalk.bold(
+                  _nestBackendProject.name
+                )} project template dependencies succeed ✅`
+              );
+            }
+          }
+        }
+      } else {
+        spinner.stop();
+
+        const _selectProjectTemplateQuestion = await inquirer.prompt([
+          {
+            name: "selectProjectTemplate",
+            type: "select",
+            message: "Which one project template do you want to update?",
+            choices: _projectTemplates,
+            default: _projectTemplates[0],
+          },
+        ]);
+
+        if (
+          _selectProjectTemplateQuestion.selectProjectTemplate !==
+          "nest-backend"
+        ) {
+          spinner.start(
+            `Start searching ${chalk.bold(
+              _selectProjectTemplateQuestion.selectProjectTemplate
+            )} project dependencies that need to be updated 🔍...\n`
+          );
+
+          const _nextFrontendProject = _fullstackProjectFolders.filter(
+            (v) => v.name === "next-frontend" && v.isDirectory()
+          )[0];
+
+          const _nextFrontendSourcePath = path.join(
+            _nextFrontendProject.parentPath,
+            _nextFrontendProject.name
+          );
+
+          const _nextFrontendTableStdout = await _checkPackageUpdatesInfo(
+            _nextFrontendSourcePath,
+            "npm",
+            "table"
+          );
+
+          const _nextFrontendJsonStdout = await _checkPackageUpdatesInfo(
+            _nextFrontendSourcePath,
+            "npm",
+            "json"
+          );
+
+          const _nextFrontendOutdatedPackages = JSON.parse(
+            _nextFrontendJsonStdout
+          );
+
+          if (Object.keys(_nextFrontendOutdatedPackages).length < 1) {
+            spinner.info(
+              `${chalk.bold(
+                _nextFrontendProject.name
+              )} project dependencies already in current or latest version ✨...\n`
+            );
+          } else {
+            console.log(`${_nextFrontendTableStdout}\n`);
+
+            spinner.stop();
+
+            const _confirmUpdateQuestion = await inquirer.prompt([
+              {
+                name: "updatePackage",
+                type: "confirm",
+                message: `Do you want to update ${chalk.bold(
+                  _nextFrontendProject.name
+                )} project dependencies?`,
+                default: false,
+              },
+            ]);
+
+            if (!_confirmUpdateQuestion.updatePackage) {
+              spinner.warn(
+                chalk.yellow(
+                  `Well, it's okay if you don't wanna update the dependencies, but still, you should update the dependencies so that you can avoid any several issues on any further.`
+                )
+              );
+            } else {
+              spinner.start(
+                `Updating ${chalk.bold(
+                  _nextFrontendProject.name
+                )} project dependencies ✨...\n`
+              );
+
+              await execa("npm", ["update"], {
+                cwd: _nextFrontendSourcePath,
+              });
+
+              spinner.succeed(
+                `Updating ${chalk.bold(
+                  _nextFrontendProject.name
+                )} project template dependencies succeed ✅`
+              );
+            }
+          }
+        } else {
+          spinner.start(
+            `Start updating ${chalk.bold(
+              _selectProjectTemplateQuestion.selectProjectTemplate
+            )} project dependencies that need to be updated 🔍...\n`
+          );
+
+          const _nestBackendProject = _fullstackProjectFolders.filter(
+            (v) => v.name === "nest-backend" && v.isDirectory()
+          )[0];
+
+          const _nestBackendSourcePath = path.join(
+            _nestBackendProject.parentPath,
+            _nestBackendProject.name
+          );
+
+          const _nestBackendTableStdout = await _checkPackageUpdatesInfo(
+            _nestBackendSourcePath,
+            "pnpm",
+            "table"
+          );
+
+          const _nestBackendJsonStdout = await _checkPackageUpdatesInfo(
+            _nestBackendSourcePath,
+            "pnpm",
+            "json"
+          );
+
+          const _nestBackendOutdatedPackages = JSON.parse(
+            _nestBackendJsonStdout
+          );
+
+          if (Object.keys(_nestBackendOutdatedPackages).length < 1) {
+            spinner.info(
+              `${chalk.bold(
+                _nestBackendProject.name
+              )} project dependencies already in current or latest version ✨...\n`
+            );
+          } else {
+            console.log(`${_nestBackendTableStdout}\n`);
+
+            spinner.stop();
+
+            const _confirmUpdateQuestion = await inquirer.prompt([
+              {
+                name: "updatePackage",
+                type: "confirm",
+                message: `Do you want to update ${chalk.bold(
+                  _nestBackendProject.name
+                )} project dependencies?`,
+                default: false,
+              },
+            ]);
+
+            if (!_confirmUpdateQuestion.updatePackage) {
+              spinner.warn(
+                chalk.yellow(
+                  `Well, it's okay if you don't wanna update the dependencies, but still, you should update the dependencies so that you can avoid any several issues on any further.`
+                )
+              );
+            } else {
+              spinner.start(
+                `Updating ${chalk.bold(
+                  _nestBackendProject.name
+                )} project dependencies ✨...\n`
+              );
+
+              await execa("pnpm", ["update"], {
+                cwd: _nestBackendSourcePath,
+              });
+
+              spinner.succeed(
+                `Updating ${chalk.bold(
+                  _nestBackendProject.name
+                )} project template dependencies succeed ✅`
+              );
+            }
+          }
+        }
+      }
+    }
+
+    const end = performance.now();
+    spinner.succeed(`✅ All done! ${(end - start).toFixed(3)} ms`);
+  } catch (error) {
+    let errorMessage =
+      error instanceof Error ? error.message : "⛔️ An unknown error occurred.";
+    spinner.fail("⛔️ Failed to generate...\n");
+
+    if (error instanceof PathNotFoundError) {
+      errorMessage = error.message;
+    }
+
+    if (error instanceof UnableOverwriteError) {
+      errorMessage = error.message;
+    }
+
+    console.error(errorMessage);
+  } finally {
+    spinner.clear();
+  }
+}
+
+async function _updateAllTemplates(
+  answers: { [x: string]: any },
+  options: OptionValues
+) {
+  const spinner = ora({
+    text: "Start updating project templates dependencies ✨...",
+    spinner: "dots9",
+    color: "green",
+    interval: 100,
+  });
+
+  const start = performance.now();
+
+  try {
+    const _dirPath = options.template
+      ? path.join(_basePath, "src/templates", options.template)
+      : path.join(_basePath, "src/templates", answers.projectType);
+    _isPathExist(_dirPath);
+
+    const _files = fs.readdirSync(_dirPath, {
+      withFileTypes: true,
+    });
+
+    if (options.template === "backend" || answers.projectType === "backend") {
+      spinner.start(
+        `Start updating all project ${
+          options.template ? options.template : answers.projectType
+        } templates dependencies ✨...`
+      );
+
+      for (const f of _files) {
+        if (f.name !== "nest-project") {
+          spinner.start(
+            `Start updating ${f.name} project templates dependencies ✨...`
+          );
+
+          const _sourcePath = path.join(f.parentPath, f.name);
+
+          await execa("npm", ["update"], {
+            cwd: _sourcePath,
+          });
+
+          spinner.succeed(
+            `Updating ${f.name} project template dependencies succeed ✅`
+          );
+        } else {
+          spinner.start(
+            `Start updating ${f.name} project templates dependencies ✨...`
+          );
+
+          const _sourcePath = path.join(f.parentPath, f.name);
+
+          await execa("pnpm", ["update"], {
+            cwd: _sourcePath,
+          });
+
+          spinner.succeed(
+            `Updating ${f.name} project template dependencies succeed ✅`
+          );
+        }
+      }
+    }
+
+    if (options.template === "frontend" || answers.projectType === "frontend") {
+      spinner.start(
+        `Start updating all project ${
+          options.template ? options.template : answers.projectType
+        } templates dependencies ✨...`
+      );
+
+      for (const f of _files) {
+        if (f.name !== "vue-project") {
+          spinner.start(
+            `Start updating ${f.name} project templates dependencies ✨...`
+          );
+
+          const _sourcePath = path.join(f.parentPath, f.name);
+
+          await execa("npm", ["update"], {
+            cwd: _sourcePath,
+          });
+
+          spinner.succeed(
+            `Updating ${f.name} project template dependencies succeed ✅`
+          );
+        } else {
+          spinner.start(
+            `Start updating ${f.name} project templates dependencies ✨...`
+          );
+
+          const _sourcePath = path.join(f.parentPath, f.name);
+
+          await execa("pnpm", ["update"], {
+            cwd: _sourcePath,
+          });
+
+          spinner.succeed(
+            `Updating ${f.name} project template dependencies succeed ✅`
+          );
+        }
+      }
+    }
+
+    if (
+      options.template === "fullstack" ||
+      answers.projectType === "fullstack"
+    ) {
+      spinner.start(
+        `Start updating all project ${
+          options.template ? options.template : answers.projectType
+        } templates dependencies ✨...`
+      );
+
+      for (const f of _files) {
+        const _fullstackProjectPath = path.join(f.parentPath, f.name, "www");
+        if (f.name !== "next-nest-project") {
+          const _fullstackProjectFolders = fs.readdirSync(
+            _fullstackProjectPath,
+            {
+              withFileTypes: true,
+            }
+          );
+
+          for (const g of _fullstackProjectFolders) {
+            spinner.start(
+              `Start updating ${g.name} project templates dependencies ✨...`
+            );
+
+            const _sourcePath = path.join(g.parentPath, g.name);
+
+            await execa("pnpm", ["update"], {
+              cwd: _sourcePath,
+            });
+
+            spinner.succeed(
+              `Updating ${g.name} project template dependencies succeed ✅`
+            );
+          }
+        } else {
+          const _fullstackProjectFolders = fs.readdirSync(
+            _fullstackProjectPath,
+            {
+              withFileTypes: true,
+            }
+          );
+
+          for (const g of _fullstackProjectFolders) {
+            if (g.name !== "nest-backend") {
+              spinner.start(
+                `Start updating ${g.name} project templates dependencies ✨...`
+              );
+
+              const _sourcePath = path.join(g.parentPath, g.name);
+
+              await execa("npm", ["update"], {
+                cwd: _sourcePath,
+              });
+
+              spinner.succeed(
+                `Updating ${g.name} project template dependencies succeed ✅`
+              );
+            } else {
+              spinner.start(
+                `Start updating ${g.name} project templates dependencies ✨...`
+              );
+
+              const _sourcePath = path.join(g.parentPath, g.name);
+
+              await execa("pnpm", ["update"], {
+                cwd: _sourcePath,
+              });
+
+              spinner.succeed(
+                `Updating ${g.name} project template dependencies succeed ✅`
+              );
+            }
+          }
+        }
+      }
+    }
+
+    const end = performance.now();
+    spinner.succeed(`✅ All done! ${(end - start).toFixed(3)} ms`);
+  } catch (error) {
+    let errorMessage =
+      error instanceof Error ? error.message : "⛔️ An unknown error occurred.";
+    spinner.fail("⛔️ Failed to generate...\n");
+
+    if (error instanceof PathNotFoundError) {
+      errorMessage = error.message;
+    }
+
+    if (error instanceof UnableOverwriteError) {
+      errorMessage = error.message;
+    }
+
+    console.error(errorMessage);
+  } finally {
+    spinner.clear();
+  }
+}
+
+async function _checkPackageUpdatesInfo(
+  targetPath: string,
+  packageManager: "npm" | "pnpm",
+  format: "json" | "table"
+) {
+  if (packageManager !== "npm") {
+    if (format !== "json") {
+      const { stdout } = await execa("pnpm", ["outdated", "--table"], {
+        cwd: targetPath,
+        reject: false,
+      });
+
+      return stdout;
+    } else {
+      const { stdout } = await execa("pnpm", ["outdated", "--json"], {
+        cwd: targetPath,
+        reject: false,
+      });
+
+      return stdout;
+    }
+  } else {
+    if (format !== "json") {
+      const { stdout } = await execa("npm", ["outdated", "--table"], {
+        cwd: targetPath,
+        reject: false,
+      });
+
+      return stdout;
+    } else {
+      const { stdout } = await execa("npm", ["outdated", "--json"], {
+        cwd: targetPath,
+        reject: false,
+      });
+
+      return stdout;
+    }
   }
 }
 

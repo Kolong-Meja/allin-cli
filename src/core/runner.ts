@@ -8,16 +8,29 @@ import {
   _program,
 } from "../constants/default.js";
 import inquirer from "inquirer";
-import { _generateCreatePrompts, _generateUsePrompts } from "./prompt.js";
-import { _getProjects, _getProjectsByName } from "../generators/files.js";
+import {
+  _generateCreatePrompts,
+  _generateUpdatePrompts,
+  _generateUsePrompts,
+} from "./prompt.js";
+import {
+  _getProjects,
+  _getProjectsByName,
+  _isPathExist,
+} from "../generators/files.js";
 import { _printAscii } from "../utils/ascii.js";
 import chalk from "chalk";
-import { _createCommand, _listCommand, _useCommand } from "./command.js";
-import { execa } from "execa";
-import ora from "ora";
+import {
+  _createCommand,
+  _listCommand,
+  _updateCommand,
+  _useCommand,
+} from "./command.js";
 import path from "path";
 import fs from "fs";
-import { _renewalProjectName } from "@/utils/string.js";
+import { _renewalProjectName } from "../utils/string.js";
+import ora from "ora";
+import { execa } from "execa";
 
 export async function runner(): Promise<void> {
   _printAscii({
@@ -116,6 +129,11 @@ export async function runner(): Promise<void> {
       "-t, --template <template>",
       "Template model that you want to update to the newest version."
     )
+    .option(
+      "-a, --all",
+      "Option that indicates whether to update or check all dependencies.",
+      false
+    )
     .helpOption(
       "-h, --help",
       `Action to get more information about ${chalk.bold("update")} command.`
@@ -123,37 +141,7 @@ export async function runner(): Promise<void> {
     .summary("Automate update of project templates version.")
     .description("Updating a available project template version automatically.")
     .action(async (options) => {
-      const _dirPath = path.join(_basePath, "src/templates", options.template);
-      const _files = fs.readdirSync(_dirPath, {
-        withFileTypes: true,
-      });
-      const _getResource = _defaultBackendFrameworks.frameworks.filter(
-        (f) => f.name === "NestJS"
-      )[0];
-      const _folder = _files.filter(
-        (f) => f.name === _getResource.templateName && f.isDirectory()
-      )[0];
-
-      const spinner = ora({
-        text: "Start updating NestJS dependecies ✨...",
-        spinner: "dots9",
-        color: "green",
-        interval: 100,
-      });
-
-      const start = performance.now();
-      spinner.start();
-
-      const _sourcePath = path.join(_folder.parentPath, _folder.name);
-
-      const { stdout } = await execa("pnpm", ["update"], {
-        cwd: _sourcePath,
-      });
-
-      console.log({ stdout });
-
-      const end = performance.now();
-      spinner.succeed(`✅ All done! ${(end - start).toFixed(3)} ms`);
+      _updateCommand(options);
     });
 
   _program.helpOption(

@@ -68,7 +68,7 @@ export function _isFrameworkProjectExist(
 
 export function _getProjects(targetPath: string): void {
   const spinner = ora({
-    text: "Start searching the templates...",
+    text: "Start searching the templates 🔎...",
     spinner: "dots",
     color: "green",
     interval: 100,
@@ -104,7 +104,7 @@ export function _getProjects(targetPath: string): void {
   } catch (error: any) {
     let errorMessage =
       error instanceof Error ? error.message : "⛔️ An unknown error occurred.";
-    spinner.fail("Failed to generate...\n");
+    spinner.fail("⛔️ Failed to generate...\n");
 
     if (error instanceof PathNotFoundError) {
       errorMessage = error.message;
@@ -118,7 +118,7 @@ export function _getProjects(targetPath: string): void {
 
 export function _getProjectsByName(targetPath: string, template: string): void {
   const spinner = ora({
-    text: `Start searching the ${_titleCase(template)} templates...`,
+    text: `Start searching the ${_titleCase(template)} templates 🔎...`,
     spinner: "dots",
     color: "green",
     interval: 100,
@@ -145,7 +145,7 @@ export function _getProjectsByName(targetPath: string, template: string): void {
   } catch (error: unknown) {
     let errorMessage =
       error instanceof Error ? error.message : "⛔️ An unknown error occurred.";
-    spinner.fail("Failed to generate...\n");
+    spinner.fail("⛔️ Failed to generate...\n");
 
     if (error instanceof PathNotFoundError) {
       errorMessage = error.message;

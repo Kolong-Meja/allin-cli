@@ -260,3 +260,84 @@ export function _generateUsePrompts(template: string): (UnnamedDistinctQuestion<
       })[];
   }
 }
+
+export function _generateUpdatePrompts(
+  template: string
+): (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
+  name: string;
+})[] {
+  switch (template) {
+    case "backend":
+      return [
+        {
+          name: "chooseBackendFramework",
+          type: "select",
+          message: "Choose the backend project template you want to update:",
+          choices: _defaultBackendFrameworks.frameworks.filter((f) => f.name),
+          default: "NestJS",
+        },
+      ] as unknown as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
+        name: string;
+      })[];
+    case "frontend":
+      return [
+        {
+          name: "chooseFrontendFramework",
+          type: "select",
+          message: "Choose the frontend project template you want to update:",
+          choices: _defaultFrontendFrameworks.frameworks.filter((f) => f.name),
+          default: "Next.js",
+        },
+      ] as unknown as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
+        name: string;
+      })[];
+    case "fullstack":
+      return [
+        {
+          name: "chooseFullStackFramework",
+          type: "select",
+          message: "Choose the fullstack project template you want to update:",
+          choices: _defaultFullStackFrameworks.frameworks.filter((f) => f.name),
+          default: "Next.js + NestJS",
+        },
+      ] as unknown as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
+        name: string;
+      })[];
+    default:
+      return [
+        {
+          name: "projectType",
+          type: "select",
+          message: "Choose project type you want to update:",
+          choices: _defaultProjectTypes,
+          default: "backend",
+        },
+        {
+          name: "chooseBackendFramework",
+          type: "select",
+          message: "Choose the backend project template you want to update:",
+          choices: _defaultBackendFrameworks.frameworks.filter((f) => f.name),
+          default: "NestJS",
+          when: (q) => q.projectType === "backend",
+        },
+        {
+          name: "chooseFrontendFramework",
+          type: "select",
+          message: "Choose the frontend project template you want to update:",
+          choices: _defaultFrontendFrameworks.frameworks.filter((f) => f.name),
+          default: "Next.js",
+          when: (q) => q.projectType === "frontend",
+        },
+        {
+          name: "chooseFullStackFramework",
+          type: "select",
+          message: "Choose the fullstack project template you want to update:",
+          choices: _defaultFullStackFrameworks.frameworks.filter((f) => f.name),
+          default: "Next.js + NestJS",
+          when: (q) => q.projectType === "fullstack",
+        },
+      ] as (UnnamedDistinctQuestion<_PromptAnswersProps & object> & {
+        name: string;
+      })[];
+  }
+}
