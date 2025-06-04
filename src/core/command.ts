@@ -26,7 +26,11 @@ import fse from "fs-extra";
 import inquirer from "inquirer";
 import ora from "ora";
 import path from "path";
-import { _generateUpdatePrompts, _generateUsePrompts } from "./prompt.js";
+import {
+  _generateCreatePrompts,
+  _generateUpdatePrompts,
+  _generateUsePrompts,
+} from "./prompt.js";
 import { execa } from "execa";
 import { _basePath } from "../config.js";
 
@@ -208,10 +212,7 @@ export async function _useCommand(options: OptionValues): Promise<void> {
   }
 }
 
-export async function _createCommand(
-  answers: { [x: string]: any },
-  options: OptionValues
-): Promise<void> {
+export async function _createCommand(options: OptionValues): Promise<void> {
   let _resource: __ProjectResourcePathProps = { sourcePath: "", desPath: "" };
   let _dockerResource: __ProjectResourcePathProps = {
     sourcePath: "",
@@ -222,8 +223,11 @@ export async function _createCommand(
     desPath: "",
   };
 
+  const _projectTemplateQuestions = await inquirer.prompt(
+    _generateCreatePrompts(options.template)
+  );
+
   const spinner = ora({
-    text: "Start generating ✨...",
     spinner: "dots9",
     color: "green",
     interval: 100,
@@ -234,171 +238,217 @@ export async function _createCommand(
   try {
     const _dirPath = options.template
       ? path.join(_basePath, "src/templates", options.template)
-      : path.join(_basePath, "src/templates", answers.projectType);
+      : path.join(
+          _basePath,
+          "src/templates",
+          _projectTemplateQuestions.projectType
+        );
     _isPathExist(_dirPath);
 
     const _files = fs.readdirSync(_dirPath, {
       withFileTypes: true,
     });
 
-    if (!answers.addDocker && !answers.addDockerBake) {
+    if (!_projectTemplateQuestions.addDocker) {
       switch (true) {
         case options.template === "backend" ||
-          answers.projectType === "backend":
+          _projectTemplateQuestions.projectType === "backend":
           spinner.start(
-            `Start generating backend project using ${answers.chooseBackendFramework} 👾...`
+            `Start generating backend project using ${_projectTemplateQuestions.chooseBackendFramework} 👾...`
           );
 
-          _resource = _getBackendResourcePath(answers, _files, options.dir);
+          const _backendResource = _getResourcePath(
+            "backend",
+            _projectTemplateQuestions,
+            _files,
+            options.dir
+          );
           _isPathExist(options.dir);
-          _isProjectExist(options.dir, answers.projectName);
+          _isProjectExist(options.dir, _projectTemplateQuestions.projectName);
 
-          await fse.copy(_resource.sourcePath, _resource.desPath);
+          _resource = _backendResource;
+
+          await fse.copy(_backendResource.sourcePath, _backendResource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed ✅`
+            `Create ${_projectTemplateQuestions.chooseBackendFramework} project succeed ✅`
           );
           break;
         case options.template === "frontend" ||
-          answers.projectType === "frontend":
+          _projectTemplateQuestions.projectType === "frontend":
           spinner.start(
-            `Start generating frontend project using ${answers.chooseFrontendFramework} 👾...`
+            `Start generating frontend project using ${_projectTemplateQuestions.chooseFrontendFramework} 👾...`
           );
 
-          _resource = _getFrontendResourcePath(answers, _files, options.dir);
+          const _frontendResource = _getResourcePath(
+            "frontend",
+            _projectTemplateQuestions,
+            _files,
+            options.dir
+          );
           _isPathExist(options.dir);
-          _isProjectExist(options.dir, answers.projectName);
+          _isProjectExist(options.dir, _projectTemplateQuestions.projectName);
 
-          await fse.copy(_resource.sourcePath, _resource.desPath);
+          _resource = _frontendResource;
+
+          await fse.copy(
+            _frontendResource.sourcePath,
+            _frontendResource.desPath
+          );
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed ✅`
+            `Create ${_projectTemplateQuestions.chooseBackendFramework} project succeed ✅`
           );
           break;
         case options.template === "fullstack" ||
-          answers.projectType === "fullstack":
+          _projectTemplateQuestions.projectType === "fullstack":
           spinner.start(
-            `Start generating fullstack project using ${answers.chooseFullStackFramework} 👾...`
+            `Start generating fullstack project using ${_projectTemplateQuestions.chooseFullStackFramework} 👾...`
           );
 
-          _resource = _getFullStackResourcePath(answers, _files, options.dir);
+          const _fullstackResource = _getResourcePath(
+            "fullstack",
+            _projectTemplateQuestions,
+            _files,
+            options.dir
+          );
           _isPathExist(options.dir);
-          _isProjectExist(options.dir, answers.projectName);
+          _isProjectExist(options.dir, _projectTemplateQuestions.projectName);
 
-          await fse.copy(_resource.sourcePath, _resource.desPath);
+          _resource = _fullstackResource;
+
+          await fse.copy(
+            _fullstackResource.sourcePath,
+            _fullstackResource.desPath
+          );
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed ✅`
+            `Create ${_projectTemplateQuestions.chooseBackendFramework} project succeed ✅`
           );
           break;
       }
     }
 
-    if (answers.addDocker && !answers.addDockerBake) {
+    if (!_projectTemplateQuestions.addDockerBake) {
       const _dockerResources = _getDockerResources();
 
       switch (true) {
         case options.template === "backend" ||
-          answers.projectType === "backend":
+          _projectTemplateQuestions.projectType === "backend":
           spinner.start(
-            `Start generating ${answers.projectType} project using ${answers.chooseBackendFramework} 👾...`
+            `Start generating ${_projectTemplateQuestions.projectType} project using ${_projectTemplateQuestions.chooseBackendFramework} 👾...`
           );
 
-          _resource = _getBackendResourcePath(answers, _files, options.dir);
+          const _backendResource = _getResourcePath(
+            "backend",
+            _projectTemplateQuestions,
+            _files,
+            options.dir
+          );
           _isPathExist(options.dir);
-          _isProjectExist(options.dir, answers.projectName);
+          _isProjectExist(options.dir, _projectTemplateQuestions.projectName);
 
-          await fse.copy(_resource.sourcePath, _resource.desPath);
+          _resource = _backendResource;
+
+          await fse.copy(_backendResource.sourcePath, _backendResource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed ✅`
+            `Create ${_projectTemplateQuestions.chooseBackendFramework} project succeed ✅`
           );
 
           spinner.start("Start copying docker compose 🐳...");
 
           _dockerResource = _getDockerComposePath(
             _dockerResources.templates,
-            _resource
+            _backendResource
           );
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
 
           spinner.succeed("Adding docker compose file succeed ✅");
 
-          if (
-            answers.chooseBackendFramework !== "Spring Boot" ||
-            answers.chooseBackendFramework !== "Laravel"
-          ) {
-            spinner.start("Start copying dockerfile 🐳...");
+          switch (_projectTemplateQuestions.chooseBackendFramework) {
+            case "Spring Boot":
+              spinner.start("Start copying dockerfile 🐳...");
 
-            const _nodeDockerfileResourcePath =
-              _getNodeDockerfileResourcePathForBackend(
-                answers,
+              const _javaDockerfileResourcePath = _getDockerfileResourcePath(
+                "java",
                 _dockerResources.dockerfiles,
-                _resource
+                _backendResource
               );
 
-            await fse.copy(
-              _nodeDockerfileResourcePath.sourcePath,
-              _nodeDockerfileResourcePath.desPath
-            );
+              await fse.copy(
+                _javaDockerfileResourcePath.sourcePath,
+                _javaDockerfileResourcePath.desPath
+              );
 
-            spinner.succeed("Adding dockerfile succeed ✅");
-          }
+              spinner.succeed("Adding dockerfile succeed ✅");
+              break;
+            case "Laravel":
+              spinner.start("Start copying dockerfile 🐳...");
 
-          if (answers.chooseBackendFramework === "Spring Boot") {
-            spinner.start("Start copying dockerfile 🐳...");
+              const _phpDockerfileResourcePath = _getDockerfileResourcePath(
+                "php",
+                _dockerResources.dockerfiles,
+                _backendResource
+              );
 
-            const _javaDockerfileResourcePath = _getJavaDockerfileResourcePath(
-              _dockerResources.dockerfiles,
-              _resource
-            );
+              await fse.copy(
+                _phpDockerfileResourcePath.sourcePath,
+                _phpDockerfileResourcePath.desPath
+              );
 
-            await fse.copy(
-              _javaDockerfileResourcePath.sourcePath,
-              _javaDockerfileResourcePath.desPath
-            );
+              spinner.succeed("Adding dockerfile succeed ✅");
+              break;
+            default:
+              spinner.start("Start copying dockerfile 🐳...");
 
-            spinner.succeed("Adding dockerfile succeed ✅");
-          }
+              const _nodeDockerfileResourcePath = _getDockerfileResourcePath(
+                "node",
+                _dockerResources.dockerfiles,
+                _backendResource
+              );
 
-          if (answers.chooseBackendFramework === "Laravel") {
-            spinner.start("Start copying dockerfile 🐳...");
+              await fse.copy(
+                _nodeDockerfileResourcePath.sourcePath,
+                _nodeDockerfileResourcePath.desPath
+              );
 
-            const _phpDockerfileResourcePath = _getPhpDockerfileResourcePath(
-              _dockerResources.dockerfiles,
-              _resource
-            );
-
-            await fse.copy(
-              _phpDockerfileResourcePath.sourcePath,
-              _phpDockerfileResourcePath.desPath
-            );
-
-            spinner.succeed("Adding dockerfile succeed ✅");
+              spinner.succeed("Adding dockerfile succeed ✅");
+              break;
           }
           break;
         case options.template === "frontend" ||
-          answers.projectType === "frontend":
+          _projectTemplateQuestions.projectType === "frontend":
           spinner.start(
-            `Start generating ${answers.projectType} project using ${answers.chooseFrontendFramework} 👾...`
+            `Start generating ${_projectTemplateQuestions.projectType} project using ${_projectTemplateQuestions.chooseFrontendFramework} 👾...`
           );
 
-          _resource = _getFrontendResourcePath(answers, _files, options.dir);
+          const _frontendResource = _getResourcePath(
+            "frontend",
+            _projectTemplateQuestions,
+            _files,
+            options.dir
+          );
           _isPathExist(options.dir);
-          _isProjectExist(options.dir, answers.projectName);
+          _isProjectExist(options.dir, _projectTemplateQuestions.projectName);
 
-          await fse.copy(_resource.sourcePath, _resource.desPath);
+          _resource = _frontendResource;
+
+          await fse.copy(
+            _frontendResource.sourcePath,
+            _frontendResource.desPath
+          );
 
           spinner.succeed(
-            `Create ${answers.chooseFrontendFramework} project succeed ✅`
+            `Create ${_projectTemplateQuestions.chooseFrontendFramework} project succeed ✅`
           );
 
           spinner.start("Start copying docker compose 🐳...");
 
           _dockerResource = _getDockerComposePath(
             _dockerResources.templates,
-            _resource
+            _frontendResource
           );
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
@@ -407,12 +457,11 @@ export async function _createCommand(
 
           spinner.start("Start copying dockerfile 🐳...");
 
-          const _nodeDockerfileResourcePath =
-            _getNodeDockerfileResourcePathForFrontend(
-              answers,
-              _dockerResources.dockerfiles,
-              _resource
-            );
+          const _nodeDockerfileResourcePath = _getDockerfileResourcePath(
+            "node",
+            _dockerResources.dockerfiles,
+            _frontendResource
+          );
 
           await fse.copy(
             _nodeDockerfileResourcePath.sourcePath,
@@ -422,26 +471,36 @@ export async function _createCommand(
           spinner.succeed("Adding dockerfile succeed ✅");
           break;
         case options.template === "fullstack" ||
-          answers.projectType === "fullstack":
+          _projectTemplateQuestions.projectType === "fullstack":
           spinner.start(
-            `Start generating ${answers.projectType} project using ${answers.chooseFullStackFramework} 👾...`
+            `Start generating ${_projectTemplateQuestions.projectType} project using ${_projectTemplateQuestions.chooseFullStackFramework} 👾...`
           );
 
-          _resource = _getFullStackResourcePath(answers, _files, options.dir);
+          const _fullstackResource = _getResourcePath(
+            "fullstack",
+            _projectTemplateQuestions,
+            _files,
+            options.dir
+          );
           _isPathExist(options.dir);
-          _isProjectExist(options.dir, answers.projectName);
+          _isProjectExist(options.dir, _projectTemplateQuestions.projectName);
 
-          await fse.copy(_resource.sourcePath, _resource.desPath);
+          _resource = _fullstackResource;
+
+          await fse.copy(
+            _fullstackResource.sourcePath,
+            _fullstackResource.desPath
+          );
 
           spinner.succeed(
-            `Create ${answers.chooseFullStackFramework} project succeed ✅`
+            `Create ${_projectTemplateQuestions.chooseFullStackFramework} project succeed ✅`
           );
 
           spinner.start("Start copying docker compose 🐳...");
 
           _dockerResource = _getDockerComposePath(
             _dockerResources.templates,
-            _resource
+            _fullstackResource
           );
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
@@ -450,110 +509,118 @@ export async function _createCommand(
 
           spinner.start("Start copying dockerfile 🐳...");
 
-          const _dockerfileResource =
-            _getNodeDockerfileResourcePathForFullStack(
-              answers,
-              _dockerResources.dockerfiles,
-              _resource
-            );
+          const _dockerfileResource = _getDockerfileResourcePathForFullStack(
+            _projectTemplateQuestions,
+            _dockerResources.dockerfiles,
+            _fullstackResource
+          );
 
           _dockerfileResource.forEach(async (v) => {
             await fse.copy(v.sourcePath, v.desPath);
           });
 
           spinner.succeed("Adding dockerfile succeed ✅");
+          break;
       }
     }
 
-    if (answers.addDocker && answers.addDockerBake) {
+    if (
+      _projectTemplateQuestions.addDocker &&
+      _projectTemplateQuestions.addDockerBake
+    ) {
       const _dockerResources = _getDockerResources();
 
       switch (true) {
         case options.template === "backend" ||
-          answers.projectType === "backend":
+          _projectTemplateQuestions.projectType === "backend":
           spinner.start(
-            `Start generating ${answers.projectType} project using ${answers.chooseBackendFramework} 👾...`
+            `Start generating ${_projectTemplateQuestions.projectType} project using ${_projectTemplateQuestions.chooseBackendFramework} 👾...`
           );
 
-          _resource = _getBackendResourcePath(answers, _files, options.dir);
+          const _backendResource = _getResourcePath(
+            "backend",
+            _projectTemplateQuestions,
+            _files,
+            options.dir
+          );
           _isPathExist(options.dir);
-          _isProjectExist(options.dir, answers.projectName);
+          _isProjectExist(options.dir, _projectTemplateQuestions.projectName);
 
-          await fse.copy(_resource.sourcePath, _resource.desPath);
+          _resource = _backendResource;
+
+          await fse.copy(_backendResource.sourcePath, _backendResource.desPath);
 
           spinner.succeed(
-            `Create ${answers.chooseBackendFramework} project succeed ✅`
+            `Create ${_projectTemplateQuestions.chooseBackendFramework} project succeed ✅`
           );
 
           spinner.start("Start copying docker 🐳...");
 
           _dockerResource = _getDockerComposePath(
             _dockerResources.templates,
-            _resource
+            _backendResource
           );
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
 
           spinner.succeed("Adding docker compose file succeed ✅");
 
-          if (
-            answers.chooseBackendFramework !== "Spring Boot" ||
-            answers.chooseBackendFramework !== "Laravel"
-          ) {
-            spinner.start("Start copying dockerfile 🐳...");
+          switch (_projectTemplateQuestions.chooseBackendFramework) {
+            case "Spring Boot":
+              spinner.start("Start copying dockerfile 🐳...");
 
-            const _dockerfileResource =
-              _getNodeDockerfileResourcePathForBackend(
-                answers,
+              const _javaDockerfileResourcePath = _getDockerfileResourcePath(
+                "java",
                 _dockerResources.dockerfiles,
-                _resource
+                _backendResource
               );
 
-            await fse.copy(
-              _dockerfileResource.sourcePath,
-              _dockerfileResource.desPath
-            );
+              await fse.copy(
+                _javaDockerfileResourcePath.sourcePath,
+                _javaDockerfileResourcePath.desPath
+              );
 
-            spinner.succeed("Adding dockerfile succeed ✅");
-          }
+              spinner.succeed("Adding dockerfile succeed ✅");
+              break;
+            case "Laravel":
+              spinner.start("Start copying dockerfile 🐳...");
 
-          if (answers.chooseBackendFramework === "Spring Boot") {
-            spinner.start("Start copying dockerfile 🐳...");
+              const _phpDockerfileResourcePath = _getDockerfileResourcePath(
+                "php",
+                _dockerResources.dockerfiles,
+                _backendResource
+              );
 
-            const _javaDockerfileResourcePath = _getJavaDockerfileResourcePath(
-              _dockerResources.dockerfiles,
-              _resource
-            );
+              await fse.copy(
+                _phpDockerfileResourcePath.sourcePath,
+                _phpDockerfileResourcePath.desPath
+              );
 
-            await fse.copy(
-              _javaDockerfileResourcePath.sourcePath,
-              _javaDockerfileResourcePath.desPath
-            );
+              spinner.succeed("Adding dockerfile succeed ✅");
+              break;
+            default:
+              spinner.start("Start copying dockerfile 🐳...");
 
-            spinner.succeed("Adding dockerfile succeed ✅");
-          }
+              const _nodeDockerfileResourcePath = _getDockerfileResourcePath(
+                "node",
+                _dockerResources.dockerfiles,
+                _backendResource
+              );
 
-          if (answers.chooseBackendFramework === "Laravel") {
-            spinner.start("Start copying dockerfile 🐳...");
+              await fse.copy(
+                _nodeDockerfileResourcePath.sourcePath,
+                _nodeDockerfileResourcePath.desPath
+              );
 
-            const _phpDockerfileResourcePath = _getPhpDockerfileResourcePath(
-              _dockerResources.dockerfiles,
-              _resource
-            );
-
-            await fse.copy(
-              _phpDockerfileResourcePath.sourcePath,
-              _phpDockerfileResourcePath.desPath
-            );
-
-            spinner.succeed("Adding dockerfile succeed ✅");
+              spinner.succeed("Adding dockerfile succeed ✅");
+              break;
           }
 
           spinner.start("Start generate docker bake 🍞...");
 
           _dockerBakeResource = _getDockerBakePath(
             _dockerResources.templates,
-            _resource
+            _backendResource
           );
 
           await fse.copy(
@@ -564,26 +631,36 @@ export async function _createCommand(
           spinner.succeed("Adding docker bake file succeed ✅");
           break;
         case options.template === "frontend" ||
-          answers.projectType === "frontend":
+          _projectTemplateQuestions.projectType === "frontend":
           spinner.start(
-            `Start generating ${answers.projectType} project using ${answers.chooseFrontendFramework} 👾...`
+            `Start generating ${_projectTemplateQuestions.projectType} project using ${_projectTemplateQuestions.chooseFrontendFramework} 👾...`
           );
 
-          _resource = _getFrontendResourcePath(answers, _files, options.dir);
+          const _frontendResource = _getResourcePath(
+            "frontend",
+            _projectTemplateQuestions,
+            _files,
+            options.dir
+          );
           _isPathExist(options.dir);
-          _isProjectExist(options.dir, answers.projectName);
+          _isProjectExist(options.dir, _projectTemplateQuestions.projectName);
 
-          await fse.copy(_resource.sourcePath, _resource.desPath);
+          _resource = _frontendResource;
+
+          await fse.copy(
+            _frontendResource.sourcePath,
+            _frontendResource.desPath
+          );
 
           spinner.succeed(
-            `Create ${answers.chooseFrontendFramework} project succeed ✅`
+            `Create ${_projectTemplateQuestions.chooseFrontendFramework} project succeed ✅`
           );
 
           spinner.start("Start copying docker 🐳...");
 
           _dockerResource = _getDockerComposePath(
             _dockerResources.templates,
-            _resource
+            _frontendResource
           );
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
@@ -592,12 +669,11 @@ export async function _createCommand(
 
           spinner.start("Start copying dockerfile 🐳...");
 
-          const _nodeDockerfileResourcePath =
-            _getNodeDockerfileResourcePathForFrontend(
-              answers,
-              _dockerResources.dockerfiles,
-              _resource
-            );
+          const _nodeDockerfileResourcePath = _getDockerfileResourcePath(
+            "node",
+            _dockerResources.dockerfiles,
+            _frontendResource
+          );
 
           await fse.copy(
             _nodeDockerfileResourcePath.sourcePath,
@@ -610,7 +686,7 @@ export async function _createCommand(
 
           _dockerBakeResource = _getDockerBakePath(
             _dockerResources.templates,
-            _resource
+            _frontendResource
           );
 
           await fse.copy(
@@ -621,26 +697,36 @@ export async function _createCommand(
           spinner.succeed("Adding docker bake file succeed ✅");
           break;
         case options.template === "fullstack" ||
-          answers.projectType === "fullstack":
+          _projectTemplateQuestions.projectType === "fullstack":
           spinner.start(
-            `Start generating ${answers.projectType} project using ${answers.chooseFullStackFramework} 👾...`
+            `Start generating ${_projectTemplateQuestions.projectType} project using ${_projectTemplateQuestions.chooseFullStackFramework} 👾...`
           );
 
-          _resource = _getFullStackResourcePath(answers, _files, options.dir);
+          const _fullstackResource = _getResourcePath(
+            "fullstack",
+            _projectTemplateQuestions,
+            _files,
+            options.dir
+          );
           _isPathExist(options.dir);
-          _isProjectExist(options.dir, answers.projectName);
+          _isProjectExist(options.dir, _projectTemplateQuestions.projectName);
 
-          await fse.copy(_resource.sourcePath, _resource.desPath);
+          _resource = _fullstackResource;
+
+          await fse.copy(
+            _fullstackResource.sourcePath,
+            _fullstackResource.desPath
+          );
 
           spinner.succeed(
-            `Create ${answers.chooseFullStackFramework} project succeed ✅`
+            `Create ${_projectTemplateQuestions.chooseFullStackFramework} project succeed ✅`
           );
 
           spinner.start("Start copying docker 🐳...");
 
           _dockerResource = _getDockerComposePath(
             _dockerResources.templates,
-            _resource
+            _fullstackResource
           );
 
           await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
@@ -649,12 +735,11 @@ export async function _createCommand(
 
           spinner.start("Start copying dockerfile 🐳...");
 
-          const _dockerfileResource =
-            _getNodeDockerfileResourcePathForFullStack(
-              answers,
-              _dockerResources.dockerfiles,
-              _resource
-            );
+          const _dockerfileResource = _getDockerfileResourcePathForFullStack(
+            _projectTemplateQuestions,
+            _dockerResources.dockerfiles,
+            _fullstackResource
+          );
 
           _dockerfileResource.forEach(async (v) => {
             await fse.copy(v.sourcePath, v.desPath);
@@ -666,7 +751,7 @@ export async function _createCommand(
 
           _dockerBakeResource = _getDockerBakePath(
             _dockerResources.templates,
-            _resource
+            _fullstackResource
           );
 
           await fse.copy(
@@ -675,14 +760,14 @@ export async function _createCommand(
           );
 
           spinner.succeed("Adding docker bake file succeed ✅");
+          break;
       }
     }
 
     const end = performance.now();
     spinner.succeed(`All done! ${(end - start).toFixed(3)} ms`);
-
-    console.log(
-      `You can check the project on ${chalk.bold(_resource?.desPath)}`
+    spinner.info(
+      `You can check the project on ${chalk.bold(_resource.desPath)}`
     );
   } catch (error: any) {
     let errorMessage =
@@ -1693,67 +1778,83 @@ function _getFolders(
   }
 }
 
-function _getBackendResourcePath(
+function _getResourcePath(
+  type: "backend" | "frontend" | "fullstack",
   answers: { [x: string]: any },
   files: fs.Dirent<string>[],
   dir: string
 ): __ProjectResourcePathProps {
-  const _getResource = _defaultBackendFrameworks.frameworks.filter(
-    (f) => f.name === answers.chooseBackendFramework
-  )[0];
-  const _folder = files.filter(
-    (f) => f.name === _getResource.templateName && f.isDirectory()
-  )[0];
+  switch (type) {
+    case "backend":
+      const _backendResource = _defaultBackendFrameworks.frameworks.filter(
+        (f) => f.name === answers.chooseBackendFramework
+      )[0];
 
-  const _sourcePath = path.join(_folder.parentPath, _folder.name);
-  const _desPath = path.join(dir, _renewalProjectName(answers.projectName));
+      const _backendFolder = files.filter(
+        (f) => f.name === _backendResource.templateName && f.isDirectory()
+      )[0];
 
-  return {
-    sourcePath: _sourcePath,
-    desPath: _desPath,
-  };
-}
+      const _backendSourcePath = path.join(
+        _backendFolder.parentPath,
+        _backendFolder.name
+      );
 
-function _getFrontendResourcePath(
-  answers: { [x: string]: any },
-  files: fs.Dirent<string>[],
-  dir: string
-): __ProjectResourcePathProps {
-  const _getResource = _defaultFrontendFrameworks.frameworks.filter(
-    (f) => f.name === answers.chooseFrontendFramework
-  )[0];
-  const _folder = files.filter(
-    (f) => f.name === _getResource.templateName && f.isDirectory()
-  )[0];
+      const _backendDesPath = path.join(
+        dir,
+        _renewalProjectName(answers.projectName)
+      );
 
-  const _sourcePath = path.join(_folder.parentPath, _folder.name);
-  const _desPath = path.join(dir, _renewalProjectName(answers.projectName));
+      return {
+        sourcePath: _backendSourcePath,
+        desPath: _backendDesPath,
+      };
+    case "frontend":
+      const _frontendResource = _defaultFrontendFrameworks.frameworks.filter(
+        (f) => f.name === answers.chooseFrontendFramework
+      )[0];
 
-  return {
-    sourcePath: _sourcePath,
-    desPath: _desPath,
-  };
-}
+      const _frontendFolder = files.filter(
+        (f) => f.name === _frontendResource.templateName && f.isDirectory()
+      )[0];
 
-function _getFullStackResourcePath(
-  answers: { [x: string]: any },
-  files: fs.Dirent<string>[],
-  dir: string
-): __ProjectResourcePathProps {
-  const _getResource = _defaultFullStackFrameworks.frameworks.filter(
-    (f) => f.name === answers.chooseFullStackFramework
-  )[0];
-  const _folder = files.filter(
-    (f) => f.name === _getResource.templateName && f.isDirectory()
-  )[0];
+      const _frontendSourcePath = path.join(
+        _frontendFolder.parentPath,
+        _frontendFolder.name
+      );
 
-  const _sourcePath = path.join(_folder.parentPath, _folder.name);
-  const _desPath = path.join(dir, _renewalProjectName(answers.projectName));
+      const _frontendDesPath = path.join(
+        dir,
+        _renewalProjectName(answers.projectName)
+      );
 
-  return {
-    sourcePath: _sourcePath,
-    desPath: _desPath,
-  };
+      return {
+        sourcePath: _frontendSourcePath,
+        desPath: _frontendDesPath,
+      };
+    case "fullstack":
+      const _fullstackResource = _defaultFullStackFrameworks.frameworks.filter(
+        (f) => f.name === answers.chooseFullStackFramework
+      )[0];
+
+      const _fullstackFolder = files.filter(
+        (f) => f.name === _fullstackResource.templateName && f.isDirectory()
+      )[0];
+
+      const _fullstackSourcePath = path.join(
+        _fullstackFolder.parentPath,
+        _fullstackFolder.name
+      );
+
+      const _fullstackDesPath = path.join(
+        dir,
+        _renewalProjectName(answers.projectName)
+      );
+
+      return {
+        sourcePath: _fullstackSourcePath,
+        desPath: _fullstackDesPath,
+      };
+  }
 }
 
 function _getDockerResources(): __DockerResourcesProps {
@@ -1820,272 +1921,107 @@ function _getDockerBakePath(
   };
 }
 
-function _getNodeDockerfileResourcePathForBackend(
-  answers: { [x: string]: any },
-  dockerfiles: fs.Dirent<string>[],
-  resource: __ProjectResourcePathProps
-): __ProjectResourcePathProps {
-  let _dockerfileSourcePath: string = "";
-  let _dockerfileDesPath: string = "";
-  let _nodeDockerfile: fs.Dirent<string> = new Dirent<string>();
-
-  switch (answers.chooseBackendFramework) {
-    case "NestJS":
-      _nodeDockerfile = dockerfiles.filter(
-        (f) => f.name === "node-pnpm.template.Dockerfile"
-      )[0];
-
-      _dockerfileSourcePath = path.join(
-        _nodeDockerfile.parentPath,
-        _nodeDockerfile.name
-      );
-
-      _dockerfileDesPath = path.join(resource.desPath, _nodeDockerfile.name);
-      break;
-    case "Express.js":
-      _nodeDockerfile = dockerfiles.filter(
-        (f) => f.name === "node.template.Dockerfile"
-      )[0];
-
-      _dockerfileSourcePath = path.join(
-        _nodeDockerfile.parentPath,
-        _nodeDockerfile.name
-      );
-
-      _dockerfileDesPath = path.join(resource.desPath, _nodeDockerfile.name);
-      break;
-    default:
-      _nodeDockerfile = dockerfiles.filter(
-        (f) => f.name === "node.template.Dockerfile"
-      )[0];
-
-      _dockerfileSourcePath = path.join(
-        _nodeDockerfile.parentPath,
-        _nodeDockerfile.name
-      );
-
-      _dockerfileDesPath = path.join(resource.desPath, _nodeDockerfile.name);
-      break;
-  }
-
-  return {
-    sourcePath: _dockerfileSourcePath,
-    desPath: _dockerfileDesPath,
-  };
-}
-
-function _getNodeDockerfileResourcePathForFrontend(
-  answers: { [x: string]: any },
-  dockerfiles: fs.Dirent<string>[],
-  resource: __ProjectResourcePathProps
-): __ProjectResourcePathProps {
-  let _dockerfileSourcePath: string = "";
-  let _dockerfileDesPath: string = "";
-  let _nodeDockerfile: fs.Dirent<string> = new Dirent<string>();
-
-  switch (answers.chooseFrontendFramework) {
-    case "Next.js":
-      _nodeDockerfile = dockerfiles.filter(
-        (f) => f.name === "node.template.Dockerfile"
-      )[0];
-
-      _dockerfileSourcePath = path.join(
-        _nodeDockerfile.parentPath,
-        _nodeDockerfile.name
-      );
-
-      _dockerfileDesPath = path.join(resource.desPath, _nodeDockerfile.name);
-      break;
-    case "Vue.js":
-      _nodeDockerfile = dockerfiles.filter(
-        (f) => f.name === "node-pnpm.template.Dockerfile"
-      )[0];
-
-      _dockerfileSourcePath = path.join(
-        _nodeDockerfile.parentPath,
-        _nodeDockerfile.name
-      );
-
-      _dockerfileDesPath = path.join(resource.desPath, _nodeDockerfile.name);
-      break;
-    default:
-      _nodeDockerfile = dockerfiles.filter(
-        (f) => f.name === "node.template.Dockerfile"
-      )[0];
-
-      _dockerfileSourcePath = path.join(
-        _nodeDockerfile.parentPath,
-        _nodeDockerfile.name
-      );
-
-      _dockerfileDesPath = path.join(resource.desPath, _nodeDockerfile.name);
-      break;
-  }
-
-  return {
-    sourcePath: _dockerfileSourcePath,
-    desPath: _dockerfileDesPath,
-  };
-}
-
-function _getNodeDockerfileResourcePathForFullStack(
+function _getDockerfileResourcePathForFullStack(
   answers: { [x: string]: any },
   dockerfiles: fs.Dirent<string>[],
   resource: __ProjectResourcePathProps
 ) {
-  let _dockerfileFullStackResourcePath: Array<__ProjectResourcePathProps> = [];
-  let _dockerfileSourcePath: string = "";
-  let _dockerfileDesPath: string = "";
+  const _fullstackSourcePath = path.join(resource.sourcePath, "www");
 
-  const _fullStackPath = path.join(resource.sourcePath, "www");
-  const _fullStackFiles = fs
-    .readdirSync(_fullStackPath, {
+  const _fullstackFolders = fs
+    .readdirSync(_fullstackSourcePath, {
       withFileTypes: true,
     })
     .filter((f) => f.isDirectory());
 
-  if (answers.chooseFullStackFramework === "Next.js + NestJS") {
-    _fullStackFiles.forEach((f) => {
-      switch (f.name) {
-        case "next-frontend":
-          const _nextResourceDesPath = path.join(resource.desPath, "www");
-          const _nextFrontendPath = path.join(_nextResourceDesPath, f.name);
+  let _nodeDockerfileResourcePath: __ProjectResourcePathProps[] = [];
+  let _nodeDockerfileSourcePath: string = "";
+  let _nodeDockerfileDesPath: string = "";
 
-          const _nextDockerfile = dockerfiles.filter(
-            (f) => f.name === "node.template.Dockerfile"
-          )[0];
+  for (const f of _fullstackFolders) {
+    const _desPath = path.join(resource.desPath, "www");
+    const _projectPath = path.join(_desPath, f.name);
 
-          _dockerfileSourcePath = path.join(
-            _nextDockerfile.parentPath,
-            _nextDockerfile.name
-          );
+    const _nodeDockerfile = dockerfiles.filter(
+      (f) => f.name === "node.template.Dockerfile"
+    )[0];
 
-          _dockerfileDesPath = path.join(
-            _nextFrontendPath,
-            _nextDockerfile.name
-          );
+    _nodeDockerfileSourcePath = path.join(
+      _nodeDockerfile.parentPath,
+      _nodeDockerfile.name
+    );
 
-          _dockerfileFullStackResourcePath.push({
-            sourcePath: _dockerfileSourcePath,
-            desPath: _dockerfileDesPath,
-          });
-          break;
-        case "nest-backend":
-          const _nestResourceDesPath = path.join(resource.desPath, "www");
-          const _nestBackendPath = path.join(_nestResourceDesPath, f.name);
+    _nodeDockerfileDesPath = path.join(_projectPath, _nodeDockerfile.name);
 
-          const _nestDockerfile = dockerfiles.filter(
-            (f) => f.name === "node-pnpm.template.Dockerfile"
-          )[0];
-
-          _dockerfileSourcePath = path.join(
-            _nestDockerfile.parentPath,
-            _nestDockerfile.name
-          );
-
-          _dockerfileDesPath = path.join(
-            _nestBackendPath,
-            _nestDockerfile.name
-          );
-
-          _dockerfileFullStackResourcePath.push({
-            sourcePath: _dockerfileSourcePath,
-            desPath: _dockerfileDesPath,
-          });
-          break;
-      }
+    _nodeDockerfileResourcePath.push({
+      sourcePath: _nodeDockerfileSourcePath,
+      desPath: _nodeDockerfileDesPath,
     });
   }
 
-  if (answers.chooseFullStackFramework === "Vue.js + NestJS") {
-    _fullStackFiles.forEach((f) => {
-      switch (f.name) {
-        case "vue-frontend":
-          const _vueResourceDesPath = path.join(resource.desPath, "www");
-          const _vueFrontendPath = path.join(_vueResourceDesPath, f.name);
+  return _nodeDockerfileResourcePath;
+}
 
-          const _vueDockerfile = dockerfiles.filter(
-            (f) => f.name === "node-pnpm.template.Dockerfile"
-          )[0];
+function _getDockerfileResourcePath(
+  origin: "node" | "java" | "php",
+  dockerfiles: fs.Dirent<string>[],
+  resource: __ProjectResourcePathProps
+): __ProjectResourcePathProps {
+  switch (origin) {
+    case "node":
+      const _nodeDockerfile = dockerfiles.filter(
+        (f) => f.name === "node.template.Dockerfile"
+      )[0];
 
-          _dockerfileSourcePath = path.join(
-            _vueDockerfile.parentPath,
-            _vueDockerfile.name
-          );
+      const _nodeDockerfileSourcePath = path.join(
+        _nodeDockerfile.parentPath,
+        _nodeDockerfile.name
+      );
 
-          _dockerfileDesPath = path.join(_vueFrontendPath, _vueDockerfile.name);
+      const _nodeDockerfileDesPath = path.join(
+        resource.desPath,
+        _nodeDockerfile.name
+      );
 
-          _dockerfileFullStackResourcePath.push({
-            sourcePath: _dockerfileSourcePath,
-            desPath: _dockerfileDesPath,
-          });
-          break;
-        case "nest-backend":
-          const _nestResourceDesPath = path.join(resource.desPath, "www");
-          const _nestBackendPath = path.join(_nestResourceDesPath, f.name);
+      return {
+        sourcePath: _nodeDockerfileSourcePath,
+        desPath: _nodeDockerfileDesPath,
+      };
+    case "java":
+      const _javaDockerfile = dockerfiles.filter(
+        (f) => f.name === "java.template.Dockerfile"
+      )[0];
 
-          const _nestDockerfile = dockerfiles.filter(
-            (f) => f.name === "node-pnpm.template.Dockerfile"
-          )[0];
+      const _javaDockerfileSourcePath = path.join(
+        _javaDockerfile.parentPath,
+        _javaDockerfile.name
+      );
+      const _javaDockerfileDesPath = path.join(
+        resource.desPath,
+        _javaDockerfile.name
+      );
 
-          _dockerfileSourcePath = path.join(
-            _nestDockerfile.parentPath,
-            _nestDockerfile.name
-          );
+      return {
+        sourcePath: _javaDockerfileSourcePath,
+        desPath: _javaDockerfileDesPath,
+      };
+    case "php":
+      const _phpDockerfile = dockerfiles.filter(
+        (f) => f.name === "php.template.Dockerfile"
+      )[0];
 
-          _dockerfileDesPath = path.join(
-            _nestBackendPath,
-            _nestDockerfile.name
-          );
+      const _phpDockerfileSourcePath = path.join(
+        _phpDockerfile.parentPath,
+        _phpDockerfile.name
+      );
+      const _phpDockerfileDesPath = path.join(
+        resource.desPath,
+        _phpDockerfile.name
+      );
 
-          _dockerfileFullStackResourcePath.push({
-            sourcePath: _dockerfileSourcePath,
-            desPath: _dockerfileDesPath,
-          });
-          break;
-      }
-    });
+      return {
+        sourcePath: _phpDockerfileSourcePath,
+        desPath: _phpDockerfileDesPath,
+      };
   }
-
-  return _dockerfileFullStackResourcePath;
-}
-
-function _getJavaDockerfileResourcePath(
-  dockerfiles: fs.Dirent<string>[],
-  resource: __ProjectResourcePathProps
-): __ProjectResourcePathProps {
-  const _javaDockerfile = dockerfiles.filter(
-    (f) => f.name === "java.template.Dockerfile"
-  )[0];
-
-  const _dockerfileSourcePath = path.join(
-    _javaDockerfile.parentPath,
-    _javaDockerfile.name
-  );
-  const _dockerfileDesPath = path.join(resource.desPath, _javaDockerfile.name);
-
-  return {
-    sourcePath: _dockerfileSourcePath,
-    desPath: _dockerfileDesPath,
-  };
-}
-
-function _getPhpDockerfileResourcePath(
-  dockerfiles: fs.Dirent<string>[],
-  resource: __ProjectResourcePathProps
-): __ProjectResourcePathProps {
-  const _phpDockerfile = dockerfiles.filter(
-    (f) => f.name === "php.template.Dockerfile"
-  )[0];
-
-  const _dockerfileSourcePath = path.join(
-    _phpDockerfile.parentPath,
-    _phpDockerfile.name
-  );
-  const _dockerfileDesPath = path.join(resource.desPath, _phpDockerfile.name);
-
-  return {
-    sourcePath: _dockerfileSourcePath,
-    desPath: _dockerfileDesPath,
-  };
 }

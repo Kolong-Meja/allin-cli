@@ -63,10 +63,8 @@ export async function runner(): Promise<void> {
     )
     .summary("Create new project template.")
     .description("Create new project template by yourself.")
-    .action(async (options) => {
-      const _answers = await inquirer.prompt(_generateCreatePrompts(options));
-
-      _createCommand(_answers, options);
+    .action((options) => {
+      _createCommand(options);
     });
 
   _program
