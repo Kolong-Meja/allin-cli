@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "A full stack CLI that speeds up your project creation in one go.",
   "exports": "./dist/index.js",
+  "main": "dist/index.js",
   "bin": {
-    "allin": "./dist/index.js"
+    "allin": "dist/index.js"
   },
   "scripts": {
     "start": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' src/index.ts",
