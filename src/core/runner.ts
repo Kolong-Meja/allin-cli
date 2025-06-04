@@ -13,11 +13,6 @@ import {
   _generateUpdatePrompts,
   _generateUsePrompts,
 } from "./prompt.js";
-import {
-  _getProjects,
-  _getProjectsByName,
-  _isPathExist,
-} from "../generators/files.js";
 import { _printAscii } from "../utils/ascii.js";
 import chalk from "chalk";
 import {
@@ -26,11 +21,7 @@ import {
   _updateCommand,
   _useCommand,
 } from "./command.js";
-import path from "path";
-import fs from "fs";
 import { _renewalProjectName } from "../utils/string.js";
-import ora from "ora";
-import { execa } from "execa";
 
 export async function runner(): Promise<void> {
   _printAscii({

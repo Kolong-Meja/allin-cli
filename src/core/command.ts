@@ -10,11 +10,10 @@ import {
   UnableOverwriteError,
 } from "../exceptions/custom.js";
 import {
-  _getProjects,
-  _getProjectsByName,
-  _isPathExist,
-  _isProjectExist,
+  _getProjectTemplates,
+  _getProjectTemplatesByName,
 } from "../generators/files.js";
+import { _isPathExist, _isProjectExist } from "../exceptions/trigger.js";
 import { _DockerResources, _ProjectResourcePath } from "../types/default.js";
 import { _renewalProjectName } from "../utils/string.js";
 import chalk from "chalk";
@@ -30,19 +29,14 @@ import { execa } from "execa";
 export async function _listCommand(options: OptionValues): Promise<void> {
   let _answers: { [x: string]: any } = {};
 
-  if (options.template && options.all) {
-    _getProjects("src/templates");
-    return;
-  }
-
   if (options.all) {
-    _getProjects("src/templates");
+    _getProjectTemplates("src/templates");
     return;
   }
 
   if (options.template) {
     if (options.template !== "") {
-      _getProjectsByName("src/templates", options.template);
+      _getProjectTemplatesByName("src/templates", options.template);
       return;
     }
   } else {
@@ -55,7 +49,7 @@ export async function _listCommand(options: OptionValues): Promise<void> {
         default: "backend",
       },
     ]);
-    _getProjectsByName("src/templates", _answers.projectType);
+    _getProjectTemplatesByName("src/templates", _answers.projectType);
     return;
   }
 }
