@@ -214,14 +214,6 @@ export async function _useCommand(options: OptionValues): Promise<void> {
 
 export async function _createCommand(options: OptionValues): Promise<void> {
   let _resource: __ProjectResourcePathProps = { sourcePath: "", desPath: "" };
-  let _dockerResource: __ProjectResourcePathProps = {
-    sourcePath: "",
-    desPath: "",
-  };
-  let _dockerBakeResource: __ProjectResourcePathProps = {
-    sourcePath: "",
-    desPath: "",
-  };
 
   const _projectTemplateQuestions = await inquirer.prompt(
     _generateCreatePrompts(options.template)
@@ -358,12 +350,15 @@ export async function _createCommand(options: OptionValues): Promise<void> {
 
           spinner.start("Start copying docker compose 🐳...");
 
-          _dockerResource = _getDockerComposePath(
+          const _dockerComposePathBackend = _getDockerComposePath(
             _dockerResources.templates,
             _backendResource
           );
 
-          await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
+          await fse.copy(
+            _dockerComposePathBackend.sourcePath,
+            _dockerComposePathBackend.desPath
+          );
 
           spinner.succeed("Adding docker compose file succeed ✅");
 
@@ -446,12 +441,15 @@ export async function _createCommand(options: OptionValues): Promise<void> {
 
           spinner.start("Start copying docker compose 🐳...");
 
-          _dockerResource = _getDockerComposePath(
+          const _dockerComposePathFrontend = _getDockerComposePath(
             _dockerResources.templates,
             _frontendResource
           );
 
-          await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
+          await fse.copy(
+            _dockerComposePathFrontend.sourcePath,
+            _dockerComposePathFrontend.desPath
+          );
 
           spinner.succeed("Adding docker compose file succeed ✅");
 
@@ -498,12 +496,15 @@ export async function _createCommand(options: OptionValues): Promise<void> {
 
           spinner.start("Start copying docker compose 🐳...");
 
-          _dockerResource = _getDockerComposePath(
+          const _dockerComposePathFullstack = _getDockerComposePath(
             _dockerResources.templates,
             _fullstackResource
           );
 
-          await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
+          await fse.copy(
+            _dockerComposePathFullstack.sourcePath,
+            _dockerComposePathFullstack.desPath
+          );
 
           spinner.succeed("Adding docker compose file succeed ✅");
 
@@ -513,7 +514,7 @@ export async function _createCommand(options: OptionValues): Promise<void> {
             _projectTemplateQuestions,
             _dockerResources.dockerfiles,
             _fullstackResource
-          );
+          ) as __ProjectResourcePathProps[];
 
           _dockerfileResource.forEach(async (v) => {
             await fse.copy(v.sourcePath, v.desPath);
@@ -556,12 +557,15 @@ export async function _createCommand(options: OptionValues): Promise<void> {
 
           spinner.start("Start copying docker 🐳...");
 
-          _dockerResource = _getDockerComposePath(
+          const _dockerComposePathBackend = _getDockerComposePath(
             _dockerResources.templates,
             _backendResource
           );
 
-          await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
+          await fse.copy(
+            _dockerComposePathBackend.sourcePath,
+            _dockerComposePathBackend.desPath
+          );
 
           spinner.succeed("Adding docker compose file succeed ✅");
 
@@ -618,14 +622,14 @@ export async function _createCommand(options: OptionValues): Promise<void> {
 
           spinner.start("Start generate docker bake 🍞...");
 
-          _dockerBakeResource = _getDockerBakePath(
+          const _dockerBakePathBackend = _getDockerBakePath(
             _dockerResources.templates,
             _backendResource
           );
 
           await fse.copy(
-            _dockerBakeResource.sourcePath,
-            _dockerBakeResource.desPath
+            _dockerBakePathBackend.sourcePath,
+            _dockerBakePathBackend.desPath
           );
 
           spinner.succeed("Adding docker bake file succeed ✅");
@@ -658,12 +662,15 @@ export async function _createCommand(options: OptionValues): Promise<void> {
 
           spinner.start("Start copying docker 🐳...");
 
-          _dockerResource = _getDockerComposePath(
+          const _dockerComposePathFrontend = _getDockerComposePath(
             _dockerResources.templates,
             _frontendResource
           );
 
-          await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
+          await fse.copy(
+            _dockerComposePathFrontend.sourcePath,
+            _dockerComposePathFrontend.desPath
+          );
 
           spinner.succeed("Adding docker compose file succeed ✅");
 
@@ -684,14 +691,14 @@ export async function _createCommand(options: OptionValues): Promise<void> {
 
           spinner.start("Start generate docker bake 🍞...");
 
-          _dockerBakeResource = _getDockerBakePath(
+          const _dockerBakePathFrontend = _getDockerBakePath(
             _dockerResources.templates,
             _frontendResource
           );
 
           await fse.copy(
-            _dockerBakeResource.sourcePath,
-            _dockerBakeResource.desPath
+            _dockerBakePathFrontend.sourcePath,
+            _dockerBakePathFrontend.desPath
           );
 
           spinner.succeed("Adding docker bake file succeed ✅");
@@ -724,12 +731,15 @@ export async function _createCommand(options: OptionValues): Promise<void> {
 
           spinner.start("Start copying docker 🐳...");
 
-          _dockerResource = _getDockerComposePath(
+          const _dockerComposePathFullstack = _getDockerComposePath(
             _dockerResources.templates,
             _fullstackResource
           );
 
-          await fse.copy(_dockerResource.sourcePath, _dockerResource.desPath);
+          await fse.copy(
+            _dockerComposePathFullstack.sourcePath,
+            _dockerComposePathFullstack.desPath
+          );
 
           spinner.succeed("Adding docker compose file succeed ✅");
 
@@ -739,7 +749,7 @@ export async function _createCommand(options: OptionValues): Promise<void> {
             _projectTemplateQuestions,
             _dockerResources.dockerfiles,
             _fullstackResource
-          );
+          ) as __ProjectResourcePathProps[];
 
           _dockerfileResource.forEach(async (v) => {
             await fse.copy(v.sourcePath, v.desPath);
@@ -749,14 +759,14 @@ export async function _createCommand(options: OptionValues): Promise<void> {
 
           spinner.start("Start generate docker bake 🍞...");
 
-          _dockerBakeResource = _getDockerBakePath(
+          const _dockerBakePathFullstack = _getDockerBakePath(
             _dockerResources.templates,
             _fullstackResource
           );
 
           await fse.copy(
-            _dockerBakeResource.sourcePath,
-            _dockerBakeResource.desPath
+            _dockerBakePathFullstack.sourcePath,
+            _dockerBakePathFullstack.desPath
           );
 
           spinner.succeed("Adding docker bake file succeed ✅");
@@ -1934,32 +1944,113 @@ function _getDockerfileResourcePathForFullStack(
     })
     .filter((f) => f.isDirectory());
 
-  let _nodeDockerfileResourcePath: __ProjectResourcePathProps[] = [];
-  let _nodeDockerfileSourcePath: string = "";
-  let _nodeDockerfileDesPath: string = "";
+  switch (answers.chooseFullStackFramework) {
+    case "Next.js + NestJS":
+      let _nextNestDockerfileResourcePath: __ProjectResourcePathProps[] = [];
 
-  for (const f of _fullstackFolders) {
-    const _desPath = path.join(resource.desPath, "www");
-    const _projectPath = path.join(_desPath, f.name);
+      for (const f of _fullstackFolders) {
+        const _desPath = path.join(resource.desPath, "www");
+        const _projectPath = path.join(_desPath, f.name);
 
-    const _nodeDockerfile = dockerfiles.filter(
-      (f) => f.name === "node.template.Dockerfile"
-    )[0];
+        const _nodeDockerfile = dockerfiles.filter(
+          (f) => f.name === "node.template.Dockerfile"
+        )[0];
 
-    _nodeDockerfileSourcePath = path.join(
-      _nodeDockerfile.parentPath,
-      _nodeDockerfile.name
-    );
+        const _nodeDockerfileSourcePath = path.join(
+          _nodeDockerfile.parentPath,
+          _nodeDockerfile.name
+        );
 
-    _nodeDockerfileDesPath = path.join(_projectPath, _nodeDockerfile.name);
+        const _nodeDockerfileDesPath = path.join(
+          _projectPath,
+          _nodeDockerfile.name
+        );
 
-    _nodeDockerfileResourcePath.push({
-      sourcePath: _nodeDockerfileSourcePath,
-      desPath: _nodeDockerfileDesPath,
-    });
+        _nextNestDockerfileResourcePath.push({
+          sourcePath: _nodeDockerfileSourcePath,
+          desPath: _nodeDockerfileDesPath,
+        });
+      }
+      return _nextNestDockerfileResourcePath;
+    case "Vue.js + NestJS":
+      let _vueNestDockerfileResourcePath: __ProjectResourcePathProps[] = [];
+
+      for (const f of _fullstackFolders) {
+        const _desPath = path.join(resource.desPath, "www");
+        const _projectPath = path.join(_desPath, f.name);
+
+        const _nodeDockerfile = dockerfiles.filter(
+          (f) => f.name === "node.template.Dockerfile"
+        )[0];
+
+        const _nodeDockerfileSourcePath = path.join(
+          _nodeDockerfile.parentPath,
+          _nodeDockerfile.name
+        );
+
+        const _nodeDockerfileDesPath = path.join(
+          _projectPath,
+          _nodeDockerfile.name
+        );
+
+        _vueNestDockerfileResourcePath.push({
+          sourcePath: _nodeDockerfileSourcePath,
+          desPath: _nodeDockerfileDesPath,
+        });
+      }
+      return _vueNestDockerfileResourcePath;
+    case "Vue.js + Laravel":
+      let _vueLaravelDockerfileResourcePath: __ProjectResourcePathProps[] = [];
+
+      for (const f of _fullstackFolders) {
+        if (f.name !== "laravel-backend") {
+          const _desPath = path.join(resource.desPath, "www");
+          const _projectPath = path.join(_desPath, f.name);
+
+          const _phpDockerfile = dockerfiles.filter(
+            (f) => f.name === "node.template.Dockerfile"
+          )[0];
+
+          const _phpDockerfileSourcePath = path.join(
+            _phpDockerfile.parentPath,
+            _phpDockerfile.name
+          );
+
+          const _phpDockerfileDesPath = path.join(
+            _projectPath,
+            _phpDockerfile.name
+          );
+
+          _vueLaravelDockerfileResourcePath.push({
+            sourcePath: _phpDockerfileSourcePath,
+            desPath: _phpDockerfileDesPath,
+          });
+        } else {
+          const _desPath = path.join(resource.desPath, "www");
+          const _projectPath = path.join(_desPath, f.name);
+
+          const _vueDockerfile = dockerfiles.filter(
+            (f) => f.name === "php.template.Dockerfile"
+          )[0];
+
+          const _vueDockerfileSourcePath = path.join(
+            _vueDockerfile.parentPath,
+            _vueDockerfile.name
+          );
+
+          const _vueDockerfileDesPath = path.join(
+            _projectPath,
+            _vueDockerfile.name
+          );
+
+          _vueLaravelDockerfileResourcePath.push({
+            sourcePath: _vueDockerfileSourcePath,
+            desPath: _vueDockerfileDesPath,
+          });
+        }
+      }
+      return _vueLaravelDockerfileResourcePath;
   }
-
-  return _nodeDockerfileResourcePath;
 }
 
 function _getDockerfileResourcePath(

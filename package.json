@@ -1,7 +1,7 @@
 {
   "name": "allin",
   "version": "1.0.0",
-  "description": "A full stack CLI that speeds up your project creation in one go.",
+  "description": "A modern full stack CLI that speeds up your project creation in one go.",
   "exports": "./dist/index.js",
   "main": "dist/index.js",
   "bin": {

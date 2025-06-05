@@ -22,6 +22,11 @@ export const _defaultBackendFrameworks: __DefaultFrameworkProps = {
       templateName: "nest-project",
       origin: "Javascript",
     },
+    {
+      name: "Laravel",
+      templateName: "laravel-project",
+      origin: "PHP",
+    },
   ],
   rootPath: "src/templates/backend",
   type: "backend",
@@ -38,6 +43,11 @@ export const _defaultFrontendFrameworks: __DefaultFrameworkProps = {
     {
       name: "Vue.js",
       templateName: "vue-project",
+      origin: "Javascript",
+    },
+    {
+      name: "Svelte",
+      templateName: "svelte-project",
       origin: "Javascript",
     },
   ],
@@ -76,6 +86,22 @@ export const _defaultFullStackFrameworks: __DefaultFullStackFrameworkProps = {
         frontend: {
           name: "Vue.js",
           templateName: "vue-frontend",
+          origin: "Javascript",
+        },
+      },
+    },
+    {
+      name: "Vue.js + Laravel",
+      templateName: "vue-laravel-project",
+      detail: {
+        backend: {
+          name: "Laravel",
+          templateName: "laravel-project",
+          origin: "PHP",
+        },
+        frontend: {
+          name: "Vue.js",
+          templateName: "vue-project",
           origin: "Javascript",
         },
       },

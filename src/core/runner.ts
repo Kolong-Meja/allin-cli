@@ -19,7 +19,7 @@ import {
   _useCommand,
 } from "./command.js";
 import { _renewalProjectName } from "../utils/string.js";
-import { _currentVersion, _program } from "../config.js";
+import { _appCreator, _appLicense, _appVersion, _program } from "../config.js";
 
 export async function runner(): Promise<void> {
   _printAscii({
@@ -41,7 +41,9 @@ export async function runner(): Promise<void> {
     "-v, --version",
     "Action to get information about the current version of this tool.",
     () => {
-      console.log(`${chalk.bold("Allin CLI Tool")}: v${_currentVersion}`);
+      console.log(`${chalk.bold("Allin CLI Tool")}: v${_appVersion}`);
+      console.log(`${chalk.bold("Allin Creator")}: ${_appCreator}`);
+      console.log(`${chalk.bold("Allin License")}: ${_appLicense}`);
       process.exit(0);
     }
   );
@@ -105,7 +107,6 @@ export async function runner(): Promise<void> {
       _useCommand(options);
     });
 
-  // need more updates on this command.
   _program
     .command("update")
     .option(
