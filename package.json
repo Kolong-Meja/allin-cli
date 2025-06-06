@@ -1,7 +1,7 @@
 {
   "name": "allin",
   "version": "1.0.0",
-  "description": "A modern full stack CLI that speeds up your project creation in one go.",
+  "description": "A modern full-stack CLI tool designed to accelerate your app development process — setup your entire stack in one seamless command.",
   "exports": "./dist/index.js",
   "main": "dist/index.js",
   "bin": {
@@ -17,8 +17,8 @@
     "cli",
     "npmtool"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Faisal Ramadhan",
+  "license": "GPL-3.0-only",
   "type": "module",
   "devDependencies": {
     "@types/figlet": "^1.7.0",

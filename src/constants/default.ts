@@ -3,18 +3,19 @@ import {
   __DefaultFullStackFrameworkProps,
 } from "../types/default.js";
 
-export const _defaultProjectTypes: string[] = [
-  "backend",
-  "frontend",
-  "fullstack",
-];
+export const _projectTypes: string[] = ["backend", "frontend", "fullstack"];
 
-export const _defaultBackendFrameworks: __DefaultFrameworkProps = {
+export const _backendFrameworks: __DefaultFrameworkProps = {
   uid: "us6h8to3ts87d8na3vifzfuo",
   frameworks: [
     {
       name: "Express.js",
       templateName: "express-project",
+      origin: "Javascript",
+    },
+    {
+      name: "Fastify",
+      templateName: "fastify-project",
       origin: "Javascript",
     },
     {
@@ -32,7 +33,7 @@ export const _defaultBackendFrameworks: __DefaultFrameworkProps = {
   type: "backend",
 };
 
-export const _defaultFrontendFrameworks: __DefaultFrameworkProps = {
+export const _frontendFrameworks: __DefaultFrameworkProps = {
   uid: "t8qp82chmqdgoiy7me4h5hyi",
   frameworks: [
     {
@@ -50,12 +51,17 @@ export const _defaultFrontendFrameworks: __DefaultFrameworkProps = {
       templateName: "svelte-project",
       origin: "Javascript",
     },
+    {
+      name: "Astro.js",
+      templateName: "astro-project",
+      origin: "Javascript",
+    },
   ],
   rootPath: "src/templates/frontend",
   type: "frontend",
 };
 
-export const _defaultFullStackFrameworks: __DefaultFullStackFrameworkProps = {
+export const _fullstackFrameworks: __DefaultFullStackFrameworkProps = {
   uid: "t8qp82chmqdgoiy7me4h5hyi",
   frameworks: [
     {
@@ -65,6 +71,22 @@ export const _defaultFullStackFrameworks: __DefaultFullStackFrameworkProps = {
         backend: {
           name: "NestJS",
           templateName: "nest-backend",
+          origin: "Javascript",
+        },
+        frontend: {
+          name: "Next.js",
+          templateName: "next-frontend",
+          origin: "Javascript",
+        },
+      },
+    },
+    {
+      name: "Next.js + Express.js",
+      templateName: "next-express-project",
+      detail: {
+        backend: {
+          name: "Express.js",
+          templateName: "express-backend",
           origin: "Javascript",
         },
         frontend: {
@@ -96,12 +118,28 @@ export const _defaultFullStackFrameworks: __DefaultFullStackFrameworkProps = {
       detail: {
         backend: {
           name: "Laravel",
-          templateName: "laravel-project",
+          templateName: "laravel-backend",
           origin: "PHP",
         },
         frontend: {
           name: "Vue.js",
-          templateName: "vue-project",
+          templateName: "vue-frontend",
+          origin: "Javascript",
+        },
+      },
+    },
+    {
+      name: "Svelte + Express.js",
+      templateName: "svelte-express-project",
+      detail: {
+        backend: {
+          name: "Express.js",
+          templateName: "express-backend",
+          origin: "Javascript",
+        },
+        frontend: {
+          name: "Svelte",
+          templateName: "svelte-frontend",
           origin: "Javascript",
         },
       },

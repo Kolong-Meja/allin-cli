@@ -6,9 +6,8 @@ import {
   UnidentifiedTemplateError,
 } from "./custom.js";
 import chalk from "chalk";
-import path from "path";
 
-export function _isPathExist(path: string): void {
+export function _pathNotFound(path: string): void {
   if (!fs.existsSync(path))
     throw new PathNotFoundError(
       `⛔️ ${chalk.bold("Path not found")}: ${chalk.bold(
@@ -18,13 +17,11 @@ export function _isPathExist(path: string): void {
   return;
 }
 
-export function _isProjectExist(basePath: string, projectName: string): void {
-  const _targetPath = path.join(basePath, projectName);
-
-  if (fs.existsSync(_targetPath) && fs.statSync(_targetPath).isDirectory())
+export function _unableOverwrite(path: string): void {
+  if (fs.existsSync(path))
     throw new UnableOverwriteError(
       `⛔️ ${chalk.bold("Unable to overwrite")}: ${chalk.bold(
-        _targetPath
+        path
       )} is exist and cannot be overwritten.`
     );
   return;

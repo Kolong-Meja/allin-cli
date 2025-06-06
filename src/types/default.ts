@@ -1,19 +1,35 @@
-import fs from "fs";
+export type __PrintAsciiProps = {
+  name: string;
+  desc: string;
+};
+
+export type __QuestionPrompsProps = {
+  projectName: string;
+  projectType: string;
+  chooseBackendFramework: string;
+  chooseFrontendFramework: string;
+  chooseFullStackFramework: string;
+  addDocker: boolean;
+  addDockerBake: boolean;
+  dirPath: string;
+};
 
 export type __ProjectResourcePathProps = {
   sourcePath: string;
   desPath: string;
 };
 
-export type __DockerResourcesProps = {
-  templates: fs.Dirent<string>[];
-  dockerfiles: fs.Dirent<string>[];
-};
-
 export type __FrameworkProps = {
   name: string;
   templateName: string;
   origin: string;
+};
+
+export type __DefaultFrameworkProps = {
+  uid: string;
+  frameworks: __FrameworkProps[];
+  rootPath: string;
+  type: string;
 };
 
 export type __FullStackFrameworkProps = {
@@ -31,13 +47,6 @@ export type __FullStackFrameworkProps = {
       origin: string;
     };
   };
-};
-
-export type __DefaultFrameworkProps = {
-  uid: string;
-  frameworks: __FrameworkProps[];
-  rootPath: string;
-  type: string;
 };
 
 export type __DefaultFullStackFrameworkProps = {

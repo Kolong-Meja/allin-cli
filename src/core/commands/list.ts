@@ -1,22 +1,52 @@
-import { PathNotFoundError } from "../exceptions/custom.js";
+import { __userrealname, _basePath } from "../../config.js";
 import {
-  _defaultBackendFrameworks,
-  _defaultFrontendFrameworks,
-  _defaultFullStackFrameworks,
-  _defaultProjectTypes,
-} from "../constants/default.js";
-import fs from "fs";
+  _backendFrameworks,
+  _frontendFrameworks,
+  _fullstackFrameworks,
+  _projectTypes,
+} from "../../constants/default.js";
+import { _pathNotFound } from "../../exceptions/trigger.js";
+import { PathNotFoundError } from "../../exceptions/custom.js";
+
+import inquirer from "inquirer";
 import path from "path";
-import { _renewalProjectName, _titleCase } from "../utils/string.js";
+import fs from "fs";
 import chalk from "chalk";
 import { table } from "table";
-import { _isPathExist } from "../exceptions/trigger.js";
-import { _basePath } from "../config.js";
+import { OptionValues } from "commander";
+import { __titleCase } from "../../utils/string.js";
+
+export async function _listCommand(options: OptionValues): Promise<void> {
+  if (options.all) {
+    _getProjectTemplates("src/templates");
+    return;
+  }
+
+  if (!options.template) {
+    const _projectTypeQuestion = await inquirer.prompt([
+      {
+        name: "projectType",
+        type: "select",
+        message: "Choose project type:",
+        choices: _projectTypes,
+        default: "backend",
+      },
+    ]);
+    _getProjectTemplatesByName(
+      "src/templates",
+      _projectTypeQuestion.projectType
+    );
+    return;
+  } else {
+    _getProjectTemplatesByName("src/templates", options.template);
+    return;
+  }
+}
 
 export async function _getProjectTemplates(targetPath: string): Promise<void> {
   try {
     const _dirPath = path.join(_basePath, targetPath);
-    _isPathExist(_dirPath);
+    _pathNotFound(_dirPath);
 
     const _files = fs.readdirSync(_dirPath, {
       withFileTypes: true,
@@ -35,7 +65,7 @@ export async function _getProjectTemplates(targetPath: string): Promise<void> {
             ],
           ];
 
-          for (const [i, v] of _defaultBackendFrameworks.frameworks.entries()) {
+          for (const [i, v] of _backendFrameworks.frameworks.entries()) {
             _backendFrameworksData.push([
               `${i + 1}`,
               v.templateName,
@@ -57,7 +87,7 @@ export async function _getProjectTemplates(targetPath: string): Promise<void> {
               ],
               header: {
                 alignment: "center",
-                content: `Available ${_titleCase(f.name)} Projects`,
+                content: `Available ${__titleCase(f.name)} Projects`,
               },
             })
           );
@@ -73,10 +103,7 @@ export async function _getProjectTemplates(targetPath: string): Promise<void> {
             ],
           ];
 
-          for (const [
-            i,
-            v,
-          ] of _defaultFrontendFrameworks.frameworks.entries()) {
+          for (const [i, v] of _frontendFrameworks.frameworks.entries()) {
             _frontendFrameworksData.push([
               `${i + 1}`,
               v.templateName,
@@ -98,7 +125,7 @@ export async function _getProjectTemplates(targetPath: string): Promise<void> {
               ],
               header: {
                 alignment: "center",
-                content: `Available ${_titleCase(f.name)} Projects`,
+                content: `Available ${__titleCase(f.name)} Projects`,
               },
             })
           );
@@ -113,10 +140,7 @@ export async function _getProjectTemplates(targetPath: string): Promise<void> {
             ],
           ];
 
-          for (const [
-            i,
-            v,
-          ] of _defaultFullStackFrameworks.frameworks.entries()) {
+          for (const [i, v] of _fullstackFrameworks.frameworks.entries()) {
             _fullstackFrameworksData.push([
               `${i + 1}`,
               v.templateName,
@@ -138,7 +162,7 @@ export async function _getProjectTemplates(targetPath: string): Promise<void> {
               ],
               header: {
                 alignment: "center",
-                content: `Available ${_titleCase(f.name)} Projects`,
+                content: `Available ${__titleCase(f.name)} Projects`,
               },
             })
           );
@@ -163,7 +187,7 @@ export function _getProjectTemplatesByName(
 ): void {
   try {
     const _dirPath = path.join(_basePath, targetPath, template);
-    _isPathExist(_dirPath);
+    _pathNotFound(_dirPath);
 
     switch (template) {
       case "backend":
@@ -176,7 +200,7 @@ export function _getProjectTemplatesByName(
           ],
         ];
 
-        for (const [i, v] of _defaultBackendFrameworks.frameworks.entries()) {
+        for (const [i, v] of _backendFrameworks.frameworks.entries()) {
           _backendFrameworksData.push([
             `${i + 1}`,
             v.templateName,
@@ -198,7 +222,7 @@ export function _getProjectTemplatesByName(
             ],
             header: {
               alignment: "center",
-              content: `Available ${_titleCase(template)} Projects`,
+              content: `Available ${__titleCase(template)} Projects`,
             },
           })
         );
@@ -213,7 +237,7 @@ export function _getProjectTemplatesByName(
           ],
         ];
 
-        for (const [i, v] of _defaultFrontendFrameworks.frameworks.entries()) {
+        for (const [i, v] of _frontendFrameworks.frameworks.entries()) {
           _frontendFrameworksData.push([
             `${i + 1}`,
             v.templateName,
@@ -235,7 +259,7 @@ export function _getProjectTemplatesByName(
             ],
             header: {
               alignment: "center",
-              content: `Available ${_titleCase(template)} Projects`,
+              content: `Available ${__titleCase(template)} Projects`,
             },
           })
         );
@@ -250,7 +274,7 @@ export function _getProjectTemplatesByName(
           ],
         ];
 
-        for (const [i, v] of _defaultFullStackFrameworks.frameworks.entries()) {
+        for (const [i, v] of _fullstackFrameworks.frameworks.entries()) {
           _fullstackFrameworksData.push([
             `${i + 1}`,
             v.templateName,
@@ -272,7 +296,7 @@ export function _getProjectTemplatesByName(
             ],
             header: {
               alignment: "center",
-              content: `Available ${_titleCase(template)} Projects`,
+              content: `Available ${__titleCase(template)} Projects`,
             },
           })
         );
