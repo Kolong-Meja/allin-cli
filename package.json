@@ -1,23 +1,38 @@
 {
-  "name": "allin",
+  "name": "@kolong-meja/allin-cli",
   "version": "1.0.0",
   "description": "A modern full-stack CLI tool designed to accelerate your app development process — setup your entire stack in one seamless command.",
-  "exports": "./dist/index.js",
-  "main": "dist/index.js",
-  "bin": {
-    "allin": "dist/index.js"
-  },
-  "scripts": {
-    "start": "npx tsx src/index.ts",
-    "build": "npx tsc && tsc-alias",
-    "test": "jest"
-  },
   "keywords": [
     "cli",
-    "npmtool"
+    "npmtool",
+    "command",
+    "template"
   ],
-  "author": "Faisal Ramadhan",
+  "homepage": "https://github.com/Kolong-Meja/allin-cli#readme",
+  "repository": "https://github.com/Kolong-Meja/allin-cli",
   "license": "GPL-3.0-only",
+  "author": "Faisal Ramadhan",
+  "preferGlobal": true,
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": "./dist/index.js",
+  "bin": {
+    "allin": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "npx tsc && tsc-alias",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test",
+    "test": "jest"
+  },
   "type": "module",
   "devDependencies": {
     "@types/figlet": "^1.7.0",
