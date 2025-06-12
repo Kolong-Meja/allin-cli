@@ -11,7 +11,6 @@ export type __QuestionPrompsProps = {
   chooseFullStackFramework: string;
   addDocker: boolean;
   addDockerBake: boolean;
-  dirPath: string;
 };
 
 export type __ProjectResourcePathProps = {
@@ -22,36 +21,34 @@ export type __ProjectResourcePathProps = {
 export type __FrameworkProps = {
   name: string;
   templateName: string;
-  origin: string;
+  language: string;
+  path: string;
 };
 
 export type __DefaultFrameworkProps = {
-  uid: string;
   frameworks: __FrameworkProps[];
-  rootPath: string;
-  type: string;
 };
 
-export type __FullStackFrameworkProps = {
+export type __LicenseProps = {
   name: string;
   templateName: string;
-  detail: {
-    backend: {
-      name: string;
-      templateName: string;
-      origin: string;
-    };
-    frontend: {
-      name: string;
-      templateName: string;
-      origin: string;
-    };
-  };
+  path: string;
 };
 
-export type __DefaultFullStackFrameworkProps = {
-  uid: string;
-  frameworks: __FullStackFrameworkProps[];
-  rootPath: string;
-  type: string;
+export type __DefaultLicenseProps = {
+  licenses: __LicenseProps[];
+};
+
+export type __PackagesProps = {
+  name: string;
+  originName: string;
+  summary: string;
+};
+
+export type __BackendPackagesProps = {
+  packages: __PackagesProps[];
+};
+
+export type __FrontendPackagesProps = {
+  packages: __PackagesProps[];
 };

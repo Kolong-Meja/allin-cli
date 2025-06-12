@@ -33,3 +33,6 @@ export const _appLicense = process.env.APP_LICENSE
 export const _appGithubLink = process.env.APP_GITHUB_LINK
   ? process.env.APP_GITHUB_LINK
   : "https://github.com/Kolong-Meja/allin-cli";
+
+export const __nodeJsVersion = process.version;
+export const _os = `${os.platform}-${os.arch}`;

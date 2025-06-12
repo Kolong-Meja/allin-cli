@@ -1,18 +1,20 @@
 import figlet from "figlet";
 import gradient from "gradient-string";
-import { __PrintAsciiProps } from "../types/default.js";
-import { table } from "table";
+import { __PrintAsciiProps } from "@/types/default.js";
+import { getBorderCharacters, table } from "table";
 import {
+  __nodeJsVersion,
   _appCreator,
   _appDesc,
   _appGithubLink,
   _appLicense,
   _appName,
   _appVersion,
+  _os,
 } from "../config.js";
 import chalk from "chalk";
 
-export const _allinGradient = gradient(["#B771E5", "#81E7AF", "#FF9100"]);
+export const _allinGradient = gradient(["#3CB371", "#81E7AF", "#FFD63A"]);
 
 export const _printAscii = (): void => {
   const _ascii = `${_allinGradient(figlet.textSync(_appName, "3D-ASCII"))}`;
@@ -27,24 +29,23 @@ export const _printAscii = (): void => {
     "Allin Github Link"
   )}: ${_appGithubLink}`;
 
+  // METADATA.
   const __data = [[_version], [_creator], [_license], [_githubLink]];
+
+  const __nodeVersion = `${_allinGradient("Node Version")}: ${__nodeJsVersion}`;
+  const __currentOs = `${_allinGradient("Operating System")}: ${_os}`;
+
+  // ENVIRONMENT.
+  __data.push([__nodeVersion], [__currentOs]);
 
   console.log(
     table(__data, {
-      singleLine: true,
+      border: getBorderCharacters("norc"),
       columnDefault: {
         width: 80,
       },
+      singleLine: true,
       columns: [
-        {
-          alignment: "left",
-        },
-        {
-          alignment: "left",
-        },
-        {
-          alignment: "left",
-        },
         {
           alignment: "left",
         },

@@ -6,6 +6,22 @@ export class PathNotFoundError extends Error {
   }
 }
 
+export class ProjectNotExistError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = "ProjectNotExistError";
+    Object.setPrototypeOf(this, ProjectNotExistError.prototype);
+  }
+}
+
+export class HarassmentWordsDetected extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = "HarassmentWordsDetected";
+    Object.setPrototypeOf(this, HarassmentWordsDetected.prototype);
+  }
+}
+
 export class UnableOverwriteError extends Error {
   constructor(message: string | undefined) {
     super(message);
