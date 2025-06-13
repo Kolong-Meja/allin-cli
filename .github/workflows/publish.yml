@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,8 +27,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run format check
+        run: npm run check-format
+
       - name: Build package
         run: npm run build
+
+      - name: Add shebang to index.js
+        run: |
+          if ! grep -q "#!/usr/bin/env node" dist/index.js; then
+            echo '#!/usr/bin/env node' > temp.js
+            cat dist/index.js >> temp.js
+            mv temp.js dist/index.js
+            chmod +x dist/index.js
+          fi
+
+      - name: Generate CJS file for dual compatibility
+        run: |
+          mkdir -p dist
+          echo '#!/usr/bin/env node' > dist/index.cjs
+          echo 'import("./index.js");' >> dist/index.cjs
+          chmod +x dist/index.cjs
 
       - name: Run tests
         run: npm test
@@ -45,6 +66,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Verify package version matches tag
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Publishing version $PKG_VERSION"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -73,17 +104,42 @@ jobs:
             exit 1
           fi
 
+          if [ -f "dist/index.cjs" ]; then
+            echo "✅ CommonJS binary file exists"
+            chmod +x dist/index.cjs
+            ls -la dist/index.cjs
+          else
+            echo "⚠️ CommonJS binary file is missing, creating it..."
+            echo '#!/usr/bin/env node' > dist/index.cjs
+            echo 'import("./index.js");' >> dist/index.cjs
+            chmod +x dist/index.cjs
+          fi
+
       - name: Fix package.json
         run: npm pkg fix
 
       - name: Configure npm
         run: |
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          npm whoami
+          npm whoami || echo "Failed to authenticate with npm"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.ALLIN_CLI_TOKEN }}
+
+      - name: Verify package contents
+        run: |
+          echo "Package contents:"
+          npm pack --dry-run
 
       - name: Publish package
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.ALLIN_CLI_TOKEN }}
+
+      - name: Test installation
+        if: success()
+        run: |
+          mkdir -p test-install
+          cd test-install
+          npm init -y
+          npm install @faisalrmdhn08/allin-cli
+          npx allin --version || echo "Failed to execute CLI"

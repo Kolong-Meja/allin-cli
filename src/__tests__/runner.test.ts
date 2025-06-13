@@ -1,7 +1,7 @@
 /**
  * __tests__/runner.test.ts
  */
-import { jest } from "@jest/globals";
+import { jest } from '@jest/globals';
 
 const mockProgram = {
   name: jest.fn().mockReturnThis(),
@@ -16,53 +16,53 @@ const mockProgram = {
 };
 
 const exitSpy = jest
-  .spyOn(process, "exit")
+  .spyOn(process, 'exit')
   .mockImplementation((() => {}) as any);
 
-jest.unstable_mockModule("../../src/config.js", () => ({
-  __userrealname: "Faisal",
-  _appName: "allin",
-  _appDesc: "desc",
-  _appCreator: "faisal",
-  _appVersion: "1.0.0",
-  _appLicense: "MIT",
-  _appGithubLink: "https://github.com/…",
-  __nodeJsVersion: "v22.16.0",
-  _os: "linux x64",
-  _basePath: "/mocked/base",
+jest.unstable_mockModule('../../src/config.js', () => ({
+  __userrealname: 'Faisal',
+  _appName: 'allin',
+  _appDesc: 'desc',
+  _appCreator: 'faisal',
+  _appVersion: '1.0.0',
+  _appLicense: 'MIT',
+  _appGithubLink: 'https://github.com/…',
+  __nodeJsVersion: 'v22.16.0',
+  _os: 'linux x64',
+  _basePath: '/mocked/base',
   _program: mockProgram,
 }));
 
 const mockPrintAscii = jest.fn();
-jest.unstable_mockModule("../../src/utils/ascii.js", () => ({
+jest.unstable_mockModule('../../src/utils/ascii.js', () => ({
   _allinGradient: jest.fn((str: string) => str),
   _printAscii: mockPrintAscii,
 }));
 
 const mockNewCreateCommand = jest.fn();
-jest.unstable_mockModule("../../src/core/commands/create.js", () => ({
+jest.unstable_mockModule('../../src/core/commands/create.js', () => ({
   _newCreateCommand: mockNewCreateCommand,
 }));
 
-const { runner } = await import("../../src/core/runner.js");
+const { runner } = await import('../../src/core/runner.js');
 
-describe("runner()", () => {
+describe('runner()', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should register name and description on the program", async () => {
+  it('should register name and description on the program', async () => {
     await runner();
 
-    expect(mockProgram.name).toHaveBeenCalledWith("allin");
+    expect(mockProgram.name).toHaveBeenCalledWith('allin');
     expect(mockProgram.description).toHaveBeenCalled();
   });
 
-  it("registers the version option and invokes _printAscii + exit", async () => {
+  it('registers the version option and invokes _printAscii + exit', async () => {
     await runner();
 
     const versionCall = mockProgram.option.mock.calls.find(
-      ([flag]) => flag === "-v, --version"
+      ([flag]) => flag === '-v, --version',
     ) as unknown[];
 
     expect(versionCall).toBeDefined();
@@ -72,10 +72,10 @@ describe("runner()", () => {
     const versionCallback: Function = versionCall[2] as Function;
 
     expect(versionFlag).not.toBeNull();
-    expect(versionFlag).toEqual("-v, --version");
+    expect(versionFlag).toEqual('-v, --version');
 
     expect(versionDesc).not.toBeNull();
-    expect(versionDesc).toContain("Allin CLI");
+    expect(versionDesc).toContain('Allin CLI');
 
     expect(versionCallback).toBeInstanceOf(Function);
 
@@ -84,56 +84,56 @@ describe("runner()", () => {
     expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  it("sets up the create subcommand with correct options and action", async () => {
+  it('sets up the create subcommand with correct options and action', async () => {
     await runner();
 
-    expect(mockProgram.command).toHaveBeenCalledWith("create");
+    expect(mockProgram.command).toHaveBeenCalledWith('create');
     expect(mockProgram.option).toHaveBeenCalledWith(
-      "-d, --dir <dir>",
+      '-d, --dir <dir>',
       "Path destination directory to save the project template that you've created.",
-      process.cwd()
+      process.cwd(),
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
-      "-g, --git",
-      "Initialize git repo automatically.",
-      false
+      '-g, --git',
+      'Initialize git repo automatically.',
+      false,
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
-      "-l, --license",
-      "Add a LICENSE file.",
-      false
+      '-l, --license',
+      'Add a LICENSE file.',
+      false,
     );
     expect(mockProgram.helpOption).toHaveBeenCalledWith(
-      "-h, --help",
-      expect.stringContaining("Action to get more information")
+      '-h, --help',
+      expect.stringContaining('Action to get more information'),
     );
     expect(mockProgram.summary).toHaveBeenCalledWith(
-      "Action to create new project."
+      'Action to create new project.',
     );
     expect(mockProgram.description).toHaveBeenCalledWith(
-      "Create new project on your own."
+      'Create new project on your own.',
     );
 
     const actionCall = mockProgram.action.mock.calls.find(
-      ([fn]) => typeof fn === "function"
+      ([fn]) => typeof fn === 'function',
     ) as unknown[];
     expect(actionCall).toBeDefined();
 
     const actionFn: Function = actionCall[0] as Function;
 
-    await actionFn({ foo: "bar" });
-    expect(mockNewCreateCommand).toHaveBeenCalledWith({ foo: "bar" });
+    await actionFn({ foo: 'bar' });
+    expect(mockNewCreateCommand).toHaveBeenCalledWith({ foo: 'bar' });
   });
 
-  it("configures global helpOption, helpCommand and invokes parse()", async () => {
+  it('configures global helpOption, helpCommand and invokes parse()', async () => {
     await runner();
     expect(mockProgram.helpOption).toHaveBeenCalledWith(
-      "-h, --help",
-      expect.stringContaining("Action to get more information")
+      '-h, --help',
+      expect.stringContaining('Action to get more information'),
     );
     expect(mockProgram.helpCommand).toHaveBeenCalledWith(
-      "help [command]",
-      expect.stringContaining("commands")
+      'help [command]',
+      expect.stringContaining('commands'),
     );
     expect(mockProgram.parse).toHaveBeenCalled();
   });

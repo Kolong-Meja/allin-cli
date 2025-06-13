@@ -1,5 +1,5 @@
-import { _allinGradient, _printAscii } from "@/utils/ascii.js";
-import chalk from "chalk";
+import { _allinGradient, _printAscii } from '@/utils/ascii.js';
+import chalk from 'chalk';
 import {
   _appCreator,
   _appDesc,
@@ -7,52 +7,52 @@ import {
   _appName,
   _appVersion,
   _program,
-} from "@/config.js";
-import { _newCreateCommand } from "./commands/create.js";
-import { __renewProjectName } from "@/utils/string.js";
+} from '@/config.js';
+import { _newCreateCommand } from './commands/create.js';
+import { __renewProjectName } from '@/utils/string.js';
 
 export async function runner(): Promise<void> {
   _program.name(_appName.toLowerCase()).description(_appDesc);
 
   _program.option(
-    "-v, --version",
+    '-v, --version',
     `Action to get information about the current version of ${_allinGradient(
-      "Allin CLI"
+      'Allin CLI',
     )} tool.`,
     () => {
       _printAscii();
       process.exit(0);
-    }
+    },
   );
 
   _program
-    .command("create")
+    .command('create')
     .option(
-      "-d, --dir <dir>",
+      '-d, --dir <dir>',
       "Path destination directory to save the project template that you've created.",
-      process.cwd()
+      process.cwd(),
     )
-    .option("-g, --git", "Initialize git repo automatically.", false)
-    .option("-l, --license", "Add a LICENSE file.", false)
+    .option('-g, --git', 'Initialize git repo automatically.', false)
+    .option('-l, --license', 'Add a LICENSE file.', false)
     .helpOption(
-      "-h, --help",
-      `Action to get more information about ${chalk.bold("use")} command.`
+      '-h, --help',
+      `Action to get more information about ${chalk.bold('use')} command.`,
     )
-    .summary("Action to create new project.")
-    .description("Create new project on your own.")
+    .summary('Action to create new project.')
+    .description('Create new project on your own.')
     .action(async (options) => {
       _newCreateCommand(options);
     });
 
   _program.helpOption(
-    "-h, --help",
-    `Action to get more information about ${_allinGradient("Allin CLI")}.`
+    '-h, --help',
+    `Action to get more information about ${_allinGradient('Allin CLI')}.`,
   );
   _program.helpCommand(
-    "help [command]",
+    'help [command]',
     `Action to get more information about ${_allinGradient(
-      "Allin CLI"
-    )} commands.`
+      'Allin CLI',
+    )} commands.`,
   );
 
   _program.parse();

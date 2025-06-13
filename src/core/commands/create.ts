@@ -1,53 +1,59 @@
-import { __LicenseProps, __ProjectResourcePathProps } from "@/types/default.js";
+import type {
+  __LicenseProps,
+  __ProjectResourcePathProps,
+} from '@/types/default.js';
 import {
   HarassmentWordsDetected,
   PathNotFoundError,
   UnableOverwriteError,
-} from "@/exceptions/custom.js";
+  UnidentifiedFrameworkError,
+  UnidentifiedTemplateError,
+} from '@/exceptions/custom.js';
 import {
   _harassmentWordsDetected,
   _pathNotFound,
   _unableOverwrite,
-} from "@/exceptions/trigger.js";
-import { __userrealname, _basePath } from "@/config.js";
+  _unidentifiedProject,
+} from '@/exceptions/trigger.js';
+import { __userrealname, _basePath } from '@/config.js';
 import {
   _backendFrameworks,
   _dirtyWords,
   _frontendFrameworks,
   _licenses,
   _projectTypes,
-} from "@/constants/index.js";
-import { _createCommandQuestionPrompt } from "@/core/prompts/create.js";
+} from '@/constants/index.js';
+import { _createCommandQuestionPrompt } from '@/core/prompts/create.js';
 import {
   _expressBackendPackages,
   _fastifyBackendPackages,
   _nestBackendPackages,
-} from "@/constants/packages/backend.js";
+} from '@/constants/packages/backend.js';
 import {
   __renewProjectName,
   __renewStringsIntoTitleCase,
-} from "@/utils/string.js";
+} from '@/utils/string.js';
 
-import chalk from "chalk";
-import { OptionValues } from "commander";
-import inquirer from "inquirer";
-import ora from "ora";
-import path from "path";
-import fs from "fs";
-import fse from "fs-extra";
-import { execa } from "execa";
-import boxen from "boxen";
+import chalk from 'chalk';
+import type { OptionValues } from 'commander';
+import inquirer from 'inquirer';
+import ora from 'ora';
+import path from 'path';
+import fs from 'fs';
+import fse from 'fs-extra';
+import { execa } from 'execa';
+import boxen from 'boxen';
 import {
   _astroFrontendPackages,
   _nextFrontendPackages,
   _svelteFrontendPackages,
   _vueFrontendPackages,
-} from "@/constants/packages/frontend.js";
+} from '@/constants/packages/frontend.js';
 
 export async function _newCreateCommand(options: OptionValues): Promise<void> {
   const spinner = ora({
-    spinner: "dots8",
-    color: "green",
+    spinner: 'dots8',
+    color: 'green',
     interval: 100,
   });
 
@@ -56,34 +62,34 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
   try {
     const _projectNameQuestion: { projectName: string } = await inquirer.prompt(
       {
-        name: "projectName",
-        type: "input",
-        message: "What project name do you want:",
-        default: "my-project",
-      }
+        name: 'projectName',
+        type: 'input',
+        message: 'What project name do you want:',
+        default: 'my-project',
+      },
     );
 
     _harassmentWordsDetected(
       __renewProjectName(_projectNameQuestion.projectName),
-      _dirtyWords
+      _dirtyWords,
     );
 
     const _chooseProjectTypeQuestion: {
-      projectType: "backend" | "frontend";
+      projectType: 'backend' | 'frontend';
     } = await inquirer.prompt([
       {
-        name: "projectType",
-        type: "list",
-        message: "What type of project do you want create:",
+        name: 'projectType',
+        type: 'list',
+        message: 'What type of project do you want create:',
         choices: __renewStringsIntoTitleCase(_projectTypes),
-        default: "backend",
+        default: 'backend',
       },
     ]);
 
     const _dirPath = path.join(
       _basePath,
-      "src/templates",
-      _chooseProjectTypeQuestion.projectType.toLowerCase()
+      'src/templates',
+      _chooseProjectTypeQuestion.projectType.toLowerCase(),
     );
     _pathNotFound(_dirPath);
 
@@ -93,49 +99,62 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
     _pathNotFound(options.dir);
 
     switch (_chooseProjectTypeQuestion.projectType.toLowerCase()) {
-      case "backend":
+      case 'backend':
         const _chooseBackendFrameworkQuestion: {
-          backendFramework: "Express.js" | "Fastify" | "NestJS";
+          backendFramework: 'Express.js' | 'Fastify' | 'NestJS';
         } = await inquirer.prompt([
           {
-            name: "backendFramework",
-            type: "select",
-            message: "Which backend framework do you want to use:",
+            name: 'backendFramework',
+            type: 'select',
+            message: 'Which backend framework do you want to use:',
             choices: _backendFrameworks.frameworks.map((f) => f.name),
-            default: "Express.js",
+            default: 'Express.js',
           },
         ]);
 
         const _backendFrameworkResource = _backendFrameworks.frameworks.filter(
-          (f) => f.name === _chooseBackendFrameworkQuestion.backendFramework
+          (f) => f.name === _chooseBackendFrameworkQuestion.backendFramework,
         )[0];
+
+        if (!_backendFrameworkResource) {
+          throw new UnidentifiedFrameworkError(
+            `${chalk.bold('Unidentified framework project')}: Backend framework resource is not defined.`,
+          );
+        }
 
         const _backendFrameworkFolder = _files.filter(
           (f) =>
-            f.name === _backendFrameworkResource.templateName && f.isDirectory()
+            f.name === _backendFrameworkResource.templateName &&
+            f.isDirectory(),
         )[0];
+
+        if (!_backendFrameworkFolder) {
+          throw new PathNotFoundError(
+            `${chalk.bold('Path not found')}: Backend framework folder not found.`,
+          );
+        }
 
         const _backendFrameworkSourcePath = path.join(
           _backendFrameworkFolder.parentPath,
-          _backendFrameworkFolder.name
+          _backendFrameworkFolder.name,
         );
         const _backendFrameworkDesPath = path.join(
           options.dir,
-          __renewProjectName(_projectNameQuestion.projectName)
+          __renewProjectName(_projectNameQuestion.projectName),
         );
         _unableOverwrite(_backendFrameworkDesPath);
 
         switch (_chooseBackendFrameworkQuestion.backendFramework) {
-          case "Express.js":
+          case 'Express.js':
             const _selectExpressPackagesQuestion: {
               backendPackages: string[];
             } = await inquirer.prompt([
               {
-                name: "backendPackages",
-                type: "checkbox",
-                message: "Select npm packages to include in your project:",
+                name: 'backendPackages',
+                type: 'checkbox',
+                message: 'Select npm packages to include in your project:',
                 choices: _expressBackendPackages.packages.map(
-                  (p) => p.originName
+                  (p) => p.originName,
                 ),
                 loop: false,
               },
@@ -146,16 +165,16 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               addDockerBake: boolean;
             } = await inquirer.prompt([
               {
-                name: "addDocker",
-                type: "confirm",
+                name: 'addDocker',
+                type: 'confirm',
                 message:
-                  "Do you want us to add docker to your project? (optional)",
+                  'Do you want us to add docker to your project? (optional)',
                 default: false,
               },
               {
-                name: "addDockerBake",
-                type: "confirm",
-                message: "Do you want us to add docker bake too? (optional)",
+                name: 'addDockerBake',
+                type: 'confirm',
+                message: 'Do you want us to add docker bake too? (optional)',
                 default: false,
                 when: (a) => a.addDocker !== false,
               },
@@ -170,24 +189,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 } else {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 }
               } else {
@@ -198,7 +217,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_expressAddDockerQuestion.addDockerBake) {
@@ -211,17 +230,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_expressAddDockerQuestion.addDockerBake) {
@@ -240,24 +259,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 } else {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 }
               } else {
@@ -268,7 +287,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_expressAddDockerQuestion.addDockerBake) {
@@ -281,17 +300,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_expressAddDockerQuestion.addDockerBake) {
@@ -304,7 +323,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
               await _addGit(
                 _projectNameQuestion.projectName,
-                _backendFrameworkDesPath
+                _backendFrameworkDesPath,
               );
             } else if (!options.git && options.license) {
               if (!_expressAddDockerQuestion.addDocker) {
@@ -315,24 +334,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 } else {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 }
               } else {
@@ -343,7 +362,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_expressAddDockerQuestion.addDockerBake) {
@@ -356,17 +375,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_expressAddDockerQuestion.addDockerBake) {
@@ -379,7 +398,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
               await _addLicense(
                 _projectNameQuestion.projectName,
-                _backendFrameworkDesPath
+                _backendFrameworkDesPath,
               );
             } else {
               if (!_expressAddDockerQuestion.addDocker) {
@@ -390,24 +409,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 } else {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 }
               } else {
@@ -418,7 +437,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_expressAddDockerQuestion.addDockerBake) {
@@ -431,17 +450,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_expressAddDockerQuestion.addDockerBake) {
@@ -454,41 +473,41 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
               await _addGit(
                 _projectNameQuestion.projectName,
-                _backendFrameworkDesPath
+                _backendFrameworkDesPath,
               );
 
               await _addLicense(
                 _projectNameQuestion.projectName,
-                _backendFrameworkDesPath
+                _backendFrameworkDesPath,
               );
             }
 
             console.log(
               boxen(
                 `You can check the project on ${chalk.bold(
-                  _backendFrameworkDesPath
+                  _backendFrameworkDesPath,
                 )}`,
                 {
-                  title: "ⓘ Project Information ⓘ",
-                  titleAlignment: "center",
+                  title: 'ⓘ Project Information ⓘ',
+                  titleAlignment: 'center',
                   padding: 1,
                   margin: 1,
-                  borderColor: "blue",
-                }
-              )
+                  borderColor: 'blue',
+                },
+              ),
             );
             break;
-          case "Fastify":
+          case 'Fastify':
             // GENERATING FOR FASTIFY FRAMEWORK
             const _selectFastifyPackagesQuestion: {
               backendPackages: string[];
             } = await inquirer.prompt([
               {
-                name: "backendPackages",
-                type: "checkbox",
-                message: "Select npm packages to include in your project:",
+                name: 'backendPackages',
+                type: 'checkbox',
+                message: 'Select npm packages to include in your project:',
                 choices: _fastifyBackendPackages.packages.map(
-                  (p) => p.originName
+                  (p) => p.originName,
                 ),
                 loop: false,
               },
@@ -499,16 +518,16 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               addDockerBake: boolean;
             } = await inquirer.prompt([
               {
-                name: "addDocker",
-                type: "confirm",
+                name: 'addDocker',
+                type: 'confirm',
                 message:
-                  "Do you want us to add docker to your project? (optional)",
+                  'Do you want us to add docker to your project? (optional)',
                 default: false,
               },
               {
-                name: "addDockerBake",
-                type: "confirm",
-                message: "Do you want us to add docker bake too? (optional)",
+                name: 'addDockerBake',
+                type: 'confirm',
+                message: 'Do you want us to add docker bake too? (optional)',
                 default: false,
                 when: (a) => a.addDocker !== false,
               },
@@ -523,24 +542,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 } else {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 }
               } else {
@@ -551,7 +570,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_fastifyAddDockerQuestion.addDockerBake) {
@@ -564,17 +583,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_fastifyAddDockerQuestion.addDockerBake) {
@@ -593,24 +612,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 } else {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 }
               } else {
@@ -621,7 +640,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_fastifyAddDockerQuestion.addDockerBake) {
@@ -634,17 +653,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_fastifyAddDockerQuestion.addDockerBake) {
@@ -657,34 +676,34 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
               await _addGit(
                 _projectNameQuestion.projectName,
-                _backendFrameworkDesPath
+                _backendFrameworkDesPath,
               );
             }
 
             console.log(
               boxen(
                 `You can check the project on ${chalk.bold(
-                  _backendFrameworkDesPath
+                  _backendFrameworkDesPath,
                 )}`,
                 {
-                  title: "ⓘ Project Information ⓘ",
-                  titleAlignment: "center",
+                  title: 'ⓘ Project Information ⓘ',
+                  titleAlignment: 'center',
                   padding: 1,
                   margin: 1,
-                  borderColor: "blue",
-                }
-              )
+                  borderColor: 'blue',
+                },
+              ),
             );
             break;
-          case "NestJS":
+          case 'NestJS':
             // GENERATING FOR NESTJS FRAMEWORK
             const _selectNestPackagesQuestion: {
               backendPackages: string[];
             } = await inquirer.prompt([
               {
-                name: "backendPackages",
-                type: "checkbox",
-                message: "Select npm packages to include in your project:",
+                name: 'backendPackages',
+                type: 'checkbox',
+                message: 'Select npm packages to include in your project:',
                 choices: _nestBackendPackages.packages.map((p) => p.originName),
                 loop: false,
               },
@@ -695,16 +714,16 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               addDockerBake: boolean;
             } = await inquirer.prompt([
               {
-                name: "addDocker",
-                type: "confirm",
+                name: 'addDocker',
+                type: 'confirm',
                 message:
-                  "Do you want us to add docker to your project? (optional)",
+                  'Do you want us to add docker to your project? (optional)',
                 default: false,
               },
               {
-                name: "addDockerBake",
-                type: "confirm",
-                message: "Do you want us to add docker bake too? (optional)",
+                name: 'addDockerBake',
+                type: 'confirm',
+                message: 'Do you want us to add docker bake too? (optional)',
                 default: false,
                 when: (a) => a.addDocker !== false,
               },
@@ -717,24 +736,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 } else {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 }
               } else {
@@ -743,7 +762,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_nestAddDockerQuestion.addDockerBake) {
@@ -756,17 +775,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_nestAddDockerQuestion.addDockerBake) {
@@ -783,24 +802,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 } else {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
                 }
               } else {
@@ -809,7 +828,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_nestAddDockerQuestion.addDockerBake) {
@@ -822,17 +841,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseBackendFrameworkQuestion.backendFramework,
                     _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath
+                    _backendFrameworkDesPath,
                   );
 
                   if (!_nestAddDockerQuestion.addDockerBake) {
@@ -845,73 +864,86 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
               await _addGit(
                 _projectNameQuestion.projectName,
-                _backendFrameworkDesPath
+                _backendFrameworkDesPath,
               );
             }
 
             console.log(
               boxen(
                 `You can check the project on ${chalk.bold(
-                  _backendFrameworkDesPath
+                  _backendFrameworkDesPath,
                 )}`,
                 {
-                  title: "ⓘ Project Information ⓘ",
-                  titleAlignment: "center",
+                  title: 'ⓘ Project Information ⓘ',
+                  titleAlignment: 'center',
                   padding: 1,
                   margin: 1,
-                  borderColor: "blue",
-                }
-              )
+                  borderColor: 'blue',
+                },
+              ),
             );
             break;
         }
         break;
-      case "frontend":
+      case 'frontend':
         // STARTING TO GENERATE FRONTEND PROJECT.
         const _chooseFrontendFrameworkQuestion: {
-          frontendFramework: "Next.js" | "Vue.js" | "Svelte" | "Astro.js";
+          frontendFramework: 'Next.js' | 'Vue.js' | 'Svelte' | 'Astro.js';
         } = await inquirer.prompt([
           {
-            name: "frontendFramework",
-            type: "select",
-            message: "Which frontend framework do you want to use:",
+            name: 'frontendFramework',
+            type: 'select',
+            message: 'Which frontend framework do you want to use:',
             choices: _frontendFrameworks.frameworks.map((f) => f.name),
-            default: "Next.js",
+            default: 'Next.js',
           },
         ]);
 
         const _frontendFrameworkResource =
           _frontendFrameworks.frameworks.filter(
-            (f) => f.name === _chooseFrontendFrameworkQuestion.frontendFramework
+            (f) =>
+              f.name === _chooseFrontendFrameworkQuestion.frontendFramework,
           )[0];
+
+        if (!_frontendFrameworkResource) {
+          throw new UnidentifiedFrameworkError(
+            `${chalk.bold('Unidentified framework project')}: Frontend framework resource is not defined.`,
+          );
+        }
 
         const _frontendFrameworkFolder = _files.filter(
           (f) =>
             f.name === _frontendFrameworkResource.templateName &&
-            f.isDirectory()
+            f.isDirectory(),
         )[0];
+
+        if (!_frontendFrameworkFolder) {
+          throw new PathNotFoundError(
+            `${chalk.bold('Path not found')}: Frontend framework folder not found.`,
+          );
+        }
 
         const _frontendFrameworkSourcePath = path.join(
           _frontendFrameworkFolder.parentPath,
-          _frontendFrameworkFolder.name
+          _frontendFrameworkFolder.name,
         );
         const _frontendFrameworkDesPath = path.join(
           options.dir,
-          __renewProjectName(_projectNameQuestion.projectName)
+          __renewProjectName(_projectNameQuestion.projectName),
         );
         _unableOverwrite(_frontendFrameworkDesPath);
 
         switch (_chooseFrontendFrameworkQuestion.frontendFramework) {
-          case "Next.js":
+          case 'Next.js':
             const _selectNextPackagesQuestion: {
               frontendPackages: string[];
             } = await inquirer.prompt([
               {
-                name: "frontendPackages",
-                type: "checkbox",
-                message: "Select npm packages to include in your project:",
+                name: 'frontendPackages',
+                type: 'checkbox',
+                message: 'Select npm packages to include in your project:',
                 choices: _nextFrontendPackages.packages.map(
-                  (p) => p.originName
+                  (p) => p.originName,
                 ),
                 loop: false,
               },
@@ -922,16 +954,16 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               addDockerBake: boolean;
             } = await inquirer.prompt([
               {
-                name: "addDocker",
-                type: "confirm",
+                name: 'addDocker',
+                type: 'confirm',
                 message:
-                  "Do you want us to add docker to your project? (optional)",
+                  'Do you want us to add docker to your project? (optional)',
                 default: false,
               },
               {
-                name: "addDockerBake",
-                type: "confirm",
-                message: "Do you want us to add docker bake too? (optional)",
+                name: 'addDockerBake',
+                type: 'confirm',
+                message: 'Do you want us to add docker bake too? (optional)',
                 default: false,
                 when: (a) => a.addDocker !== false,
               },
@@ -944,24 +976,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 } else {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 }
               } else {
@@ -970,7 +1002,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_nextAddDockerQuestion.addDockerBake) {
@@ -983,17 +1015,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_nextAddDockerQuestion.addDockerBake) {
@@ -1010,24 +1042,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 } else {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 }
               } else {
@@ -1036,7 +1068,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_nextAddDockerQuestion.addDockerBake) {
@@ -1049,17 +1081,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_nextAddDockerQuestion.addDockerBake) {
@@ -1072,33 +1104,33 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
               await _addGit(
                 _projectNameQuestion.projectName,
-                _frontendFrameworkDesPath
+                _frontendFrameworkDesPath,
               );
             }
 
             console.log(
               boxen(
                 `You can check the project on ${chalk.bold(
-                  _frontendFrameworkDesPath
+                  _frontendFrameworkDesPath,
                 )}`,
                 {
-                  title: "ⓘ Project Information ⓘ",
-                  titleAlignment: "center",
+                  title: 'ⓘ Project Information ⓘ',
+                  titleAlignment: 'center',
                   padding: 1,
                   margin: 1,
-                  borderColor: "blue",
-                }
-              )
+                  borderColor: 'blue',
+                },
+              ),
             );
             break;
-          case "Vue.js":
+          case 'Vue.js':
             const _selectVuePackagesQuestion: {
               frontendPackages: string[];
             } = await inquirer.prompt([
               {
-                name: "frontendPackages",
-                type: "checkbox",
-                message: "Select npm packages to include in your project:",
+                name: 'frontendPackages',
+                type: 'checkbox',
+                message: 'Select npm packages to include in your project:',
                 choices: _vueFrontendPackages.packages.map((p) => p.originName),
                 loop: false,
               },
@@ -1109,16 +1141,16 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               addDockerBake: boolean;
             } = await inquirer.prompt([
               {
-                name: "addDocker",
-                type: "confirm",
+                name: 'addDocker',
+                type: 'confirm',
                 message:
-                  "Do you want us to add docker to your project? (optional)",
+                  'Do you want us to add docker to your project? (optional)',
                 default: false,
               },
               {
-                name: "addDockerBake",
-                type: "confirm",
-                message: "Do you want us to add docker bake too? (optional)",
+                name: 'addDockerBake',
+                type: 'confirm',
+                message: 'Do you want us to add docker bake too? (optional)',
                 default: false,
                 when: (a) => a.addDocker !== false,
               },
@@ -1131,24 +1163,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 } else {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 }
               } else {
@@ -1157,7 +1189,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_vueAddDockerQuestion.addDockerBake) {
@@ -1170,17 +1202,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_vueAddDockerQuestion.addDockerBake) {
@@ -1197,24 +1229,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 } else {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 }
               } else {
@@ -1223,7 +1255,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_vueAddDockerQuestion.addDockerBake) {
@@ -1236,17 +1268,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_vueAddDockerQuestion.addDockerBake) {
@@ -1259,35 +1291,35 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
               await _addGit(
                 _projectNameQuestion.projectName,
-                _frontendFrameworkDesPath
+                _frontendFrameworkDesPath,
               );
             }
 
             console.log(
               boxen(
                 `You can check the project on ${chalk.bold(
-                  _frontendFrameworkDesPath
+                  _frontendFrameworkDesPath,
                 )}`,
                 {
-                  title: "ⓘ Project Information ⓘ",
-                  titleAlignment: "center",
+                  title: 'ⓘ Project Information ⓘ',
+                  titleAlignment: 'center',
                   padding: 1,
                   margin: 1,
-                  borderColor: "blue",
-                }
-              )
+                  borderColor: 'blue',
+                },
+              ),
             );
             break;
-          case "Svelte":
+          case 'Svelte':
             const _selectSveltePackagesQuestion: {
               frontendPackages: string[];
             } = await inquirer.prompt([
               {
-                name: "frontendPackages",
-                type: "checkbox",
-                message: "Select npm packages to include in your project:",
+                name: 'frontendPackages',
+                type: 'checkbox',
+                message: 'Select npm packages to include in your project:',
                 choices: _svelteFrontendPackages.packages.map(
-                  (p) => p.originName
+                  (p) => p.originName,
                 ),
                 loop: false,
               },
@@ -1298,16 +1330,16 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               addDockerBake: boolean;
             } = await inquirer.prompt([
               {
-                name: "addDocker",
-                type: "confirm",
+                name: 'addDocker',
+                type: 'confirm',
                 message:
-                  "Do you want us to add docker to your project? (optional)",
+                  'Do you want us to add docker to your project? (optional)',
                 default: false,
               },
               {
-                name: "addDockerBake",
-                type: "confirm",
-                message: "Do you want us to add docker bake too? (optional)",
+                name: 'addDockerBake',
+                type: 'confirm',
+                message: 'Do you want us to add docker bake too? (optional)',
                 default: false,
                 when: (a) => a.addDocker !== false,
               },
@@ -1322,24 +1354,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 } else {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 }
               } else {
@@ -1350,7 +1382,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_svelteAddDockerQuestion.addDockerBake) {
@@ -1363,17 +1395,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_svelteAddDockerQuestion.addDockerBake) {
@@ -1392,24 +1424,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 } else {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 }
               } else {
@@ -1420,7 +1452,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_svelteAddDockerQuestion.addDockerBake) {
@@ -1433,17 +1465,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_svelteAddDockerQuestion.addDockerBake) {
@@ -1456,35 +1488,35 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
               await _addGit(
                 _projectNameQuestion.projectName,
-                _frontendFrameworkDesPath
+                _frontendFrameworkDesPath,
               );
             }
 
             console.log(
               boxen(
                 `You can check the project on ${chalk.bold(
-                  _frontendFrameworkDesPath
+                  _frontendFrameworkDesPath,
                 )}`,
                 {
-                  title: "ⓘ Project Information ⓘ",
-                  titleAlignment: "center",
+                  title: 'ⓘ Project Information ⓘ',
+                  titleAlignment: 'center',
                   padding: 1,
                   margin: 1,
-                  borderColor: "blue",
-                }
-              )
+                  borderColor: 'blue',
+                },
+              ),
             );
             break;
-          case "Astro.js":
+          case 'Astro.js':
             const _selectAstroPackagesQuestion: {
               frontendPackages: string[];
             } = await inquirer.prompt([
               {
-                name: "frontendPackages",
-                type: "checkbox",
-                message: "Select npm packages to include in your project:",
+                name: 'frontendPackages',
+                type: 'checkbox',
+                message: 'Select npm packages to include in your project:',
                 choices: _astroFrontendPackages.packages.map(
-                  (p) => p.originName
+                  (p) => p.originName,
                 ),
                 loop: false,
               },
@@ -1495,16 +1527,16 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               addDockerBake: boolean;
             } = await inquirer.prompt([
               {
-                name: "addDocker",
-                type: "confirm",
+                name: 'addDocker',
+                type: 'confirm',
                 message:
-                  "Do you want us to add docker to your project? (optional)",
+                  'Do you want us to add docker to your project? (optional)',
                 default: false,
               },
               {
-                name: "addDockerBake",
-                type: "confirm",
-                message: "Do you want us to add docker bake too? (optional)",
+                name: 'addDockerBake',
+                type: 'confirm',
+                message: 'Do you want us to add docker bake too? (optional)',
                 default: false,
                 when: (a) => a.addDocker !== false,
               },
@@ -1519,24 +1551,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 } else {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 }
               } else {
@@ -1547,7 +1579,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_astroAddDockerQuestion.addDockerBake) {
@@ -1560,17 +1592,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_astroAddDockerQuestion.addDockerBake) {
@@ -1589,24 +1621,24 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 } else {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
                 }
               } else {
@@ -1617,7 +1649,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_astroAddDockerQuestion.addDockerBake) {
@@ -1630,17 +1662,17 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
                     _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runInstallingPackages(
                     _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   await _runUpdatingPackages(
                     _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath
+                    _frontendFrameworkDesPath,
                   );
 
                   if (!_astroAddDockerQuestion.addDockerBake) {
@@ -1653,23 +1685,23 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
               await _addGit(
                 _projectNameQuestion.projectName,
-                _frontendFrameworkDesPath
+                _frontendFrameworkDesPath,
               );
             }
 
             console.log(
               boxen(
                 `You can check the project on ${chalk.bold(
-                  _frontendFrameworkDesPath
+                  _frontendFrameworkDesPath,
                 )}`,
                 {
-                  title: "ⓘ Project Information ⓘ",
-                  titleAlignment: "center",
+                  title: 'ⓘ Project Information ⓘ',
+                  titleAlignment: 'center',
                   padding: 1,
                   margin: 1,
-                  borderColor: "blue",
-                }
-              )
+                  borderColor: 'blue',
+                },
+              ),
             );
             break;
         }
@@ -1679,12 +1711,12 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
     const end = performance.now();
     spinner.succeed(`All done! ${chalk.bold((end - start).toFixed(3))} ms`);
   } catch (error: any | unknown) {
-    spinner.fail("⛔️ Failed to create project...\n");
+    spinner.fail('⛔️ Failed to create project...\n');
 
     let errorMessage =
       error instanceof Error
         ? error.message
-        : `${chalk.bold("Error")}: An unknown error occurred.`;
+        : `${chalk.bold('Error')}: An unknown error occurred.`;
 
     if (error instanceof PathNotFoundError) {
       errorMessage = error.message;
@@ -1698,20 +1730,20 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
       errorMessage = error.message;
     }
 
-    if (error.name === "ExitPromptError") {
+    if (error.name === 'ExitPromptError') {
       errorMessage = `${chalk.bold(
-        "Exit prompt error"
+        'Exit prompt error',
       )}: User forced close the prompt.`;
     }
 
     console.error(
       boxen(errorMessage, {
         title: `⛔️ ${error.name} ⛔️`,
-        titleAlignment: "center",
+        titleAlignment: 'center',
         padding: 1,
         margin: 1,
-        borderColor: "red",
-      })
+        borderColor: 'red',
+      }),
     );
   } finally {
     spinner.clear();
@@ -1722,28 +1754,28 @@ async function _generateBackendProject(
   projectName: string,
   framework: string,
   sourcePath: string,
-  desPath: string
+  desPath: string,
 ): Promise<void> {
   const spinner = ora({
-    spinner: "dots8",
-    color: "green",
+    spinner: 'dots8',
+    color: 'green',
     interval: 100,
   });
 
   spinner.start(
     `Allright ${chalk.bold(
-      __userrealname.split(" ")[0]
+      __userrealname.split(' ')[0],
     )}, We are start generating ${chalk.bold(projectName)} using ${chalk.bold(
-      framework
-    )} for you, please wait...`
+      framework,
+    )} for you, please wait...`,
   );
 
   await fse.copy(sourcePath, desPath);
 
   spinner.succeed(
     `${chalk.bold(projectName)} using ${chalk.bold(
-      framework
-    )} framework successfully created ✅`
+      framework,
+    )} framework successfully created ✅`,
   );
 }
 
@@ -1751,53 +1783,53 @@ async function _generateFrontendProject(
   projectName: string,
   framework: string,
   sourcePath: string,
-  desPath: string
+  desPath: string,
 ) {
   const spinner = ora({
-    spinner: "dots8",
-    color: "green",
+    spinner: 'dots8',
+    color: 'green',
     interval: 100,
   });
 
   spinner.start(
     `Allright ${chalk.bold(
-      __userrealname.split(" ")[0]
+      __userrealname.split(' ')[0],
     )}, We are start generating ${chalk.bold(projectName)} using ${chalk.bold(
-      framework
-    )} for you, please wait...`
+      framework,
+    )} for you, please wait...`,
   );
 
   await fse.copy(sourcePath, desPath);
 
   spinner.succeed(
     `${chalk.bold(projectName)} using ${chalk.bold(
-      framework
-    )} framework successfully created ✅`
+      framework,
+    )} framework successfully created ✅`,
   );
 }
 
 async function _runInstallingPackages(
   packages: string[],
-  desPath: string
+  desPath: string,
 ): Promise<void> {
   const spinner = ora({
-    spinner: "dots8",
-    color: "green",
+    spinner: 'dots8',
+    color: 'green',
     interval: 100,
   });
 
   spinner.start(
     `Allright ${chalk.bold(
-      __userrealname.split(" ")[0]
+      __userrealname.split(' ')[0],
     )}, We are start installing ${chalk.bold(
-      packages.join(", ")
-    )} packages for you 👾...`
+      packages.join(', '),
+    )} packages for you 👾...`,
   );
 
   for (const p of packages) {
     spinner.start(`Start installing ${chalk.bold(p)} package...`);
 
-    await execa("npm", ["install", "--save", p], {
+    await execa('npm', ['install', '--save', p], {
       cwd: desPath,
     });
 
@@ -1809,15 +1841,15 @@ async function _runInstallingPackages(
 
 async function _runUpdatingPackages(projectName: string, desPath: string) {
   const spinner = ora({
-    spinner: "dots8",
-    color: "green",
+    spinner: 'dots8',
+    color: 'green',
     interval: 100,
   });
 
   const _updatePackagesQuestion = await inquirer.prompt({
-    name: "updatePackages",
-    type: "confirm",
-    message: `Do you want us to run ${chalk.bold("npm update")}? (optional)`,
+    name: 'updatePackages',
+    type: 'confirm',
+    message: `Do you want us to run ${chalk.bold('npm update')}? (optional)`,
     default: false,
   });
 
@@ -1825,20 +1857,20 @@ async function _runUpdatingPackages(projectName: string, desPath: string) {
     spinner.warn(
       `${chalk.yellow(
         `It's okay ${chalk.bold(
-          __userrealname.split(" ")[0]
-        )}, you can update the packages later by yourself.`
-      )}`
+          __userrealname.split(' ')[0],
+        )}, you can update the packages later by yourself.`,
+      )}`,
     );
   } else {
     spinner.start(
       `Allright ${chalk.bold(
-        __userrealname.split(" ")[0]
+        __userrealname.split(' ')[0],
       )}, We are start updating your ${chalk.bold(
-        projectName
-      )} packages, please wait...`
+        projectName,
+      )} packages, please wait...`,
     );
 
-    await execa("npm", ["update"], {
+    await execa('npm', ['update'], {
       cwd: desPath,
     });
 
@@ -1848,98 +1880,98 @@ async function _runUpdatingPackages(projectName: string, desPath: string) {
 
 async function _addDocker(desPath: string): Promise<void> {
   const spinner = ora({
-    spinner: "dots8",
-    color: "green",
+    spinner: 'dots8',
+    color: 'green',
     interval: 100,
   });
 
-  spinner.start("Start adding docker compose file 🐳...");
+  spinner.start('Start adding docker compose file 🐳...');
 
   const _dockerResources = _getDockerResources();
 
   const _dockerComposePathBackend = _getDockerComposePath(
     _dockerResources,
-    desPath
+    desPath,
   );
 
   await fse.copy(
     _dockerComposePathBackend.sourcePath,
-    _dockerComposePathBackend.desPath
+    _dockerComposePathBackend.desPath,
   );
 
-  spinner.succeed("Adding docker compose file succeed ✅");
+  spinner.succeed('Adding docker compose file succeed ✅');
 
-  spinner.start("Start adding dockerfile 🐳...");
+  spinner.start('Start adding dockerfile 🐳...');
 
   const _dockerfilePath = _getDockerfilePath(
-    "npm.Dockerfile",
+    'npm.Dockerfile',
     _dockerResources,
-    desPath
+    desPath,
   );
 
   await fse.copy(_dockerfilePath.sourcePath, _dockerfilePath.desPath);
 
-  spinner.succeed("Adding dockerfile succeed ✅");
+  spinner.succeed('Adding dockerfile succeed ✅');
 }
 
 async function _addDockerWithBake(desPath: string): Promise<void> {
   const spinner = ora({
-    spinner: "dots8",
-    color: "green",
+    spinner: 'dots8',
+    color: 'green',
     interval: 100,
   });
 
-  spinner.start("Start adding docker compose file 🐳...");
+  spinner.start('Start adding docker compose file 🐳...');
 
   const _dockerResources = _getDockerResources();
 
   const _dockerComposePathBackend = _getDockerComposePath(
     _dockerResources,
-    desPath
+    desPath,
   );
 
   await fse.copy(
     _dockerComposePathBackend.sourcePath,
-    _dockerComposePathBackend.desPath
+    _dockerComposePathBackend.desPath,
   );
 
-  spinner.succeed("Adding docker compose file succeed ✅");
+  spinner.succeed('Adding docker compose file succeed ✅');
 
-  spinner.start("Start adding dockerfile 🐳...");
+  spinner.start('Start adding dockerfile 🐳...');
 
   const _dockerfilePath = _getDockerfilePath(
-    "npm.Dockerfile",
+    'npm.Dockerfile',
     _dockerResources,
-    desPath
+    desPath,
   );
 
   await fse.copy(_dockerfilePath.sourcePath, _dockerfilePath.desPath);
 
-  spinner.succeed("Adding dockerfile succeed ✅");
+  spinner.succeed('Adding dockerfile succeed ✅');
 
-  spinner.start("Start adding docker bake file 🍞...");
+  spinner.start('Start adding docker bake file 🍞...');
 
   const _dockerBakePathBackend = _getDockerBakePath(_dockerResources, desPath);
 
   await fse.copy(
     _dockerBakePathBackend.sourcePath,
-    _dockerBakePathBackend.desPath
+    _dockerBakePathBackend.desPath,
   );
 
-  spinner.succeed("Adding docker bake file succeed ✅");
+  spinner.succeed('Adding docker bake file succeed ✅');
 }
 
 async function _addGit(projectName: string, desPath: string): Promise<void> {
   const spinner = ora({
-    spinner: "dots8",
-    color: "green",
+    spinner: 'dots8',
+    color: 'green',
     interval: 100,
   });
 
   const _initiliazeGitQuestion = await inquirer.prompt({
-    name: "addGit",
-    type: "confirm",
-    message: `Do you want us to run ${chalk.bold("git init")}? (optional)`,
+    name: 'addGit',
+    type: 'confirm',
+    message: `Do you want us to run ${chalk.bold('git init')}? (optional)`,
     default: false,
   });
 
@@ -1947,41 +1979,41 @@ async function _addGit(projectName: string, desPath: string): Promise<void> {
     spinner.warn(
       `${chalk.yellow(
         `It's okay ${chalk.bold(
-          __userrealname.split(" ")[0]
-        )}, you can run ${chalk.bold("git init")} later by yourself.`
-      )}`
+          __userrealname.split(' ')[0],
+        )}, you can run ${chalk.bold('git init')} later by yourself.`,
+      )}`,
     );
   } else {
     spinner.start(
       `Allright ${chalk.bold(
-        __userrealname.split(" ")[0]
-      )}, We are start running ${chalk.bold("git init")} on ${chalk.bold(
-        projectName
-      )}, please wait...`
+        __userrealname.split(' ')[0],
+      )}, We are start running ${chalk.bold('git init')} on ${chalk.bold(
+        projectName,
+      )}, please wait...`,
     );
 
-    await execa("git", ["init"], {
+    await execa('git', ['init'], {
       cwd: desPath,
     });
 
     spinner.succeed(
-      `Running ${chalk.bold("git init")} on ${projectName} succeed ✅`
+      `Running ${chalk.bold('git init')} on ${projectName} succeed ✅`,
     );
   }
 }
 
 async function _addLicense(projectName: string, desPath: string) {
   const spinner = ora({
-    spinner: "dots8",
-    color: "green",
+    spinner: 'dots8',
+    color: 'green',
     interval: 100,
   });
 
   const _addLicenseQuestion = await inquirer.prompt({
-    name: "addGit",
-    type: "confirm",
+    name: 'addGit',
+    type: 'confirm',
     message: `Do you want us to add ${chalk.bold(
-      "LICENSE"
+      'LICENSE',
     )} file into your project? (optional)`,
     default: false,
   });
@@ -1990,52 +2022,52 @@ async function _addLicense(projectName: string, desPath: string) {
     spinner.warn(
       `${chalk.yellow(
         `It's okay ${chalk.bold(
-          __userrealname.split(" ")[0]
-        )}, you can add ${chalk.bold("LICENSE")} file manually.`
-      )}`
+          __userrealname.split(' ')[0],
+        )}, you can add ${chalk.bold('LICENSE')} file manually.`,
+      )}`,
     );
   } else {
     const _chooseLicenseQuestion: {
       license:
-        | "Apache 2.0 License"
-        | "BSD 2-Clause License"
-        | "BSD 3-Clause License"
-        | "GNU General Public License v3.0"
-        | "ISC License"
-        | "GNU Lesser General Public License v3.0"
-        | "MIT License"
-        | "Unlicense";
+        | 'Apache 2.0 License'
+        | 'BSD 2-Clause License'
+        | 'BSD 3-Clause License'
+        | 'GNU General Public License v3.0'
+        | 'ISC License'
+        | 'GNU Lesser General Public License v3.0'
+        | 'MIT License'
+        | 'Unlicense';
     } = await inquirer.prompt({
-      name: "license",
-      type: "select",
-      message: "Which license do you want to use:",
+      name: 'license',
+      type: 'select',
+      message: 'Which license do you want to use:',
       choices: _licenses.licenses.map((l) => l.name),
-      default: "MIT License",
+      default: 'MIT License',
     });
 
     spinner.start(
       `Start adding ${chalk.bold(
-        _chooseLicenseQuestion.license
-      )} file into ${chalk.bold(projectName)} 🧾...`
+        _chooseLicenseQuestion.license,
+      )} file into ${chalk.bold(projectName)} 🧾...`,
     );
 
     switch (_chooseLicenseQuestion.license) {
-      case "Apache 2.0 License":
+      case 'Apache 2.0 License':
         const _apacheLicense = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license
+          (l) => l.name === _chooseLicenseQuestion.license,
         ) as __LicenseProps;
 
         const _apacheLicenseSourcePath = path.join(
           _basePath,
-          _apacheLicense.path
+          _apacheLicense.path,
         );
 
         await fse.copy(_apacheLicenseSourcePath, desPath);
 
         break;
-      case "BSD 2-Clause License":
+      case 'BSD 2-Clause License':
         const _bsd2License = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license
+          (l) => l.name === _chooseLicenseQuestion.license,
         ) as __LicenseProps;
 
         const _bsd2LicenseSourcePath = path.join(_basePath, _bsd2License.path);
@@ -2043,9 +2075,9 @@ async function _addLicense(projectName: string, desPath: string) {
         await fse.copy(_bsd2LicenseSourcePath, desPath);
 
         break;
-      case "BSD 3-Clause License":
+      case 'BSD 3-Clause License':
         const _bsd3License = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license
+          (l) => l.name === _chooseLicenseQuestion.license,
         ) as __LicenseProps;
 
         const _bsd3LicenseSourcePath = path.join(_basePath, _bsd3License.path);
@@ -2053,9 +2085,9 @@ async function _addLicense(projectName: string, desPath: string) {
         await fse.copy(_bsd3LicenseSourcePath, desPath);
 
         break;
-      case "GNU General Public License v3.0":
+      case 'GNU General Public License v3.0':
         const _gpl3License = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license
+          (l) => l.name === _chooseLicenseQuestion.license,
         ) as __LicenseProps;
 
         const _gpl3LicenseSourcePath = path.join(_basePath, _gpl3License.path);
@@ -2063,22 +2095,22 @@ async function _addLicense(projectName: string, desPath: string) {
         await fse.copy(_gpl3LicenseSourcePath, desPath);
 
         break;
-      case "GNU Lesser General Public License v3.0":
+      case 'GNU Lesser General Public License v3.0':
         const _lgpl3License = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license
+          (l) => l.name === _chooseLicenseQuestion.license,
         ) as __LicenseProps;
 
         const _lgpl3LicenseSourcePath = path.join(
           _basePath,
-          _lgpl3License.path
+          _lgpl3License.path,
         );
 
         await fse.copy(_lgpl3LicenseSourcePath, desPath);
 
         break;
-      case "ISC License":
+      case 'ISC License':
         const _iscLicense = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license
+          (l) => l.name === _chooseLicenseQuestion.license,
         ) as __LicenseProps;
 
         const _iscLicenseSourcePath = path.join(_basePath, _iscLicense.path);
@@ -2086,9 +2118,9 @@ async function _addLicense(projectName: string, desPath: string) {
         await fse.copy(_iscLicenseSourcePath, desPath);
 
         break;
-      case "MIT License":
+      case 'MIT License':
         const _mitLicense = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license
+          (l) => l.name === _chooseLicenseQuestion.license,
         ) as __LicenseProps;
 
         const _mitLicenseSourcePath = path.join(_basePath, _mitLicense.path);
@@ -2096,14 +2128,14 @@ async function _addLicense(projectName: string, desPath: string) {
         await fse.copy(_mitLicenseSourcePath, desPath);
 
         break;
-      case "Unlicense":
+      case 'Unlicense':
         const unlicenseLicense = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license
+          (l) => l.name === _chooseLicenseQuestion.license,
         ) as __LicenseProps;
 
         const unlicenseLicenseSourcePath = path.join(
           _basePath,
-          unlicenseLicense.path
+          unlicenseLicense.path,
         );
 
         await fse.copy(unlicenseLicenseSourcePath, desPath);
@@ -2113,14 +2145,14 @@ async function _addLicense(projectName: string, desPath: string) {
 
     spinner.succeed(
       `Adding ${chalk.bold(
-        _chooseLicenseQuestion.license
-      )} file on ${chalk.bold(projectName)} succeed ✅`
+        _chooseLicenseQuestion.license,
+      )} file on ${chalk.bold(projectName)} succeed ✅`,
     );
   }
 }
 
 function _getLicenseResources() {
-  const _licenseTemplatesPath = path.join(_basePath, "src/templates/licenses");
+  const _licenseTemplatesPath = path.join(_basePath, 'src/templates/licenses');
   _pathNotFound(_licenseTemplatesPath);
 
   const _licenseSources = fs.readdirSync(_licenseTemplatesPath, {
@@ -2131,7 +2163,7 @@ function _getLicenseResources() {
 }
 
 function _getDockerResources() {
-  const _dockerTemplatesPath = path.join(_basePath, "src/templates/docker");
+  const _dockerTemplatesPath = path.join(_basePath, 'src/templates/docker');
   _pathNotFound(_dockerTemplatesPath);
 
   const _dockerSources = fs.readdirSync(_dockerTemplatesPath, {
@@ -2143,15 +2175,21 @@ function _getDockerResources() {
 
 function _getDockerComposePath(
   templates: fs.Dirent<string>[],
-  desPath: string
+  desPath: string,
 ): { sourcePath: string; desPath: string } {
   const _dockerComposeFile = templates.filter(
-    (f) => f.name === "compose.yml"
+    (f) => f.name === 'compose.yml',
   )[0];
+
+  if (!_dockerComposeFile) {
+    throw new UnidentifiedTemplateError(
+      `${chalk.bold('Unidentified template')}: Docker compose file template is not defined.`,
+    );
+  }
 
   const _dockerComposeSourcePath = path.join(
     _dockerComposeFile.parentPath,
-    _dockerComposeFile.name
+    _dockerComposeFile.name,
   );
   const _dockerComposeDesPath = path.join(desPath, _dockerComposeFile.name);
 
@@ -2163,15 +2201,21 @@ function _getDockerComposePath(
 
 function _getDockerBakePath(
   templates: fs.Dirent<string>[],
-  desPath: string
+  desPath: string,
 ): { sourcePath: string; desPath: string } {
   const _dockerBakeFile = templates.filter(
-    (f) => f.name === "docker-bake.hcl"
+    (f) => f.name === 'docker-bake.hcl',
   )[0];
+
+  if (!_dockerBakeFile) {
+    throw new UnidentifiedTemplateError(
+      `${chalk.bold('Unidentified template')}: Docker bake file template is not defined.`,
+    );
+  }
 
   const _dockerBakeSourcePath = path.join(
     _dockerBakeFile.parentPath,
-    _dockerBakeFile.name
+    _dockerBakeFile.name,
   );
   const _dockerBakeDesPath = path.join(desPath, _dockerBakeFile.name);
 
@@ -2184,13 +2228,19 @@ function _getDockerBakePath(
 function _getDockerfilePath(
   filename: string,
   dockerfiles: fs.Dirent<string>[],
-  desPath: string
+  desPath: string,
 ): { sourcePath: string; desPath: string } {
   const _dockerfile = dockerfiles.filter((f) => f.name === filename)[0];
 
+  if (!_dockerfile) {
+    throw new UnidentifiedTemplateError(
+      `${chalk.bold('Unidentified template')}: Dockerfile template is not defined.`,
+    );
+  }
+
   const _dockerfileSourcePath = path.join(
     _dockerfile.parentPath,
-    _dockerfile.name
+    _dockerfile.name,
   );
 
   const _dockerfileDesPath = path.join(desPath, _dockerfile.name);
