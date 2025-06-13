@@ -5,27 +5,37 @@
   "_version": "22.16.0",
 
   "compilerOptions": {
-    "lib": ["ES2022"],
-    "module": "nodenext",
-    "target": "es2022",
-
-    "strict": true,
+    /* Base Options: */
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "nodenext",
+    "target": "es2022",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+
+    /* Strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+
+    /* If transpiling with TypeScript: */
+    "module": "NodeNext",
     "outDir": "./dist",
     "rootDir": "./src",
+    "sourceMap": true,
 
-    "allowJs": true,
+    /* Other options */
+    "lib": ["ES2022"],
+    "moduleResolution": "nodenext",
+    "forceConsistentCasingInFileNames": true,
     "skipDefaultLibCheck": true,
     "noImplicitThis": true,
     "strictPropertyInitialization": true,
     "noEmit": false,
     "baseUrl": ".",
     "types": ["jest", "node"],
-    "sourceMap": true,
-    "isolatedModules": true,
     "paths": {
       "@/*": ["./src/*"]
     }
