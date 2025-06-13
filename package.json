@@ -21,7 +21,10 @@
     "template"
   ],
   "homepage": "https://github.com/Kolong-Meja/allin-cli#readme",
-  "repository": "https://github.com/Kolong-Meja/allin-cli",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kolong-Meja/allin-cli.git"
+  },
   "license": "GPL-3.0-only",
   "author": "Faisal Ramadhan",
   "preferGlobal": true,
