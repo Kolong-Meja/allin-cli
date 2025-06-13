@@ -76,7 +76,14 @@ jobs:
       - name: Fix package.json
         run: npm pkg fix
 
+      - name: Configure npm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.ALLIN_CLI_TOKEN }}
+
       - name: Publish package
         run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.ALLIN_CLI_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.ALLIN_CLI_TOKEN }}

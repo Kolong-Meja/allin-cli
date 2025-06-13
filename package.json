@@ -1,5 +1,5 @@
 {
-  "name": "@kolong-meja/allin-cli",
+  "name": "@Kolong-Meja/allin-cli",
   "version": "1.0.0",
   "description": "A modern full-stack CLI tool based on Typescript designed to accelerate your app development process — setup your entire stack in one seamless command.",
   "exports": "./dist/index.js",
