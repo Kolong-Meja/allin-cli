@@ -1,17 +1,31 @@
 # Allin CLI
 
-**A modern full-stack CLI tool based on TypeScript designed to accelerate your app development process — setup your entire stack in one seamless command.**
+A modern full-stack CLI tool based on TypeScript designed to accelerate your app development process — setup your entire stack in one seamless command.
+
+### **Available on**: 
+
+![OS](https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=apple&logoColor=white) ![OS](  https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![OS](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+
+### **Included Frameworks**:
+- **Backend**:
+
+![FRAMEWORK](https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=white) ![FRAMEWORK](https://img.shields.io/badge/fastify-202020?style=for-the-badge&logo=fastify&logoColor=white) ![FRAMEWORK](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+
+- **Frontend**:
+
+![FRAMEWORK](https://img.shields.io/badge/next%20js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white) ![FRAMEWORK](https://img.shields.io/badge/Vue%20js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D) ![FRAMEWORK](https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00) ![FRAMEWORK](https://img.shields.io/badge/Astro-0C1222?style=for-the-badge&logo=astro&logoColor=FDFDFE)
+
 
 ## Table of Contents
 
-- [Prerequisites](https://github.com/Kolong-Meja/allin-cli?tab=readme-ov-file#prerequisites)
-- [Installation](https://github.com/Kolong-Meja/allin-cli?tab=readme-ov-file#installation)
-- [Usage](https://github.com/Kolong-Meja/allin-cli?tab=readme-ov-file#usage)
-- [Commands](https://github.com/Kolong-Meja/allin-cli?tab=readme-ov-file#commands)
-- [Options](https://github.com/Kolong-Meja/allin-cli?tab=readme-ov-file#options)
-- [Examples](https://github.com/Kolong-Meja/allin-cli?tab=readme-ov-file#examples)
-- [Creator & Collaboration](https://github.com/Kolong-Meja/allin-cli?tab=readme-ov-file#creator--collaboration)
-- [License](https://github.com/Kolong-Meja/allin-cli?tab=readme-ov-file#license)
+- [Prerequisites](https://github.com/Kolong-Meja/allin-cli#prerequisites)
+- [Installation](https://github.com/Kolong-Meja/allin-cli#installation)
+- [Usage](https://github.com/Kolong-Meja/allin-cli#usage)
+- [Commands](https://github.com/Kolong-Meja/allin-cli#commands)
+- [Options](https://github.com/Kolong-Meja/allin-cli#options)
+- [Examples](https://github.com/Kolong-Meja/allin-cli#examples)
+- [Creator & Collaboration](https://github.com/Kolong-Meja/allin-cli#creator--collaboration)
+- [License](https://github.com/Kolong-Meja/allin-cli#license)
 
 ## Prerequisites
 
