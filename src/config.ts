@@ -20,7 +20,7 @@ dotenv.config({ path: path.join(_basePath, ".env") });
 export const _appName = process.env.APP_NAME ? process.env.APP_NAME : "Allin";
 export const _appDesc = process.env.APP_DESC
   ? process.env.APP_DESC
-  : "A modern full-stack CLI tool designed to accelerate your app development process — setup your entire stack in one seamless command.";
+  : "A modern full-stack CLI tool based on Typescript designed to accelerate your app development process — setup your entire stack in one seamless command.";
 export const _appCreator = process.env.APP_CREATOR
   ? process.env.APP_CREATOR
   : "Faisal Ramadhan";
