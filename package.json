@@ -12,7 +12,7 @@
     "build": "npx tsc && tsc-alias",
     "prepare": "npm run build",
     "prepublishOnly": "npm test",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [
     "cli",
