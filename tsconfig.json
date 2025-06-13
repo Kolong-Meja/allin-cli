@@ -1,27 +1,36 @@
 {
+  "extends": "@tsconfig/node22/tsconfig.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Node 22",
+  "_version": "22.16.0",
+
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
+    "lib": ["ES2022"],
+    "module": "nodenext",
+    "target": "es2022",
+
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "moduleResolution": "nodenext",
-    "lib": ["ESNext"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+
     "allowJs": true,
     "skipDefaultLibCheck": true,
     "noImplicitThis": true,
     "strictPropertyInitialization": true,
     "noEmit": false,
-    "rootDir": "src",
-    "outDir": "dist",
     "baseUrl": ".",
     "types": ["jest", "node"],
     "sourceMap": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
     "paths": {
       "@/*": ["./src/*"]
     }
   },
+
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "src/templates/**"]
 }
