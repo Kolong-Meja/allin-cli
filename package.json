@@ -1,6 +1,6 @@
 {
   "name": "@faisalrmdhn08/allin-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A modern full-stack CLI tool based on Typescript designed to accelerate your app development process — setup your entire stack in one seamless command.",
   "exports": {
     "./package.json": "./package.json",
@@ -30,6 +30,11 @@
     "type": "git",
     "url": "git+https://github.com/Kolong-Meja/allin-cli.git"
   },
+  "files": [
+    "dist",
+    "bin",
+    "templates"
+  ],
   "keywords": [
     "cli",
     "npmtool",
@@ -52,10 +57,6 @@
     "node": ">=22",
     "npm": ">=10"
   },
-  "files": [
-    "dist",
-    "bin"
-  ],
   "type": "module",
   "types": "./dist/index.d.ts",
   "devDependencies": {

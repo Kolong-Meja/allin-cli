@@ -1,0 +1,51 @@
+# Please visit https://docs.docker.com/compose/gettingstarted/ to gain more information about docker compose.
+
+name: "your-application-name" # Change this same as your application name.
+
+services:
+  ${APP_NAME}:
+    image: "${APP_IMAGE}"
+    container_name: "${APP_NAME}"
+    working_dir: "${WORKDIR}"
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    env_file:
+      - .env # load env vars tambahan jika perlu
+    environment:
+      - NODE_ENV=production # contoh env spesifik container
+      - PORT=${APP_PORT}
+    volumes:
+      - ./:${WORKDIR}:ro # mount kode (read-only) di dev
+      # - logs:/var/log/${APP_NAME}  # contoh named volume untuk logs
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-net
+    restart: unless-stopped # kebijakan restart otomatis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  db:
+    image: postgres:latest
+    container_name: "${APP_NAME}-db"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${APP_NAME}_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-net
+
+networks:
+  your-app-networks:
+    driver: bridge

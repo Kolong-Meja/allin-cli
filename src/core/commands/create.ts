@@ -88,7 +88,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
     const _dirPath = path.join(
       _basePath,
-      'src/templates',
+      'templates',
       _chooseProjectTypeQuestion.projectType.toLowerCase(),
     );
     _pathNotFound(_dirPath);
@@ -2152,7 +2152,7 @@ async function _addLicense(projectName: string, desPath: string) {
 }
 
 function _getLicenseResources() {
-  const _licenseTemplatesPath = path.join(_basePath, 'src/templates/licenses');
+  const _licenseTemplatesPath = path.join(_basePath, 'templates/licenses');
   _pathNotFound(_licenseTemplatesPath);
 
   const _licenseSources = fs.readdirSync(_licenseTemplatesPath, {
@@ -2163,7 +2163,7 @@ function _getLicenseResources() {
 }
 
 function _getDockerResources() {
-  const _dockerTemplatesPath = path.join(_basePath, 'src/templates/docker');
+  const _dockerTemplatesPath = path.join(_basePath, 'templates/docker');
   _pathNotFound(_dockerTemplatesPath);
 
   const _dockerSources = fs.readdirSync(_dockerTemplatesPath, {

@@ -38,9 +38,9 @@
     "types": ["jest", "node"],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
   },
 
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "src/templates/**"]
+  "exclude": ["node_modules"]
 }
