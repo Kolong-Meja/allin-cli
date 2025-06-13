@@ -41,7 +41,10 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
-templates/
+
+# Ignore all Git-related files in templates
+**/.git
+**/.gitignore
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
