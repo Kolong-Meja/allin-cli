@@ -9,6 +9,7 @@ import {
   _appGithubLink,
   _appLicense,
   _appName,
+  _appNpmLink,
   _appVersion,
   _os,
 } from '../config.js';
@@ -22,15 +23,14 @@ export const _printAscii = (): void => {
 
   const _header = `${_ascii}\n${_desc}\n`;
 
-  const _version = `${_allinGradient('Allin CLI Tool')}: v${_appVersion}`;
-  const _creator = `${_allinGradient('Allin Creator')}: ${_appCreator}`;
-  const _license = `${_allinGradient('Allin License')}: ${_appLicense}`;
-  const _githubLink = `${_allinGradient(
-    'Allin Github Link',
-  )}: ${_appGithubLink}`;
+  const _version = `${_allinGradient('Version')}: v${_appVersion}`;
+  const _creator = `${_allinGradient('Creator')}: ${_appCreator}`;
+  const _license = `${_allinGradient('License')}: ${_appLicense}`;
+  const _githubLink = `${_allinGradient('Github Link')}: ${_appGithubLink}`;
+  const _npmLink = `${_allinGradient('NPM Link')}: ${_appNpmLink}`;
 
   // METADATA.
-  const __data = [[_version], [_creator], [_license], [_githubLink]];
+  const __data = [[_version], [_creator], [_license], [_githubLink], [_npmLink]];
 
   const __nodeVersion = `${_allinGradient('Node Version')}: ${__nodeJsVersion}`;
   const __currentOs = `${_allinGradient('Operating System')}: ${_os}`;
