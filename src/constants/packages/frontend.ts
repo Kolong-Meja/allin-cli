@@ -1,4 +1,4 @@
-import type { __FrontendPackagesProps } from '@/types/default.js';
+import type { __FrontendPackagesProps } from '@/types/index.js';
 
 export const _nextFrontendPackages: __FrontendPackagesProps = {
   packages: [

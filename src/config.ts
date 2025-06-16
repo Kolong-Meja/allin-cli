@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import os from 'os';
 import { execa } from 'execa';
-import fs from 'fs';
 
 export const _program = new Command();
 
@@ -18,10 +17,6 @@ export const _basePath = path.resolve(__dirname, '..');
 
 dotenv.config({ path: path.join(_basePath, '.env') });
 
-const _packageJsonContent = fs.readFileSync('./package.json', 'utf8');
-const _packageInfo = JSON.parse(_packageJsonContent);
-const _version: string = _packageInfo.version;
-
 export const _appName = process.env.APP_NAME ? process.env.APP_NAME : 'Allin';
 export const _appDesc = process.env.APP_DESC
   ? process.env.APP_DESC
@@ -31,7 +26,7 @@ export const _appCreator = process.env.APP_CREATOR
   : 'Faisal Ramadhan';
 export const _appVersion = process.env.APP_VERSION
   ? process.env.APP_VERSION
-  : _version;
+  : "1.0.4";
 export const _appLicense = process.env.APP_LICENSE
   ? process.env.APP_LICENSE
   : 'GNU General Public License version 3 (GPLv3)';

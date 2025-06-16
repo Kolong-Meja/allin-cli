@@ -1,4 +1,4 @@
-import type { __BackendPackagesProps } from '@/types/default.js';
+import type { __BackendPackagesProps } from '@/types/index.js';
 
 export const _expressBackendPackages: __BackendPackagesProps = {
   packages: [

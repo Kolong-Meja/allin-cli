@@ -6,7 +6,7 @@ import {
   UnableOverwriteError,
   UnidentifiedFrameworkError,
   UnidentifiedTemplateError,
-} from './custom.js';
+} from './error.js';
 import chalk from 'chalk';
 
 export function _pathNotFound(path: string): void {

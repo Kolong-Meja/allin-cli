@@ -3,7 +3,7 @@ import type {
   __DefaultFrameworkProps,
   __DefaultLicenseProps,
   __FrontendPackagesProps,
-} from '../types/default.js';
+} from '@/types/index.js';
 
 export const _projectTypes: string[] = ['backend', 'frontend'];
 

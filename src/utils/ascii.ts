@@ -1,6 +1,6 @@
 import figlet from 'figlet';
 import gradient from 'gradient-string';
-import type { __PrintAsciiProps } from '@/types/default.js';
+import type { __PrintAsciiProps } from '@/types/index.js';
 import { getBorderCharacters, table } from 'table';
 import {
   __nodeJsVersion,
@@ -30,7 +30,13 @@ export const _printAscii = (): void => {
   const _npmLink = `${_allinGradient('NPM Link')}: ${_appNpmLink}`;
 
   // METADATA.
-  const __data = [[_version], [_creator], [_license], [_githubLink], [_npmLink]];
+  const __data = [
+    [_version],
+    [_creator],
+    [_license],
+    [_githubLink],
+    [_npmLink],
+  ];
 
   const __nodeVersion = `${_allinGradient('Node Version')}: ${__nodeJsVersion}`;
   const __currentOs = `${_allinGradient('Operating System')}: ${_os}`;

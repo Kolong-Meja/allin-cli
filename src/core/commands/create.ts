@@ -1,14 +1,14 @@
 import type {
   __LicenseProps,
   __ProjectResourcePathProps,
-} from '@/types/default.js';
+} from '@/types/index.js';
 import {
   HarassmentWordsDetected,
   PathNotFoundError,
   UnableOverwriteError,
   UnidentifiedFrameworkError,
   UnidentifiedTemplateError,
-} from '@/exceptions/custom.js';
+} from '@/exceptions/error.js';
 import {
   _harassmentWordsDetected,
   _pathNotFound,
@@ -2295,7 +2295,9 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
             if (!options.git && !options.license) {
               if (!_astroAddDockerQuestion.addDocker) {
-                if (_selectAstroPackagesQuestion.frontendPackages.length === 0) {
+                if (
+                  _selectAstroPackagesQuestion.frontendPackages.length === 0
+                ) {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
@@ -2321,7 +2323,9 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                   );
                 }
               } else {
-                if (_selectAstroPackagesQuestion.frontendPackages.length === 0) {
+                if (
+                  _selectAstroPackagesQuestion.frontendPackages.length === 0
+                ) {
                   await _generateFrontendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
@@ -2361,7 +2365,9 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               }
             } else if (options.git && !options.license) {
               if (!_astroAddDockerQuestion.addDocker) {
-                if (_selectAstroPackagesQuestion.frontendPackages.length === 0) {
+                if (
+                  _selectAstroPackagesQuestion.frontendPackages.length === 0
+                ) {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
@@ -2387,7 +2393,9 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                   );
                 }
               } else {
-                if (_selectAstroPackagesQuestion.frontendPackages.length === 0) {
+                if (
+                  _selectAstroPackagesQuestion.frontendPackages.length === 0
+                ) {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
@@ -2432,7 +2440,9 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               );
             } else if (!options.git && options.license) {
               if (!_astroAddDockerQuestion.addDocker) {
-                if (_selectAstroPackagesQuestion.frontendPackages.length === 0) {
+                if (
+                  _selectAstroPackagesQuestion.frontendPackages.length === 0
+                ) {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
@@ -2458,7 +2468,9 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                   );
                 }
               } else {
-                if (_selectAstroPackagesQuestion.frontendPackages.length === 0) {
+                if (
+                  _selectAstroPackagesQuestion.frontendPackages.length === 0
+                ) {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
@@ -2503,7 +2515,9 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               );
             } else {
               if (!_astroAddDockerQuestion.addDocker) {
-                if (_selectAstroPackagesQuestion.frontendPackages.length === 0) {
+                if (
+                  _selectAstroPackagesQuestion.frontendPackages.length === 0
+                ) {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
@@ -2529,7 +2543,9 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
                   );
                 }
               } else {
-                if (_selectAstroPackagesQuestion.frontendPackages.length === 0) {
+                if (
+                  _selectAstroPackagesQuestion.frontendPackages.length === 0
+                ) {
                   await _generateBackendProject(
                     _projectNameQuestion.projectName,
                     _chooseFrontendFrameworkQuestion.frontendFramework,
