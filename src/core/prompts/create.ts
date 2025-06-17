@@ -3,7 +3,7 @@ import {
   _frontendFrameworks,
   _projectTypes,
 } from '@/constants/index.js';
-import type { __QuestionPrompsProps } from '@/types/default.js';
+import type { __QuestionPrompsProps } from '@/types/index.js';
 import { __renewStringsIntoTitleCase } from '@/utils/string.js';
 
 import type { UnnamedDistinctQuestion } from 'node_modules/inquirer/dist/esm/types.js';

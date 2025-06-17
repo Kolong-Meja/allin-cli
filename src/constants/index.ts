@@ -3,7 +3,7 @@ import type {
   __DefaultFrameworkProps,
   __DefaultLicenseProps,
   __FrontendPackagesProps,
-} from '../types/default.js';
+} from '@/types/index.js';
 
 export const _projectTypes: string[] = ['backend', 'frontend'];
 
@@ -36,25 +36,31 @@ export const _frontendFrameworks: __DefaultFrameworkProps = {
       name: 'Next.js',
       templateName: 'next-project',
       language: 'ts',
-      path: 'templates/backend/next-project',
+      path: 'templates/frontend/next-project',
     },
     {
       name: 'Vue.js',
       templateName: 'vue-project',
       language: 'ts',
-      path: 'templates/backend/vue-project',
+      path: 'templates/frontend/vue-project',
     },
     {
       name: 'Svelte',
       templateName: 'svelte-project',
-      language: 'js',
-      path: 'templates/backend/svelte-project',
+      language: 'ts',
+      path: 'templates/frontend/svelte-project',
     },
     {
       name: 'Astro.js',
       templateName: 'astro-project',
-      language: 'js',
-      path: 'templates/backend/astro-project',
+      language: 'ts',
+      path: 'templates/frontend/astro-project',
+    },
+    {
+      name: 'SolidJS',
+      templateName: 'solid-project',
+      language: 'ts',
+      path: 'templates/frontend/solid-project',
     },
   ],
 };
