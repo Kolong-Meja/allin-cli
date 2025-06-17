@@ -44,22 +44,22 @@ jest.unstable_mockModule('../../src/core/commands/create.js', () => ({
   _newCreateCommand: mockNewCreateCommand,
 }));
 
-const { runner } = await import('../../src/core/runner.js');
+const { _generateProgram } = await import('../../src/core/program.js');
 
-describe('runner()', () => {
+describe('_generateProgram()', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should register name and description on the program', async () => {
-    await runner();
+    await _generateProgram();
 
     expect(mockProgram.name).toHaveBeenCalledWith('allin');
     expect(mockProgram.description).toHaveBeenCalled();
   });
 
   it('registers the version option and invokes _printAscii + exit', async () => {
-    await runner();
+    await _generateProgram();
 
     const versionCall = mockProgram.option.mock.calls.find(
       ([flag]) => flag === '-v, --version',
@@ -85,7 +85,7 @@ describe('runner()', () => {
   });
 
   it('sets up the create subcommand with correct options and action', async () => {
-    await runner();
+    await _generateProgram();
 
     expect(mockProgram.command).toHaveBeenCalledWith('create');
     expect(mockProgram.option).toHaveBeenCalledWith(
@@ -126,7 +126,7 @@ describe('runner()', () => {
   });
 
   it('configures global helpOption, helpCommand and invokes parse()', async () => {
-    await runner();
+    await _generateProgram();
     expect(mockProgram.helpOption).toHaveBeenCalledWith(
       '-h, --help',
       expect.stringContaining('Action to get more information'),

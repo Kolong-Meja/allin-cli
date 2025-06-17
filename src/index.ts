@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { runner } from './core/runner.js';
+import { _generateProgram } from './core/program.js';
 
 function main(): void {
-  runner();
+  _generateProgram();
 }
 
 main();

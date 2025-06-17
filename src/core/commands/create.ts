@@ -1,4 +1,5 @@
 import type {
+  __FrameworkProps,
   __LicenseProps,
   __ProjectResourcePathProps,
 } from '@/types/index.js';
@@ -49,6 +50,7 @@ import {
   _svelteFrontendPackages,
   _vueFrontendPackages,
 } from '@/constants/packages/frontend.js';
+import { _typescriptDependencies } from '@/constants/packages/typescript.js';
 
 export async function _newCreateCommand(options: OptionValues): Promise<void> {
   const spinner = ora({
@@ -146,6 +148,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
 
         switch (_chooseBackendFrameworkQuestion.backendFramework) {
           case 'Express.js':
+            // GENERATING FOR EXPRESS.JS FRAMEWORK.
             const _selectExpressPackagesQuestion: {
               backendPackages: string[];
             } = await inquirer.prompt([
@@ -180,303 +183,51 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               },
             ]);
 
-            if (!options.git && !options.license) {
-              if (!_expressAddDockerQuestion.addDocker) {
-                if (
-                  _selectExpressPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
+            await _generateBackendProject(
+              _projectNameQuestion.projectName,
+              _chooseBackendFrameworkQuestion.backendFramework,
+              _backendFrameworkSourcePath,
+              _backendFrameworkDesPath,
+            );
 
-                  await _runInstallingPackages(
-                    _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectExpressPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_expressAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_expressAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-            } else if (options.git && !options.license) {
-              if (!_expressAddDockerQuestion.addDocker) {
-                if (
-                  _selectExpressPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectExpressPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_expressAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_expressAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addGit(
-                _projectNameQuestion.projectName,
+            if (!_expressAddDockerQuestion.addDocker) {
+              await _runInstallAndUpdatePackages(
+                _selectExpressPackagesQuestion.backendPackages,
                 _backendFrameworkDesPath,
-              );
-            } else if (!options.git && options.license) {
-              if (!_expressAddDockerQuestion.addDocker) {
-                if (
-                  _selectExpressPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectExpressPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_expressAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_expressAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addLicense(
                 _projectNameQuestion.projectName,
-                _backendFrameworkDesPath,
               );
             } else {
-              if (!_expressAddDockerQuestion.addDocker) {
-                if (
-                  _selectExpressPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
+              await _runInstallAndUpdatePackages(
+                _selectExpressPackagesQuestion.backendPackages,
+                _backendFrameworkDesPath,
+                _projectNameQuestion.projectName,
+              );
 
-                  await _runInstallingPackages(
-                    _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
+              await _runSetupDocker(
+                _expressAddDockerQuestion.addDocker,
+                _expressAddDockerQuestion.addDockerBake,
+                _backendFrameworkDesPath,
+              );
+            }
 
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectExpressPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_expressAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectExpressPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_expressAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-
+            if (options.git) {
               await _addGit(
                 _projectNameQuestion.projectName,
                 _backendFrameworkDesPath,
               );
+            }
 
+            if (options.license) {
               await _addLicense(
+                _projectNameQuestion.projectName,
+                _backendFrameworkDesPath,
+              );
+            }
+
+            if (options.ts) {
+              await _addTypescript(
+                _chooseProjectTypeQuestion.projectType.toLowerCase(),
+                _chooseBackendFrameworkQuestion.backendFramework,
                 _projectNameQuestion.projectName,
                 _backendFrameworkDesPath,
               );
@@ -533,303 +284,51 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               },
             ]);
 
-            if (!options.git && !options.license) {
-              if (!_fastifyAddDockerQuestion.addDocker) {
-                if (
-                  _selectFastifyPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
+            await _generateBackendProject(
+              _projectNameQuestion.projectName,
+              _chooseBackendFrameworkQuestion.backendFramework,
+              _backendFrameworkSourcePath,
+              _backendFrameworkDesPath,
+            );
 
-                  await _runInstallingPackages(
-                    _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectFastifyPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_fastifyAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_fastifyAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-            } else if (options.git && !options.license) {
-              if (!_fastifyAddDockerQuestion.addDocker) {
-                if (
-                  _selectFastifyPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectFastifyPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_fastifyAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_fastifyAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addGit(
-                _projectNameQuestion.projectName,
+            if (!_fastifyAddDockerQuestion.addDocker) {
+              await _runInstallAndUpdatePackages(
+                _selectFastifyPackagesQuestion.backendPackages,
                 _backendFrameworkDesPath,
-              );
-            } else if (!options.git && options.license) {
-              if (!_fastifyAddDockerQuestion.addDocker) {
-                if (
-                  _selectFastifyPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectFastifyPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_fastifyAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_fastifyAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addLicense(
                 _projectNameQuestion.projectName,
-                _backendFrameworkDesPath,
               );
             } else {
-              if (!_fastifyAddDockerQuestion.addDocker) {
-                if (
-                  _selectFastifyPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
+              await _runInstallAndUpdatePackages(
+                _selectFastifyPackagesQuestion.backendPackages,
+                _backendFrameworkDesPath,
+                _projectNameQuestion.projectName,
+              );
 
-                  await _runInstallingPackages(
-                    _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
+              await _runSetupDocker(
+                _fastifyAddDockerQuestion.addDocker,
+                _fastifyAddDockerQuestion.addDockerBake,
+                _backendFrameworkDesPath,
+              );
+            }
 
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectFastifyPackagesQuestion.backendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_fastifyAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectFastifyPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_fastifyAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-
+            if (options.git) {
               await _addGit(
                 _projectNameQuestion.projectName,
                 _backendFrameworkDesPath,
               );
+            }
 
+            if (options.license) {
               await _addLicense(
+                _projectNameQuestion.projectName,
+                _backendFrameworkDesPath,
+              );
+            }
+
+            if (options.ts) {
+              await _addTypescript(
+                _chooseProjectTypeQuestion.projectType.toLowerCase(),
+                _chooseBackendFrameworkQuestion.backendFramework,
                 _projectNameQuestion.projectName,
                 _backendFrameworkDesPath,
               );
@@ -851,7 +350,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
             );
             break;
           case 'NestJS':
-            // GENERATING FOR NESTJS FRAMEWORK
+            // GENERATING FOR NESTJS FRAMEWORK.
             const _selectNestPackagesQuestion: {
               backendPackages: string[];
             } = await inquirer.prompt([
@@ -884,287 +383,51 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               },
             ]);
 
-            if (!options.git && !options.license) {
-              if (!_nestAddDockerQuestion.addDocker) {
-                if (_selectNestPackagesQuestion.backendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
+            await _generateBackendProject(
+              _projectNameQuestion.projectName,
+              _chooseBackendFrameworkQuestion.backendFramework,
+              _backendFrameworkSourcePath,
+              _backendFrameworkDesPath,
+            );
 
-                  await _runInstallingPackages(
-                    _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectNestPackagesQuestion.backendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_nestAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_nestAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-            } else if (options.git && !options.license) {
-              if (!_nestAddDockerQuestion.addDocker) {
-                if (_selectNestPackagesQuestion.backendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectNestPackagesQuestion.backendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_nestAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_nestAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addGit(
-                _projectNameQuestion.projectName,
+            if (!_nestAddDockerQuestion.addDocker) {
+              await _runInstallAndUpdatePackages(
+                _selectNestPackagesQuestion.backendPackages,
                 _backendFrameworkDesPath,
-              );
-            } else if (!options.git && options.license) {
-              if (!_nestAddDockerQuestion.addDocker) {
-                if (_selectNestPackagesQuestion.backendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectNestPackagesQuestion.backendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_nestAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_nestAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addLicense(
                 _projectNameQuestion.projectName,
-                _backendFrameworkDesPath,
               );
             } else {
-              if (!_nestAddDockerQuestion.addDocker) {
-                if (_selectNestPackagesQuestion.backendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
+              await _runInstallAndUpdatePackages(
+                _selectNestPackagesQuestion.backendPackages,
+                _backendFrameworkDesPath,
+                _projectNameQuestion.projectName,
+              );
 
-                  await _runInstallingPackages(
-                    _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
+              await _runSetupDocker(
+                _nestAddDockerQuestion.addDocker,
+                _nestAddDockerQuestion.addDockerBake,
+                _backendFrameworkDesPath,
+              );
+            }
 
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectNestPackagesQuestion.backendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_nestAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseBackendFrameworkQuestion.backendFramework,
-                    _backendFrameworkSourcePath,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNestPackagesQuestion.backendPackages,
-                    _backendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _backendFrameworkDesPath,
-                  );
-
-                  if (!_nestAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_backendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_backendFrameworkDesPath);
-                  }
-                }
-              }
-
+            if (options.git) {
               await _addGit(
                 _projectNameQuestion.projectName,
                 _backendFrameworkDesPath,
               );
+            }
 
+            if (options.license) {
               await _addLicense(
+                _projectNameQuestion.projectName,
+                _backendFrameworkDesPath,
+              );
+            }
+
+            if (options.ts) {
+              await _addTypescript(
+                _chooseProjectTypeQuestion.projectType.toLowerCase(),
+                _chooseBackendFrameworkQuestion.backendFramework,
                 _projectNameQuestion.projectName,
                 _backendFrameworkDesPath,
               );
@@ -1188,7 +451,6 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
         }
         break;
       case 'frontend':
-        // STARTING TO GENERATE FRONTEND PROJECT.
         const _chooseFrontendFrameworkQuestion: {
           frontendFramework: 'Next.js' | 'Vue.js' | 'Svelte' | 'Astro.js';
         } = await inquirer.prompt([
@@ -1236,6 +498,7 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
         _unableOverwrite(_frontendFrameworkDesPath);
 
         switch (_chooseFrontendFrameworkQuestion.frontendFramework) {
+          // GENERATING FOR NEXT.JS FRAMEWORK.
           case 'Next.js':
             const _selectNextPackagesQuestion: {
               frontendPackages: string[];
@@ -1271,287 +534,51 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               },
             ]);
 
-            if (!options.git && !options.license) {
-              if (!_nextAddDockerQuestion.addDocker) {
-                if (_selectNextPackagesQuestion.frontendPackages.length === 0) {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
+            await _generateFrontendProject(
+              _projectNameQuestion.projectName,
+              _chooseFrontendFrameworkQuestion.frontendFramework,
+              _frontendFrameworkSourcePath,
+              _frontendFrameworkDesPath,
+            );
 
-                  await _runInstallingPackages(
-                    _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectNextPackagesQuestion.frontendPackages.length === 0) {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_nextAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_nextAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-            } else if (options.git && !options.license) {
-              if (!_nextAddDockerQuestion.addDocker) {
-                if (_selectNextPackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectNextPackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_nextAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_nextAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addGit(
-                _projectNameQuestion.projectName,
+            if (!_nextAddDockerQuestion.addDocker) {
+              await _runInstallAndUpdatePackages(
+                _selectNextPackagesQuestion.frontendPackages,
                 _frontendFrameworkDesPath,
-              );
-            } else if (!options.git && options.license) {
-              if (!_nextAddDockerQuestion.addDocker) {
-                if (_selectNextPackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectNextPackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_nextAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_nextAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addLicense(
                 _projectNameQuestion.projectName,
-                _frontendFrameworkDesPath,
               );
             } else {
-              if (!_nextAddDockerQuestion.addDocker) {
-                if (_selectNextPackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
+              await _runInstallAndUpdatePackages(
+                _selectNextPackagesQuestion.frontendPackages,
+                _frontendFrameworkDesPath,
+                _projectNameQuestion.projectName,
+              );
 
-                  await _runInstallingPackages(
-                    _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
+              await _runSetupDocker(
+                _nextAddDockerQuestion.addDocker,
+                _nextAddDockerQuestion.addDockerBake,
+                _frontendFrameworkDesPath,
+              );
+            }
 
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectNextPackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_nextAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectNextPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_nextAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
+            if (options.git) {
               await _addGit(
                 _projectNameQuestion.projectName,
                 _frontendFrameworkDesPath,
               );
+            }
 
+            if (options.license) {
               await _addLicense(
+                _projectNameQuestion.projectName,
+                _frontendFrameworkDesPath,
+              );
+            }
+
+            if (options.ts) {
+              await _addTypescript(
+                _chooseProjectTypeQuestion.projectType.toLowerCase(),
+                _chooseFrontendFrameworkQuestion.frontendFramework,
                 _projectNameQuestion.projectName,
                 _frontendFrameworkDesPath,
               );
@@ -1605,287 +632,51 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               },
             ]);
 
-            if (!options.git && !options.license) {
-              if (!_vueAddDockerQuestion.addDocker) {
-                if (_selectVuePackagesQuestion.frontendPackages.length === 0) {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
+            await _generateFrontendProject(
+              _projectNameQuestion.projectName,
+              _chooseFrontendFrameworkQuestion.frontendFramework,
+              _frontendFrameworkSourcePath,
+              _frontendFrameworkDesPath,
+            );
 
-                  await _runInstallingPackages(
-                    _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectVuePackagesQuestion.frontendPackages.length === 0) {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_vueAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_vueAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-            } else if (options.git && !options.license) {
-              if (!_vueAddDockerQuestion.addDocker) {
-                if (_selectVuePackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectVuePackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_vueAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_vueAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addGit(
-                _projectNameQuestion.projectName,
+            if (!_vueAddDockerQuestion.addDocker) {
+              await _runInstallAndUpdatePackages(
+                _selectVuePackagesQuestion.frontendPackages,
                 _frontendFrameworkDesPath,
-              );
-            } else if (!options.git && options.license) {
-              if (!_vueAddDockerQuestion.addDocker) {
-                if (_selectVuePackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectVuePackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_vueAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_vueAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addLicense(
                 _projectNameQuestion.projectName,
-                _frontendFrameworkDesPath,
               );
             } else {
-              if (!_vueAddDockerQuestion.addDocker) {
-                if (_selectVuePackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
+              await _runInstallAndUpdatePackages(
+                _selectVuePackagesQuestion.frontendPackages,
+                _frontendFrameworkDesPath,
+                _projectNameQuestion.projectName,
+              );
 
-                  await _runInstallingPackages(
-                    _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
+              await _runSetupDocker(
+                _vueAddDockerQuestion.addDocker,
+                _vueAddDockerQuestion.addDockerBake,
+                _frontendFrameworkDesPath,
+              );
+            }
 
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (_selectVuePackagesQuestion.frontendPackages.length === 0) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_vueAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectVuePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_vueAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
+            if (options.git) {
               await _addGit(
                 _projectNameQuestion.projectName,
                 _frontendFrameworkDesPath,
               );
+            }
 
+            if (options.license) {
               await _addLicense(
+                _projectNameQuestion.projectName,
+                _frontendFrameworkDesPath,
+              );
+            }
+
+            if (options.ts) {
+              await _addTypescript(
+                _chooseProjectTypeQuestion.projectType.toLowerCase(),
+                _chooseFrontendFrameworkQuestion.frontendFramework,
                 _projectNameQuestion.projectName,
                 _frontendFrameworkDesPath,
               );
@@ -1941,303 +732,51 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               },
             ]);
 
-            if (!options.git && !options.license) {
-              if (!_svelteAddDockerQuestion.addDocker) {
-                if (
-                  _selectSveltePackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
+            await _generateFrontendProject(
+              _projectNameQuestion.projectName,
+              _chooseFrontendFrameworkQuestion.frontendFramework,
+              _frontendFrameworkSourcePath,
+              _frontendFrameworkDesPath,
+            );
 
-                  await _runInstallingPackages(
-                    _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectSveltePackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_svelteAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_svelteAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-            } else if (options.git && !options.license) {
-              if (!_svelteAddDockerQuestion.addDocker) {
-                if (
-                  _selectSveltePackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectSveltePackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_svelteAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_svelteAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addGit(
-                _projectNameQuestion.projectName,
+            if (!_svelteAddDockerQuestion.addDocker) {
+              await _runInstallAndUpdatePackages(
+                _selectSveltePackagesQuestion.frontendPackages,
                 _frontendFrameworkDesPath,
-              );
-            } else if (!options.git && options.license) {
-              if (!_svelteAddDockerQuestion.addDocker) {
-                if (
-                  _selectSveltePackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectSveltePackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_svelteAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_svelteAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addLicense(
                 _projectNameQuestion.projectName,
-                _frontendFrameworkDesPath,
               );
             } else {
-              if (!_svelteAddDockerQuestion.addDocker) {
-                if (
-                  _selectSveltePackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
+              await _runInstallAndUpdatePackages(
+                _selectSveltePackagesQuestion.frontendPackages,
+                _frontendFrameworkDesPath,
+                _projectNameQuestion.projectName,
+              );
 
-                  await _runInstallingPackages(
-                    _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
+              await _runSetupDocker(
+                _svelteAddDockerQuestion.addDocker,
+                _svelteAddDockerQuestion.addDockerBake,
+                _frontendFrameworkDesPath,
+              );
+            }
 
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectSveltePackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_svelteAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectSveltePackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_svelteAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
+            if (options.git) {
               await _addGit(
                 _projectNameQuestion.projectName,
                 _frontendFrameworkDesPath,
               );
+            }
 
+            if (options.license) {
               await _addLicense(
+                _projectNameQuestion.projectName,
+                _frontendFrameworkDesPath,
+              );
+            }
+
+            if (options.ts) {
+              await _addTypescript(
+                _chooseProjectTypeQuestion.projectType.toLowerCase(),
+                _chooseFrontendFrameworkQuestion.frontendFramework,
                 _projectNameQuestion.projectName,
                 _frontendFrameworkDesPath,
               );
@@ -2293,303 +832,51 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               },
             ]);
 
-            if (!options.git && !options.license) {
-              if (!_astroAddDockerQuestion.addDocker) {
-                if (
-                  _selectAstroPackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
+            await _generateFrontendProject(
+              _projectNameQuestion.projectName,
+              _chooseFrontendFrameworkQuestion.frontendFramework,
+              _frontendFrameworkSourcePath,
+              _frontendFrameworkDesPath,
+            );
 
-                  await _runInstallingPackages(
-                    _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectAstroPackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_astroAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateFrontendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_astroAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-            } else if (options.git && !options.license) {
-              if (!_astroAddDockerQuestion.addDocker) {
-                if (
-                  _selectAstroPackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectAstroPackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_astroAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_astroAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addGit(
-                _projectNameQuestion.projectName,
+            if (!_astroAddDockerQuestion.addDocker) {
+              await _runInstallAndUpdatePackages(
+                _selectAstroPackagesQuestion.frontendPackages,
                 _frontendFrameworkDesPath,
-              );
-            } else if (!options.git && options.license) {
-              if (!_astroAddDockerQuestion.addDocker) {
-                if (
-                  _selectAstroPackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectAstroPackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_astroAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_astroAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
-              await _addLicense(
                 _projectNameQuestion.projectName,
-                _frontendFrameworkDesPath,
               );
             } else {
-              if (!_astroAddDockerQuestion.addDocker) {
-                if (
-                  _selectAstroPackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
+              await _runInstallAndUpdatePackages(
+                _selectAstroPackagesQuestion.frontendPackages,
+                _frontendFrameworkDesPath,
+                _projectNameQuestion.projectName,
+              );
 
-                  await _runInstallingPackages(
-                    _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
+              await _runSetupDocker(
+                _astroAddDockerQuestion.addDocker,
+                _astroAddDockerQuestion.addDockerBake,
+                _frontendFrameworkDesPath,
+              );
+            }
 
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-                }
-              } else {
-                if (
-                  _selectAstroPackagesQuestion.frontendPackages.length === 0
-                ) {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_astroAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                } else {
-                  await _generateBackendProject(
-                    _projectNameQuestion.projectName,
-                    _chooseFrontendFrameworkQuestion.frontendFramework,
-                    _frontendFrameworkSourcePath,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runInstallingPackages(
-                    _selectAstroPackagesQuestion.frontendPackages,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  await _runUpdatingPackages(
-                    _projectNameQuestion.projectName,
-                    _frontendFrameworkDesPath,
-                  );
-
-                  if (!_astroAddDockerQuestion.addDockerBake) {
-                    await _addDocker(_frontendFrameworkDesPath);
-                  } else {
-                    await _addDockerWithBake(_frontendFrameworkDesPath);
-                  }
-                }
-              }
-
+            if (options.git) {
               await _addGit(
                 _projectNameQuestion.projectName,
                 _frontendFrameworkDesPath,
               );
+            }
 
+            if (options.license) {
               await _addLicense(
+                _projectNameQuestion.projectName,
+                _frontendFrameworkDesPath,
+              );
+            }
+
+            if (options.ts) {
+              await _addTypescript(
+                _chooseProjectTypeQuestion.projectType.toLowerCase(),
+                _chooseFrontendFrameworkQuestion.frontendFramework,
                 _projectNameQuestion.projectName,
                 _frontendFrameworkDesPath,
               );
@@ -2714,74 +1001,93 @@ async function _generateFrontendProject(
   );
 }
 
-async function _runInstallingPackages(
-  packages: string[],
-  desPath: string,
-): Promise<void> {
-  const spinner = ora({
-    spinner: 'dots8',
-    color: 'green',
-    interval: 100,
+function _getDockerResources() {
+  const _dockerTemplatesPath = path.join(_basePath, 'templates/docker');
+  _pathNotFound(_dockerTemplatesPath);
+
+  const _dockerSources = fs.readdirSync(_dockerTemplatesPath, {
+    withFileTypes: true,
   });
 
-  spinner.start(
-    `Allright ${chalk.bold(
-      __userrealname.split(' ')[0],
-    )}, We are start installing ${chalk.bold(
-      packages.join(', '),
-    )} packages for you 👾...`,
-  );
-
-  for (const p of packages) {
-    spinner.start(`Start installing ${chalk.bold(p)} package...`);
-
-    await execa('npm', ['install', '--save', p], {
-      cwd: desPath,
-    });
-
-    spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
-  }
-
-  spinner.succeed(`Installing all packages succeed ✅`);
+  return _dockerSources;
 }
 
-async function _runUpdatingPackages(projectName: string, desPath: string) {
-  const spinner = ora({
-    spinner: 'dots8',
-    color: 'green',
-    interval: 100,
-  });
+function _getDockerComposePath(
+  templates: fs.Dirent<string>[],
+  desPath: string,
+): { sourcePath: string; desPath: string } {
+  const _dockerComposeFile = templates.filter(
+    (f) => f.name === 'compose.yml',
+  )[0];
 
-  const _updatePackagesQuestion = await inquirer.prompt({
-    name: 'updatePackages',
-    type: 'confirm',
-    message: `Do you want us to run ${chalk.bold('npm update')}? (optional)`,
-    default: false,
-  });
-
-  if (!_updatePackagesQuestion.updatePackages) {
-    spinner.warn(
-      `${chalk.yellow(
-        `It's okay ${chalk.bold(
-          __userrealname.split(' ')[0],
-        )}, you can update the packages later by yourself.`,
-      )}`,
+  if (!_dockerComposeFile) {
+    throw new UnidentifiedTemplateError(
+      `${chalk.bold('Unidentified template')}: Docker compose file template is not defined.`,
     );
-  } else {
-    spinner.start(
-      `Allright ${chalk.bold(
-        __userrealname.split(' ')[0],
-      )}, We are start updating your ${chalk.bold(
-        projectName,
-      )} packages, please wait...`,
-    );
-
-    await execa('npm', ['update'], {
-      cwd: desPath,
-    });
-
-    spinner.succeed(`Updating ${projectName}  packages succeed ✅`);
   }
+
+  const _dockerComposeSourcePath = path.join(
+    _dockerComposeFile.parentPath,
+    _dockerComposeFile.name,
+  );
+  const _dockerComposeDesPath = path.join(desPath, _dockerComposeFile.name);
+
+  return {
+    sourcePath: _dockerComposeSourcePath,
+    desPath: _dockerComposeDesPath,
+  };
+}
+
+function _getDockerBakePath(
+  templates: fs.Dirent<string>[],
+  desPath: string,
+): { sourcePath: string; desPath: string } {
+  const _dockerBakeFile = templates.filter(
+    (f) => f.name === 'docker-bake.hcl',
+  )[0];
+
+  if (!_dockerBakeFile) {
+    throw new UnidentifiedTemplateError(
+      `${chalk.bold('Unidentified template')}: Docker bake file template is not defined.`,
+    );
+  }
+
+  const _dockerBakeSourcePath = path.join(
+    _dockerBakeFile.parentPath,
+    _dockerBakeFile.name,
+  );
+  const _dockerBakeDesPath = path.join(desPath, _dockerBakeFile.name);
+
+  return {
+    sourcePath: _dockerBakeSourcePath,
+    desPath: _dockerBakeDesPath,
+  };
+}
+
+function _getDockerfilePath(
+  filename: string,
+  dockerfiles: fs.Dirent<string>[],
+  desPath: string,
+): { sourcePath: string; desPath: string } {
+  const _dockerfile = dockerfiles.filter((f) => f.name === filename)[0];
+
+  if (!_dockerfile) {
+    throw new UnidentifiedTemplateError(
+      `${chalk.bold('Unidentified template')}: Dockerfile template is not defined.`,
+    );
+  }
+
+  const _dockerfileSourcePath = path.join(
+    _dockerfile.parentPath,
+    _dockerfile.name,
+  );
+
+  const _dockerfileDesPath = path.join(desPath, _dockerfile.name);
+
+  return {
+    sourcePath: _dockerfileSourcePath,
+    desPath: _dockerfileDesPath,
+  };
 }
 
 async function _addDocker(desPath: string): Promise<void> {
@@ -2874,14 +1180,14 @@ async function _addGit(projectName: string, desPath: string): Promise<void> {
     interval: 100,
   });
 
-  const _initiliazeGitQuestion = await inquirer.prompt({
+  const _initializeGitQuestion = await inquirer.prompt({
     name: 'addGit',
     type: 'confirm',
     message: `Do you want us to run ${chalk.bold('git init')}? (optional)`,
     default: false,
   });
 
-  if (!_initiliazeGitQuestion.addGit) {
+  if (!_initializeGitQuestion.addGit) {
     spinner.warn(
       `${chalk.yellow(
         `It's okay ${chalk.bold(
@@ -2889,23 +1195,24 @@ async function _addGit(projectName: string, desPath: string): Promise<void> {
         )}, you can run ${chalk.bold('git init')} later by yourself.`,
       )}`,
     );
-  } else {
-    spinner.start(
-      `Allright ${chalk.bold(
-        __userrealname.split(' ')[0],
-      )}, We are start running ${chalk.bold('git init')} on ${chalk.bold(
-        projectName,
-      )}, please wait...`,
-    );
-
-    await execa('git', ['init'], {
-      cwd: desPath,
-    });
-
-    spinner.succeed(
-      `Running ${chalk.bold('git init')} on ${projectName} succeed ✅`,
-    );
+    return;
   }
+
+  spinner.start(
+    `Allright ${chalk.bold(
+      __userrealname.split(' ')[0],
+    )}, We are start running ${chalk.bold('git init')} on ${chalk.bold(
+      projectName,
+    )}, please wait...`,
+  );
+
+  await execa('git', ['init'], {
+    cwd: desPath,
+  });
+
+  spinner.succeed(
+    `Running ${chalk.bold('git init')} on ${projectName} succeed ✅`,
+  );
 }
 
 async function _addLicense(projectName: string, desPath: string) {
@@ -2932,227 +1239,405 @@ async function _addLicense(projectName: string, desPath: string) {
         )}, you can add ${chalk.bold('LICENSE')} file manually.`,
       )}`,
     );
-  } else {
-    const _chooseLicenseQuestion: {
-      license:
-        | 'Apache 2.0 License'
-        | 'BSD 2-Clause License'
-        | 'BSD 3-Clause License'
-        | 'GNU General Public License v3.0'
-        | 'ISC License'
-        | 'GNU Lesser General Public License v3.0'
-        | 'MIT License'
-        | 'Unlicense';
-    } = await inquirer.prompt({
-      name: 'license',
-      type: 'select',
-      message: 'Which license do you want to use:',
-      choices: _licenses.licenses.map((l) => l.name),
-      default: 'MIT License',
-    });
+    return;
+  }
 
-    spinner.start(
-      `Start adding ${chalk.bold(
-        _chooseLicenseQuestion.license,
-      )} file into ${chalk.bold(projectName)} 🧾...`,
+  const _chooseLicenseQuestion: {
+    license:
+      | 'Apache 2.0 License'
+      | 'BSD 2-Clause License'
+      | 'BSD 3-Clause License'
+      | 'GNU General Public License v3.0'
+      | 'ISC License'
+      | 'GNU Lesser General Public License v3.0'
+      | 'MIT License'
+      | 'Unlicense';
+  } = await inquirer.prompt({
+    name: 'license',
+    type: 'select',
+    message: 'Which license do you want to use:',
+    choices: _licenses.licenses.map((l) => l.name),
+    default: 'MIT License',
+  });
+
+  spinner.start(
+    `Start adding ${chalk.bold(
+      _chooseLicenseQuestion.license,
+    )} file into ${chalk.bold(projectName)} 🧾...`,
+  );
+
+  switch (_chooseLicenseQuestion.license) {
+    case 'Apache 2.0 License':
+      const _apacheLicense = _licenses.licenses.find(
+        (l) => l.name === _chooseLicenseQuestion.license,
+      ) as __LicenseProps;
+
+      const _apacheLicenseSourcePath = path.join(
+        _basePath,
+        _apacheLicense.path,
+      );
+
+      await fse.copy(_apacheLicenseSourcePath, desPath);
+
+      break;
+    case 'BSD 2-Clause License':
+      const _bsd2License = _licenses.licenses.find(
+        (l) => l.name === _chooseLicenseQuestion.license,
+      ) as __LicenseProps;
+
+      const _bsd2LicenseSourcePath = path.join(_basePath, _bsd2License.path);
+
+      await fse.copy(_bsd2LicenseSourcePath, desPath);
+
+      break;
+    case 'BSD 3-Clause License':
+      const _bsd3License = _licenses.licenses.find(
+        (l) => l.name === _chooseLicenseQuestion.license,
+      ) as __LicenseProps;
+
+      const _bsd3LicenseSourcePath = path.join(_basePath, _bsd3License.path);
+
+      await fse.copy(_bsd3LicenseSourcePath, desPath);
+
+      break;
+    case 'GNU General Public License v3.0':
+      const _gpl3License = _licenses.licenses.find(
+        (l) => l.name === _chooseLicenseQuestion.license,
+      ) as __LicenseProps;
+
+      const _gpl3LicenseSourcePath = path.join(_basePath, _gpl3License.path);
+
+      await fse.copy(_gpl3LicenseSourcePath, desPath);
+
+      break;
+    case 'GNU Lesser General Public License v3.0':
+      const _lgpl3License = _licenses.licenses.find(
+        (l) => l.name === _chooseLicenseQuestion.license,
+      ) as __LicenseProps;
+
+      const _lgpl3LicenseSourcePath = path.join(_basePath, _lgpl3License.path);
+
+      await fse.copy(_lgpl3LicenseSourcePath, desPath);
+
+      break;
+    case 'ISC License':
+      const _iscLicense = _licenses.licenses.find(
+        (l) => l.name === _chooseLicenseQuestion.license,
+      ) as __LicenseProps;
+
+      const _iscLicenseSourcePath = path.join(_basePath, _iscLicense.path);
+
+      await fse.copy(_iscLicenseSourcePath, desPath);
+
+      break;
+    case 'MIT License':
+      const _mitLicense = _licenses.licenses.find(
+        (l) => l.name === _chooseLicenseQuestion.license,
+      ) as __LicenseProps;
+
+      const _mitLicenseSourcePath = path.join(_basePath, _mitLicense.path);
+
+      await fse.copy(_mitLicenseSourcePath, desPath);
+
+      break;
+    case 'Unlicense':
+      const unlicenseLicense = _licenses.licenses.find(
+        (l) => l.name === _chooseLicenseQuestion.license,
+      ) as __LicenseProps;
+
+      const unlicenseLicenseSourcePath = path.join(
+        _basePath,
+        unlicenseLicense.path,
+      );
+
+      await fse.copy(unlicenseLicenseSourcePath, desPath);
+
+      break;
+  }
+
+  spinner.succeed(
+    `Adding ${chalk.bold(
+      _chooseLicenseQuestion.license,
+    )} file on ${chalk.bold(projectName)} succeed ✅`,
+  );
+}
+
+async function _addTypescript(
+  projectType: string,
+  framework: string,
+  projectName: string,
+  desPath: string,
+): Promise<void> {
+  const spinner = ora({
+    spinner: 'dots8',
+    color: 'green',
+    interval: 100,
+  });
+
+  const _frameworkList =
+    projectType !== 'backend'
+      ? _frontendFrameworks.frameworks
+      : _backendFrameworks.frameworks;
+  const _frameworkDetails = _frameworkList.find(
+    (f) => f.name === framework,
+  ) as __FrameworkProps;
+  const _frameworkPath = path.join(_basePath, _frameworkDetails.path);
+  const _frameworkFiles = fs.readdirSync(_frameworkPath, {
+    withFileTypes: true,
+  });
+  const _findTsConfigFile = _frameworkFiles.find(
+    (f) => f.name === 'tsconfig.json',
+  );
+
+  if (_findTsConfigFile !== undefined) {
+    spinner.warn(
+      `${chalk.yellow(`${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(projectName)}, means that ${chalk.bold('Typescript')} already installed.`)}`,
     );
+    return;
+  }
 
-    switch (_chooseLicenseQuestion.license) {
-      case 'Apache 2.0 License':
-        const _apacheLicense = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license,
-        ) as __LicenseProps;
+  const _addTypescriptQuestion = await inquirer.prompt({
+    name: 'addTypescript',
+    type: 'confirm',
+    message: `Do you want us to add ${chalk.bold(
+      'Typescript',
+    )} into your project? (optional)`,
+    default: false,
+  });
 
-        const _apacheLicenseSourcePath = path.join(
-          _basePath,
-          _apacheLicense.path,
-        );
+  if (!_addTypescriptQuestion.addTypescript) {
+    spinner.warn(
+      `${chalk.yellow(
+        `It's okay ${chalk.bold(
+          __userrealname.split(' ')[0],
+        )}, you can add ${chalk.bold('Typescript')} manually.`,
+      )}`,
+    );
+    return;
+  }
 
-        await fse.copy(_apacheLicenseSourcePath, desPath);
+  spinner.start(
+    `Allright ${chalk.bold(
+      __userrealname.split(' ')[0],
+    )}, We are adding ${chalk.bold('Typescript')} on ${chalk.bold(
+      projectName,
+    )}, please wait...`,
+  );
 
+  if (projectType !== 'backend') {
+    switch (framework) {
+      case 'Next.js':
+        for (const p of _typescriptDependencies.frontend['Next.js']) {
+          spinner.start(`Start installing ${chalk.bold(p)} package...`);
+
+          await execa('npm', ['install', '-D', `${p}`], {
+            cwd: desPath,
+          });
+
+          spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+        }
         break;
-      case 'BSD 2-Clause License':
-        const _bsd2License = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license,
-        ) as __LicenseProps;
+      case 'Vue.js':
+        for (const p of _typescriptDependencies.frontend['Vue.js']) {
+          spinner.start(`Start installing ${chalk.bold(p)} package...`);
 
-        const _bsd2LicenseSourcePath = path.join(_basePath, _bsd2License.path);
+          await execa('npm', ['install', '-D', `${p}`], {
+            cwd: desPath,
+          });
 
-        await fse.copy(_bsd2LicenseSourcePath, desPath);
-
+          spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+        }
         break;
-      case 'BSD 3-Clause License':
-        const _bsd3License = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license,
-        ) as __LicenseProps;
+      case 'Svelte':
+        for (const p of _typescriptDependencies.frontend['Svelte']) {
+          spinner.start(`Start installing ${chalk.bold(p)} package...`);
 
-        const _bsd3LicenseSourcePath = path.join(_basePath, _bsd3License.path);
+          await execa('npm', ['install', '-D', `${p}`], {
+            cwd: desPath,
+          });
 
-        await fse.copy(_bsd3LicenseSourcePath, desPath);
-
-        break;
-      case 'GNU General Public License v3.0':
-        const _gpl3License = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license,
-        ) as __LicenseProps;
-
-        const _gpl3LicenseSourcePath = path.join(_basePath, _gpl3License.path);
-
-        await fse.copy(_gpl3LicenseSourcePath, desPath);
-
-        break;
-      case 'GNU Lesser General Public License v3.0':
-        const _lgpl3License = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license,
-        ) as __LicenseProps;
-
-        const _lgpl3LicenseSourcePath = path.join(
-          _basePath,
-          _lgpl3License.path,
-        );
-
-        await fse.copy(_lgpl3LicenseSourcePath, desPath);
-
-        break;
-      case 'ISC License':
-        const _iscLicense = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license,
-        ) as __LicenseProps;
-
-        const _iscLicenseSourcePath = path.join(_basePath, _iscLicense.path);
-
-        await fse.copy(_iscLicenseSourcePath, desPath);
-
-        break;
-      case 'MIT License':
-        const _mitLicense = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license,
-        ) as __LicenseProps;
-
-        const _mitLicenseSourcePath = path.join(_basePath, _mitLicense.path);
-
-        await fse.copy(_mitLicenseSourcePath, desPath);
-
-        break;
-      case 'Unlicense':
-        const unlicenseLicense = _licenses.licenses.find(
-          (l) => l.name === _chooseLicenseQuestion.license,
-        ) as __LicenseProps;
-
-        const unlicenseLicenseSourcePath = path.join(
-          _basePath,
-          unlicenseLicense.path,
-        );
-
-        await fse.copy(unlicenseLicenseSourcePath, desPath);
-
+          spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+        }
         break;
     }
+  } else {
+    switch (framework) {
+      case 'Express.js':
+        for (const p of _typescriptDependencies.backend['Express.js']) {
+          spinner.start(`Start installing ${chalk.bold(p)} package...`);
 
-    spinner.succeed(
-      `Adding ${chalk.bold(
-        _chooseLicenseQuestion.license,
-      )} file on ${chalk.bold(projectName)} succeed ✅`,
-    );
+          await execa('npm', ['install', '-D', `${p}`], {
+            cwd: desPath,
+          });
+
+          spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+        }
+        break;
+      case 'Fastify':
+        for (const p of _typescriptDependencies.backend['Fastify']) {
+          spinner.start(`Start installing ${chalk.bold(p)} package...`);
+
+          await execa('npm', ['install', '-D', `${p}`], {
+            cwd: desPath,
+          });
+
+          spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+        }
+        break;
+      case 'NestJS':
+        for (const p of _typescriptDependencies.backend['NestJS']) {
+          spinner.start(`Start installing ${chalk.bold(p)} package...`);
+
+          await execa('npm', ['install', '-D', `${p}`], {
+            cwd: desPath,
+          });
+
+          spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+        }
+        break;
+    }
   }
+
+  await _initializeTypescript(desPath);
+
+  spinner.succeed(
+    `Adding ${chalk.bold('Typescript')} on ${projectName} succeed ✅`,
+  );
 }
 
-function _getLicenseResources() {
-  const _licenseTemplatesPath = path.join(_basePath, 'templates/licenses');
-  _pathNotFound(_licenseTemplatesPath);
-
-  const _licenseSources = fs.readdirSync(_licenseTemplatesPath, {
-    withFileTypes: true,
+async function _runInstallingPackages(
+  packages: string[],
+  desPath: string,
+): Promise<void> {
+  const spinner = ora({
+    spinner: 'dots8',
+    color: 'green',
+    interval: 100,
   });
 
-  return _licenseSources;
+  spinner.start(
+    `Allright ${chalk.bold(
+      __userrealname.split(' ')[0],
+    )}, We are start installing ${chalk.bold(
+      packages.join(', '),
+    )} packages for you 👾...`,
+  );
+
+  for (const p of packages) {
+    spinner.start(`Start installing ${chalk.bold(p)} package...`);
+
+    await execa('npm', ['install', '--save', p], {
+      cwd: desPath,
+    });
+
+    spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+  }
+
+  spinner.succeed(`Installing all packages succeed ✅`);
 }
 
-function _getDockerResources() {
-  const _dockerTemplatesPath = path.join(_basePath, 'templates/docker');
-  _pathNotFound(_dockerTemplatesPath);
-
-  const _dockerSources = fs.readdirSync(_dockerTemplatesPath, {
-    withFileTypes: true,
+async function _runUpdatingPackages(projectName: string, desPath: string) {
+  const spinner = ora({
+    spinner: 'dots8',
+    color: 'green',
+    interval: 100,
   });
 
-  return _dockerSources;
-}
+  const _updatePackagesQuestion = await inquirer.prompt({
+    name: 'updatePackages',
+    type: 'confirm',
+    message: `Do you want us to run ${chalk.bold('npm update')}? (optional)`,
+    default: false,
+  });
 
-function _getDockerComposePath(
-  templates: fs.Dirent<string>[],
-  desPath: string,
-): { sourcePath: string; desPath: string } {
-  const _dockerComposeFile = templates.filter(
-    (f) => f.name === 'compose.yml',
-  )[0];
-
-  if (!_dockerComposeFile) {
-    throw new UnidentifiedTemplateError(
-      `${chalk.bold('Unidentified template')}: Docker compose file template is not defined.`,
+  if (!_updatePackagesQuestion.updatePackages) {
+    spinner.warn(
+      `${chalk.yellow(
+        `It's okay ${chalk.bold(
+          __userrealname.split(' ')[0],
+        )}, you can update the packages later by yourself.`,
+      )}`,
     );
+    return;
   }
 
-  const _dockerComposeSourcePath = path.join(
-    _dockerComposeFile.parentPath,
-    _dockerComposeFile.name,
+  spinner.start(
+    `Allright ${chalk.bold(
+      __userrealname.split(' ')[0],
+    )}, We are start updating your ${chalk.bold(
+      projectName,
+    )} packages, please wait...`,
   );
-  const _dockerComposeDesPath = path.join(desPath, _dockerComposeFile.name);
 
-  return {
-    sourcePath: _dockerComposeSourcePath,
-    desPath: _dockerComposeDesPath,
-  };
+  await execa('npm', ['update'], {
+    cwd: desPath,
+  });
+
+  spinner.succeed(`Updating ${projectName}  packages succeed ✅`);
 }
 
-function _getDockerBakePath(
-  templates: fs.Dirent<string>[],
+async function _runInstallAndUpdatePackages(
+  packages: string[],
   desPath: string,
-): { sourcePath: string; desPath: string } {
-  const _dockerBakeFile = templates.filter(
-    (f) => f.name === 'docker-bake.hcl',
-  )[0];
-
-  if (!_dockerBakeFile) {
-    throw new UnidentifiedTemplateError(
-      `${chalk.bold('Unidentified template')}: Docker bake file template is not defined.`,
-    );
+  projectName: string,
+): Promise<void> {
+  if (packages.length < 1) {
+    return;
   }
 
-  const _dockerBakeSourcePath = path.join(
-    _dockerBakeFile.parentPath,
-    _dockerBakeFile.name,
-  );
-  const _dockerBakeDesPath = path.join(desPath, _dockerBakeFile.name);
+  await _runInstallingPackages(packages, desPath);
 
-  return {
-    sourcePath: _dockerBakeSourcePath,
-    desPath: _dockerBakeDesPath,
-  };
+  await _runUpdatingPackages(projectName, desPath);
 }
 
-function _getDockerfilePath(
-  filename: string,
-  dockerfiles: fs.Dirent<string>[],
+async function _runSetupDocker(
+  addDocker: boolean,
+  addDockerBake: boolean,
   desPath: string,
-): { sourcePath: string; desPath: string } {
-  const _dockerfile = dockerfiles.filter((f) => f.name === filename)[0];
-
-  if (!_dockerfile) {
-    throw new UnidentifiedTemplateError(
-      `${chalk.bold('Unidentified template')}: Dockerfile template is not defined.`,
-    );
+): Promise<void> {
+  if (!addDocker) {
+    return;
   }
 
-  const _dockerfileSourcePath = path.join(
-    _dockerfile.parentPath,
-    _dockerfile.name,
-  );
+  if (!addDockerBake) {
+    await _addDocker(desPath);
+  } else {
+    await _addDockerWithBake(desPath);
+  }
+}
 
-  const _dockerfileDesPath = path.join(desPath, _dockerfile.name);
+async function _initializeTypescript(desPath: string): Promise<void> {
+  const spinner = ora({
+    spinner: 'dots8',
+    color: 'green',
+    interval: 100,
+  });
 
-  return {
-    sourcePath: _dockerfileSourcePath,
-    desPath: _dockerfileDesPath,
-  };
+  const _initializeTypescriptQuestion = await inquirer.prompt({
+    name: 'addTsConfig',
+    type: 'confirm',
+    message: `Do you want us to initialize ${chalk.bold(
+      'Typescript',
+    )} in your project? (optional)`,
+    default: false,
+  });
+
+  if (!_initializeTypescriptQuestion.addTsConfig) {
+    spinner.warn(
+      `${chalk.yellow(
+        `It's okay ${chalk.bold(
+          __userrealname.split(' ')[0],
+        )}, you can initialize ${chalk.bold('Typescript')} by yourself later.`,
+      )}`,
+    );
+    return;
+  }
+
+  spinner.start(`Start initialize ${chalk.bold('Typescript')} package...`);
+
+  await execa('npx', ['tsc', '--init'], {
+    cwd: desPath,
+  });
+
+  spinner.succeed(`Initializing ${chalk.bold('Typescript')} succeed ✅`);
 }
