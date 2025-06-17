@@ -47,6 +47,7 @@ import boxen from 'boxen';
 import {
   _astroFrontendPackages,
   _nextFrontendPackages,
+  _solidFrontendPackages,
   _svelteFrontendPackages,
   _vueFrontendPackages,
 } from '@/constants/packages/frontend.js';
@@ -452,7 +453,12 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
         break;
       case 'frontend':
         const _chooseFrontendFrameworkQuestion: {
-          frontendFramework: 'Next.js' | 'Vue.js' | 'Svelte' | 'Astro.js';
+          frontendFramework:
+            | 'Next.js'
+            | 'Vue.js'
+            | 'Svelte'
+            | 'Astro.js'
+            | 'SolidJS';
         } = await inquirer.prompt([
           {
             name: 'frontendFramework',
@@ -855,6 +861,106 @@ export async function _newCreateCommand(options: OptionValues): Promise<void> {
               await _runSetupDocker(
                 _astroAddDockerQuestion.addDocker,
                 _astroAddDockerQuestion.addDockerBake,
+                _frontendFrameworkDesPath,
+              );
+            }
+
+            if (options.git) {
+              await _addGit(
+                _projectNameQuestion.projectName,
+                _frontendFrameworkDesPath,
+              );
+            }
+
+            if (options.license) {
+              await _addLicense(
+                _projectNameQuestion.projectName,
+                _frontendFrameworkDesPath,
+              );
+            }
+
+            if (options.ts) {
+              await _addTypescript(
+                _chooseProjectTypeQuestion.projectType.toLowerCase(),
+                _chooseFrontendFrameworkQuestion.frontendFramework,
+                _projectNameQuestion.projectName,
+                _frontendFrameworkDesPath,
+              );
+            }
+
+            console.log(
+              boxen(
+                `You can check the project on ${chalk.bold(
+                  _frontendFrameworkDesPath,
+                )}`,
+                {
+                  title: 'ⓘ Project Information ⓘ',
+                  titleAlignment: 'center',
+                  padding: 1,
+                  margin: 1,
+                  borderColor: 'blue',
+                },
+              ),
+            );
+            break;
+          case 'SolidJS':
+            const _selectSolidPackagesQuestion: {
+              frontendPackages: string[];
+            } = await inquirer.prompt([
+              {
+                name: 'frontendPackages',
+                type: 'checkbox',
+                message: 'Select npm packages to include in your project:',
+                choices: _solidFrontendPackages.packages.map(
+                  (p) => p.originName,
+                ),
+                loop: false,
+              },
+            ]);
+
+            const _solidAddDockerQuestion: {
+              addDocker: boolean;
+              addDockerBake: boolean;
+            } = await inquirer.prompt([
+              {
+                name: 'addDocker',
+                type: 'confirm',
+                message:
+                  'Do you want us to add docker to your project? (optional)',
+                default: false,
+              },
+              {
+                name: 'addDockerBake',
+                type: 'confirm',
+                message: 'Do you want us to add docker bake too? (optional)',
+                default: false,
+                when: (a) => a.addDocker !== false,
+              },
+            ]);
+
+            await _generateFrontendProject(
+              _projectNameQuestion.projectName,
+              _chooseFrontendFrameworkQuestion.frontendFramework,
+              _frontendFrameworkSourcePath,
+              _frontendFrameworkDesPath,
+            );
+
+            if (!_solidAddDockerQuestion.addDocker) {
+              await _runInstallAndUpdatePackages(
+                _selectSolidPackagesQuestion.frontendPackages,
+                _frontendFrameworkDesPath,
+                _projectNameQuestion.projectName,
+              );
+            } else {
+              await _runInstallAndUpdatePackages(
+                _selectSolidPackagesQuestion.frontendPackages,
+                _frontendFrameworkDesPath,
+                _projectNameQuestion.projectName,
+              );
+
+              await _runSetupDocker(
+                _solidAddDockerQuestion.addDocker,
+                _solidAddDockerQuestion.addDockerBake,
                 _frontendFrameworkDesPath,
               );
             }
@@ -1450,6 +1556,17 @@ async function _addTypescript(
         break;
       case 'Svelte':
         for (const p of _typescriptDependencies.frontend['Svelte']) {
+          spinner.start(`Start installing ${chalk.bold(p)} package...`);
+
+          await execa('npm', ['install', '-D', `${p}`], {
+            cwd: desPath,
+          });
+
+          spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+        }
+        break;
+      case 'SolidJS':
+        for (const p of _typescriptDependencies.frontend["SolidJS"]) {
           spinner.start(`Start installing ${chalk.bold(p)} package...`);
 
           await execa('npm', ['install', '-D', `${p}`], {

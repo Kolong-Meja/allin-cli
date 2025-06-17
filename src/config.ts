@@ -26,7 +26,7 @@ export const _appCreator = process.env.APP_CREATOR
   : 'Faisal Ramadhan';
 export const _appVersion = process.env.APP_VERSION
   ? process.env.APP_VERSION
-  : "1.0.4";
+  : "1.0.5";
 export const _appLicense = process.env.APP_LICENSE
   ? process.env.APP_LICENSE
   : 'GNU General Public License version 3 (GPLv3)';

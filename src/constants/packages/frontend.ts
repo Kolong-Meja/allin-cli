@@ -9,10 +9,28 @@ export const _nextFrontendPackages: __FrontendPackagesProps = {
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
+      name: 'Tailwind CSS PostCSS',
+      originName: '@tailwindcss/postcss',
+      summary:
+        'Official PostCSS plugin for Tailwind CSS that processes your CSS files to generate utility classes, enabling JIT compilation and seamless integration into your build pipeline.',
+    },
+    {
+      name: 'PostCSS',
+      originName: 'postcss',
+      summary:
+        'PostCSS runner required by Tailwind CSS and other CSS transformations.',
+    },
+    {
       name: 'ESLint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
+    },
+    {
+      name: 'ESLint Plugin Next',
+      originName: '@next/eslint-plugin-next',
+      summary:
+        'Adds ESLint rules and JSX support tailored for Next.js projects to ensure best practices and prevent common mistakes.',
     },
     {
       name: 'Prettier',
@@ -139,10 +157,22 @@ export const _vueFrontendPackages: __FrontendPackagesProps = {
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
+      name: 'Tailwind CSS Vite',
+      originName: '@tailwindcss/vite',
+      summary:
+        'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
+    },
+    {
       name: 'ESLint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
+    },
+    {
+      name: 'ESLint Plugin Vue',
+      originName: 'eslint-plugin-vue',
+      summary:
+        'Adds ESLint rules and JSX support tailored for Vue.js projects to ensure best practices and prevent common mistakes.',
     },
     {
       name: 'Prettier',
@@ -239,10 +269,22 @@ export const _svelteFrontendPackages: __FrontendPackagesProps = {
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
+      name: 'Tailwind CSS Vite',
+      originName: '@tailwindcss/vite',
+      summary:
+        'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
+    },
+    {
       name: 'ESLint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
+    },
+    {
+      name: 'ESLint Plugin Svelte',
+      originName: 'eslint-plugin-svelte',
+      summary:
+        'Adds ESLint rules and JSX support tailored for Svelte projects to ensure best practices and prevent common mistakes.',
     },
     {
       name: 'Prettier',
@@ -343,10 +385,22 @@ export const _astroFrontendPackages: __FrontendPackagesProps = {
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
+      name: 'Tailwind CSS Vite',
+      originName: '@tailwindcss/vite',
+      summary:
+        'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
+    },
+    {
       name: 'ESLint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
+    },
+    {
+      name: 'ESLint Plugin Astro',
+      originName: 'eslint-plugin-astro',
+      summary:
+        'Adds ESLint rules and JSX support tailored for Astro projects to ensure best practices and prevent common mistakes.',
     },
     {
       name: 'Prettier',
@@ -450,12 +504,6 @@ export const _astroFrontendPackages: __FrontendPackagesProps = {
         'Partytown integration for Astro, offloading third-party scripts to web workers for improved performance.',
     },
     {
-      name: 'Vite Plugin PWA',
-      originName: 'vite-plugin-pwa',
-      summary:
-        'Vite plugin to add PWA features to SvelteKit including service worker registration, manifest generation, and offline caching strategies.',
-    },
-    {
       name: 'Vitest',
       originName: 'vitest',
       summary:
@@ -466,6 +514,111 @@ export const _astroFrontendPackages: __FrontendPackagesProps = {
       originName: 'playwright',
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
+    },
+  ],
+};
+
+export const _solidFrontendPackages: __FrontendPackagesProps = {
+  packages: [
+    {
+      name: 'Tailwind CSS',
+      originName: 'tailwindcss',
+      summary:
+        'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
+    },
+    {
+      name: 'Tailwind CSS Vite',
+      originName: '@tailwindcss/vite',
+      summary:
+        'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
+    },
+    {
+      name: 'Autoprefixer',
+      originName: 'autoprefixer',
+      summary:
+        'PostCSS plugin to parse CSS and add vendor prefixes automatically, ensuring cross-browser compatibility.',
+    },
+    {
+      name: 'ESLint',
+      originName: 'eslint',
+      summary:
+        'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
+    },
+    {
+      name: 'ESLint Plugin Solid',
+      originName: 'eslint-plugin-solid',
+      summary:
+        'Adds ESLint rules and JSX support tailored for SolidJS projects to ensure best practices and prevent common mistakes.',
+    },
+    {
+      name: 'Prettier',
+      originName: 'prettier',
+      summary:
+        'Opinionated code formatter supporting multiple languages, ensuring consistent style.',
+    },
+    {
+      name: 'Dotenv',
+      originName: 'dotenv',
+      summary: 'Loads environment variables from a .env file into process.env.',
+    },
+    {
+      name: 'Axios',
+      originName: 'axios',
+      summary:
+        'Promise-based HTTP client for browsers and Node.js, with support for interceptors and transformations.',
+    },
+    {
+      name: 'Vite',
+      originName: 'vite',
+      summary:
+        'Next-generation frontend build tool with lightning-fast HMR, pre-bundling, and optimized production builds.',
+    },
+    {
+      name: 'Vite Plugin Solid',
+      originName: 'vite-plugin-solid',
+      summary:
+        'Official plugin to compile SolidJS components in Vite, enabling fast refresh and JSX/TSX support.',
+    },
+    {
+      name: 'Vitest',
+      originName: 'vitest',
+      summary:
+        'Blazing fast unit test framework built on Vite, offering a Jest-compatible API optimized for Vue.js projects.',
+    },
+    {
+      name: 'SolidJS Router',
+      originName: '@solidjs/router',
+      summary:
+        'Lightweight, client-side router for SolidJS with nested routes, route parameters, and lazy loading support.',
+    },
+    {
+      name: 'graphql-request',
+      originName: 'graphql-request',
+      summary: 'Minimal GraphQL client.',
+    },
+    {
+      name: 'Zod',
+      originName: 'zod',
+      summary:
+        'Type-safe schema validation library for TypeScript and JavaScript, enabling robust data parsing and type inference.',
+    },
+    {
+      name: 'Felte Solid',
+      originName: '@felte/solid',
+      summary:
+        'Form state management library for SolidJS, providing validation, field arrays, and submission helpers.',
+    },
+    {
+      name: 'Solid Primitives i18n',
+      originName: '@solid-primitives/i18n',
+      summary:
+        'Collection of reactive internationalization primitives for SolidJS, handling translations, pluralization, and locale changes.',
+    },
+    {
+      name: 'Solid Testing Library',
+      originName: '@testing-library/solid',
+      summary:
+        'Testing utilities for SolidJS components following the Testing Library philosophy of user-centric tests.',
     },
   ],
 };

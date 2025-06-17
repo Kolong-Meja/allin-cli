@@ -1,5 +1,5 @@
 type _BackendFramework = 'Express.js' | 'Fastify' | 'NestJS';
-type _FrontendFramework = 'Next.js' | 'Vue.js' | 'Svelte';
+type _FrontendFramework = 'Next.js' | 'Vue.js' | 'Svelte' | 'SolidJS';
 
 export const _typescriptDependencies: {
   backend: Record<_BackendFramework, string[]>;
@@ -25,5 +25,6 @@ export const _typescriptDependencies: {
       'npm-run-all2',
     ],
     Svelte: ['typescript', 'svelte-check'],
+    SolidJS: ['typescript'],
   },
 };

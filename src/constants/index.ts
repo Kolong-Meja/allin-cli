@@ -47,14 +47,20 @@ export const _frontendFrameworks: __DefaultFrameworkProps = {
     {
       name: 'Svelte',
       templateName: 'svelte-project',
-      language: 'js',
+      language: 'ts',
       path: 'templates/frontend/svelte-project',
     },
     {
       name: 'Astro.js',
       templateName: 'astro-project',
-      language: 'js',
+      language: 'ts',
       path: 'templates/frontend/astro-project',
+    },
+    {
+      name: 'SolidJS',
+      templateName: 'solid-project',
+      language: 'ts',
+      path: 'templates/frontend/solid-project',
     },
   ],
 };
