@@ -3,18 +3,17 @@ export const __titleCase = <T extends string>(s: T) =>
     s.slice(1).toLocaleLowerCase('en-US')) as Capitalize<typeof s>;
 
 export const __renewProjectName = <T extends string>(s: T) => {
-  let result: string;
+  const trimmed = s.trim();
 
-  if (s.trim().indexOf(' ') !== -1) {
-    result = s.toLocaleLowerCase('en-US').split(' ').join('-');
+  if (trimmed.includes(' ')) {
+    return trimmed.toLocaleLowerCase('en-US').split(' ').join('-');
   } else {
-    result = s
+    return trimmed
       .split(/(?=[A-Z])/)
+      .filter(Boolean)
       .join('-')
       .toLocaleLowerCase('en-US');
   }
-
-  return result;
 };
 
 export const __renewStringIntoTitleCase = <T extends string>(s: T) => {

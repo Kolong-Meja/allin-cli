@@ -1,5 +1,5 @@
 /**
- * __tests__/runner.test.ts
+ * __tests__/program.test.ts
  */
 import { jest } from '@jest/globals';
 
@@ -95,12 +95,17 @@ describe('_generateProgram()', () => {
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
       '-g, --git',
-      'Initialize git repo automatically.',
+      'Initialize git repo automatically (default: false).',
       false,
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
       '-l, --license',
-      'Add a LICENSE file.',
+      'Add a LICENSE file (default: false).',
+      false,
+    );
+    expect(mockProgram.option).toHaveBeenCalledWith(
+      '--ts',
+      'Initialize project with TypeScript configuration (default: false).',
       false,
     );
     expect(mockProgram.helpOption).toHaveBeenCalledWith(
