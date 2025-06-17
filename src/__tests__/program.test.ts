@@ -1,5 +1,5 @@
 /**
- * __tests__/runner.test.ts
+ * __tests__/program.test.ts
  */
 import { jest } from '@jest/globals';
 
