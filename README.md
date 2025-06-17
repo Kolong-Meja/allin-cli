@@ -1,38 +1,42 @@
 # Allin CLI
 
-A modern full-stack CLI tool based on TypeScript designed to accelerate your app development process — setup your entire stack in one seamless command.
+![NPM VERSION](https://img.shields.io/npm/v/@faisalrmdhn08/allin-cli?style=flat-square)
+![NPM DOWNLOADS](https://img.shields.io/npm/dm/@faisalrmdhn08/allin-cli?style=flat-square)
+![LICENSE](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
-### **Available on**: 
+A modern, full-stack CLI tool built with TypeScript that scaffolds your entire stack—backend, frontend or both—in one seamless command.
+
+### Supported Platforms: 
 
 ![OS](https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=apple&logoColor=white) ![OS](  https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![OS](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 
-### **Included Frameworks**:
-- **Backend**:
+### Supported Templates :
+![EXPRESS](https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=white) ![FASTIFY](https://img.shields.io/badge/fastify-202020?style=for-the-badge&logo=fastify&logoColor=white) ![NESTJS](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white) ![NEXT](https://img.shields.io/badge/next%20js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white) ![VUE](https://img.shields.io/badge/Vue%20js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D) ![SVELTE](https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00) ![ASTRO](https://img.shields.io/badge/Astro-0C1222?style=for-the-badge&logo=astro&logoColor=FDFDFE) ![SOLID](https://img.shields.io/badge/Solid%20JS-2C4F7C?style=for-the-badge&logo=solid&logoColor=white)
 
-![FRAMEWORK](https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=white) ![FRAMEWORK](https://img.shields.io/badge/fastify-202020?style=for-the-badge&logo=fastify&logoColor=white) ![FRAMEWORK](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
 
-- **Frontend**:
-
-![FRAMEWORK](https://img.shields.io/badge/next%20js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white) ![FRAMEWORK](https://img.shields.io/badge/Vue%20js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D) ![FRAMEWORK](https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00) ![FRAMEWORK](https://img.shields.io/badge/Astro-0C1222?style=for-the-badge&logo=astro&logoColor=FDFDFE)
+### **New Features**:
+- Add new `--ts` option so you can initiliaze `Typescript` on your project.
+- Add **SolidJS Framework** as a project template which you can use when creating new project.
 
 
 ## Table of Contents
 
-- [Prerequisites](https://github.com/Kolong-Meja/allin-cli#prerequisites)
-- [Installation](https://github.com/Kolong-Meja/allin-cli#installation)
-- [Usage](https://github.com/Kolong-Meja/allin-cli#usage)
-- [Commands](https://github.com/Kolong-Meja/allin-cli#commands)
-- [Options](https://github.com/Kolong-Meja/allin-cli#options)
-- [Examples](https://github.com/Kolong-Meja/allin-cli#examples)
-- [Creator & Collaboration](https://github.com/Kolong-Meja/allin-cli#creator--collaboration)
-- [License](https://github.com/Kolong-Meja/allin-cli#license)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Commands](#commands)
+- [Options](#options)
+- [Examples](#examples)
+- [Creator & Collaboration](#creator--collaboration)
+- [License](#license)
 
 ## Prerequisites
 
 Before using Allin CLI, ensure you have the following installed on your machine:
 
-- Node.js version **22.16.0** (LTS) or later
-- npm version **10.9.2** or later
+- **Node.js** version **22.16.0** (LTS) or later
+- **npm** version **10.9.2** or later
+- **git** (optional, if you use option `-g` or `--git`)
 
 You can verify your versions with:
 
@@ -43,25 +47,25 @@ npm --version    # should output 10.9.2 or higher
 
 ## Installation
 
-Install Allin CLI globally via npm:
+#### npm:
 
 ```bash
 npm install -g @faisalrmdhn08/allin-cli
 ```
 
-Install Allin CLI globally via yarn:
+#### yarn:
 
 ```bash
 yarn global add @faisalrmdhn08/allin-cli
 ```
 
-Install Allin CLI globally via pnpm:
+#### pnpm:
 
 ```bash
 pnpm add -g @faisalrmdhn08/allin-cli
 ```
 
-Install Allin CLI globally via bun:
+#### bun:
 
 ```bash
 bun add -g @faisalrmdhn08/allin-cli
@@ -69,19 +73,19 @@ bun add -g @faisalrmdhn08/allin-cli
 
 ## Usage
 
-Start creating project:
+#### Start creating new project:
 
 ```bash
 allin create
 ```
 
-Show global help:
+#### Show help:
 
 ```bash
 allin --help
 ```
 
-Show version and exit:
+#### Show version:
 
 ```bash
 allin --version
@@ -104,21 +108,39 @@ allin create [options]
 
 | Flag              | Description                                                  | Default                   |
 | ----------------- | ------------------------------------------------------------ | ------------------------- |
-| `-d, --dir <dir>` | Destination directory to save the project template.          | Current working directory |
-| `-g, --git`       | Initialize a Git repository automatically after scaffolding. | `false`                   |
-| `-l, --license`   | Add a `LICENSE` file to the generated project (GPLv3).       | `false`                   |
-| `-h, --help`      | Display help information for a specific command.             | —                         |
-| `-v, --version`   | Show current version of Allin CLI and exit.                  | —                         |
+| `-d, --dir <dir>` | Destination directory for the generated project.             | current working directory |
+| `-g, --git`       | Initialize a Git repository.                                 | `false`                   |
+| `-l, --license`   | Add a LICENSE file (GPLv3).                                  | `false`                   |
+| `--ts`            | Scaffold project with TypeScript config and boilerplate.     | `false`                   |
+| `-h, --help`      | Display help for a specific command.                         | —                         |
+| `-v, --version`   | Display the CLI version and exit.                            | —                         |
 
 ## Examples
 
-Create a new project in folder **my-app**, **initialize Git**, and **add a LICENSE**:
+Create new project in folder **my-app** with `git init`, add `LICENSE`, and add `Typescript`:
 
 ```bash
-allin create -d my-app -g -l
+allin create -d my-app -g -l --ts
 ```
 
-Create in current directory without Git or license:
+Create new project in folder **my-app** with `git init` only.
+
+```bash
+allin create -d my-app -g
+```
+
+Create new project in folder **my-app** with add `LICENSE` only.
+
+```bash
+allin create -d my-app -l
+```
+Create new project in folder **my-app** with add `Typescript` only.
+
+```bash
+allin create -d my-app --ts
+```
+
+Create in current directory without `git init`, add `LICENSE`, and add `Typescript`:
 
 ```bash
 allin create
