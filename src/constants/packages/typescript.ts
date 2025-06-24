@@ -1,5 +1,10 @@
 type _BackendFramework = 'Express.js' | 'Fastify' | 'NestJS' | 'Node.js';
-type _FrontendFramework = 'Next.js' | 'Vue.js' | 'Svelte' | 'SolidJS';
+type _FrontendFramework =
+  | 'Next.js'
+  | 'Vue.js'
+  | 'Svelte'
+  | 'SolidJS'
+  | 'VanillaJS';
 
 export const TYPESCRIPT_DEPENDENCIES: {
   backend: Record<_BackendFramework, string[]>;
@@ -27,5 +32,6 @@ export const TYPESCRIPT_DEPENDENCIES: {
     ],
     Svelte: ['typescript', 'svelte-check'],
     SolidJS: ['typescript'],
+    VanillaJS: ['typescript', '@types/node'],
   },
 };

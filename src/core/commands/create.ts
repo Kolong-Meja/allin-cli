@@ -39,6 +39,7 @@ import {
   NEXT_DEPENDENCIES,
   SOLID_DEPENDENCIES,
   SVELTE_DEPENDENCIES,
+  VANILLA_DEPENDENCIES,
   VUE_DEPENDENCIES,
 } from '@/constants/packages/frontend.js';
 import { TYPESCRIPT_DEPENDENCIES } from '@/constants/packages/typescript.js';
@@ -1206,6 +1207,109 @@ export class CreateCommand {
           ),
         );
         break;
+      case 'VanillaJS':
+        const __vanillaDependenciesSelection: {
+          vanillaDependencies: string[];
+        } = await inquirer.prompt([
+          {
+            name: 'vanillaDependencies',
+            type: 'checkbox',
+            message: 'Select npm packages to include in your project:',
+            choices: VANILLA_DEPENDENCIES.packages
+              .sort((i, e) =>
+                i.name
+                  .toLowerCase()
+                  .localeCompare(e.name.toLowerCase(), 'en-US'),
+              )
+              .map((p) => p.originName),
+            loop: false,
+          },
+        ]);
+
+        const __vanillaDockerQuestion: {
+          addDocker: boolean;
+          addDockerBake: boolean;
+        } = await inquirer.prompt([
+          {
+            name: 'addDocker',
+            type: 'confirm',
+            message: 'Do you want us to add docker to your project? (optional)',
+            default: false,
+          },
+          {
+            name: 'addDockerBake',
+            type: 'confirm',
+            message: 'Do you want us to add docker bake too? (optional)',
+            default: false,
+            when: (a) => a.addDocker !== false,
+          },
+        ]);
+
+        await this.__generateProject(
+          spinner,
+          projectName,
+          __frontendFrameworkQuestion.frontendFramework,
+          __frontendFrameworkTemplateSourcePath,
+          __frontendFrameworkTemplateDesPath,
+        );
+
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __vanillaDependenciesSelection.vanillaDependencies,
+          __frontendFrameworkTemplateDesPath,
+          projectName,
+        );
+
+        if (__vanillaDockerQuestion.addDocker) {
+          await this.__setupDocker(
+            spinner,
+            __vanillaDockerQuestion.addDocker,
+            __vanillaDockerQuestion.addDockerBake,
+            __frontendFrameworkTemplateDesPath,
+          );
+        }
+
+        if (options.git) {
+          await this.__runAddGit(
+            spinner,
+            projectName,
+            __frontendFrameworkTemplateDesPath,
+          );
+        }
+
+        if (options.license) {
+          await this.__runAddLicense(
+            spinner,
+            projectName,
+            __frontendFrameworkTemplateDesPath,
+          );
+        }
+
+        if (options.ts) {
+          await this.__runAddTypescript(
+            spinner,
+            projectType.toLowerCase(),
+            __frontendFrameworkQuestion.frontendFramework,
+            projectName,
+            __frontendFrameworkTemplateDesPath,
+          );
+        }
+
+        console.log(
+          boxen(
+            `You can check the project on ${chalk.bold(
+              __frontendFrameworkTemplateDesPath,
+            )}`,
+            {
+              title: 'ⓘ Project Information ⓘ',
+              titleAlignment: 'center',
+              padding: 1,
+              margin: 1,
+              borderColor: 'blue',
+            },
+          ),
+        );
+        break;
     }
   }
 
@@ -1554,22 +1658,39 @@ export class CreateCommand {
       cwd: desPath,
     });
 
-    const __indexFileJsPath = path.join(desPath, 'index.js');
+    spinner.succeed(`Initializing ${chalk.bold('Typescript')} succeed ✅`);
 
-    if (fs.existsSync(__indexFileJsPath)) {
-      spinner.start(
-        `Renaming ${chalk.bold('index.js')} into ${chalk.bold('index.ts')}...`,
-      );
+    spinner.start(`Start renaming .js files to .ts`);
 
-      const __indexFileTsPath = path.join(desPath, 'index.ts');
-      fs.renameSync(__indexFileJsPath, __indexFileTsPath);
+    const renamePairs: [string, string][] =
+      projectType === 'backend'
+        ? [[path.join(desPath, 'index.js'), path.join(desPath, 'index.ts')]]
+        : [
+            [
+              path.join(desPath, 'src', 'main.js'),
+              path.join(desPath, 'src', 'main.ts'),
+            ],
+            [
+              path.join(desPath, 'src', 'counter.js'),
+              path.join(desPath, 'src', 'counter.ts'),
+            ],
+          ];
 
-      spinner.succeed(
-        `Renaming ${chalk.bold('index.js')} into ${chalk.bold('index.ts')} succeed ✅`,
-      );
+    for (const [__sourcePath, __desPath] of renamePairs) {
+      if (fs.existsSync(__sourcePath)) {
+        spinner.start(
+          `Renaming ${chalk.bold(__sourcePath)} to ${chalk.bold(__desPath)}...`,
+        );
+
+        fs.renameSync(__sourcePath, __desPath);
+
+        spinner.succeed(
+          `Renamed ${chalk.bold(__sourcePath)} → ${chalk.bold(__desPath)} ✅`,
+        );
+      }
     }
 
-    spinner.succeed(`Initializing ${chalk.bold('Typescript')} succeed ✅`);
+    spinner.succeed(`All file renames complete for ${projectName} ✅`);
 
     spinner.succeed(
       `Adding ${chalk.bold('Typescript')} on ${projectName} succeed ✅`,
@@ -1673,6 +1794,18 @@ export class CreateCommand {
 
     if (framework === 'SolidJS') {
       for (const p of TYPESCRIPT_DEPENDENCIES.frontend['SolidJS']) {
+        spinner.start(`Start installing ${chalk.bold(p)} package...`);
+
+        await execa('npm', ['install', '-D', `${p}`], {
+          cwd: desPath,
+        });
+
+        spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+      }
+    }
+
+    if (framework === 'VanillaJS') {
+      for (const p of TYPESCRIPT_DEPENDENCIES.frontend['VanillaJS']) {
         spinner.start(`Start installing ${chalk.bold(p)} package...`);
 
         await execa('npm', ['install', '-D', `${p}`], {

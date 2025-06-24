@@ -66,6 +66,12 @@ export const FRONTEND_FRAMEWORKS: __DefaultFrameworkProps = {
       language: 'ts',
       path: 'templates/frontend/solid-project',
     },
+    {
+      name: 'VanillaJS',
+      templateName: 'vanilla-project',
+      language: 'js',
+      path: 'templates/frontend/vanilla-project',
+    },
   ],
 };
 
