@@ -32,6 +32,7 @@ import {
   EXPRESS_DEPENDENCIES,
   FASTIFY_DEPENDENCIES,
   NEST_DEPENDENCIES,
+  NODE_DEPENDENCIES,
 } from '@/constants/packages/backend.js';
 import {
   ASTRO_DEPENDENCIES,
@@ -486,6 +487,109 @@ export class CreateCommand {
             spinner,
             __nestDockerQuestion.addDocker,
             __nestDockerQuestion.addDockerBake,
+            __backendFrameworkTemplateDesPath,
+          );
+        }
+
+        if (options.git) {
+          await this.__runAddGit(
+            spinner,
+            projectName,
+            __backendFrameworkTemplateDesPath,
+          );
+        }
+
+        if (options.license) {
+          await this.__runAddLicense(
+            spinner,
+            projectName,
+            __backendFrameworkTemplateDesPath,
+          );
+        }
+
+        if (options.ts) {
+          await this.__runAddTypescript(
+            spinner,
+            projectType.toLowerCase(),
+            __backendFrameworkQuestion.backendFramework,
+            projectName,
+            __backendFrameworkTemplateDesPath,
+          );
+        }
+
+        console.log(
+          boxen(
+            `You can check the project on ${chalk.bold(
+              __backendFrameworkTemplateDesPath,
+            )}`,
+            {
+              title: 'ⓘ Project Information ⓘ',
+              titleAlignment: 'center',
+              padding: 1,
+              margin: 1,
+              borderColor: 'blue',
+            },
+          ),
+        );
+        break;
+      case 'Node.js':
+        const __nodeDependenciesSelection: {
+          nestDependencies: string[];
+        } = await inquirer.prompt([
+          {
+            name: 'nestDependencies',
+            type: 'checkbox',
+            message: 'Select npm packages to include in your project:',
+            choices: NODE_DEPENDENCIES.packages
+              .sort((i, e) =>
+                i.name
+                  .toLowerCase()
+                  .localeCompare(e.name.toLowerCase(), 'en-US'),
+              )
+              .map((p) => p.originName),
+            loop: false,
+          },
+        ]);
+
+        const __nodeDockerQuestion: {
+          addDocker: boolean;
+          addDockerBake: boolean;
+        } = await inquirer.prompt([
+          {
+            name: 'addDocker',
+            type: 'confirm',
+            message: 'Do you want us to add docker to your project? (optional)',
+            default: false,
+          },
+          {
+            name: 'addDockerBake',
+            type: 'confirm',
+            message: 'Do you want us to add docker bake too? (optional)',
+            default: false,
+            when: (a) => a.addDocker !== false,
+          },
+        ]);
+
+        await this.__generateProject(
+          spinner,
+          projectName,
+          __backendFrameworkQuestion.backendFramework,
+          __backendFrameworkTemplateSourcePath,
+          __backendFrameworkTemplateDesPath,
+        );
+
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __nodeDependenciesSelection.nestDependencies,
+          __backendFrameworkTemplateDesPath,
+          projectName,
+        );
+
+        if (!__nodeDockerQuestion.addDocker) {
+          await this.__setupDocker(
+            spinner,
+            __nodeDockerQuestion.addDocker,
+            __nodeDockerQuestion.addDockerBake,
             __backendFrameworkTemplateDesPath,
           );
         }
@@ -1503,6 +1607,18 @@ export class CreateCommand {
 
     if (framework === 'NestJS') {
       for (const p of TYPESCRIPT_DEPENDENCIES.backend['NestJS']) {
+        spinner.start(`Start installing ${chalk.bold(p)} package...`);
+
+        await execa('npm', ['install', '-D', `${p}`], {
+          cwd: desPath,
+        });
+
+        spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+      }
+    }
+
+    if (framework === 'Node.js') {
+      for (const p of TYPESCRIPT_DEPENDENCIES.backend['Node.js']) {
         spinner.start(`Start installing ${chalk.bold(p)} package...`);
 
         await execa('npm', ['install', '-D', `${p}`], {

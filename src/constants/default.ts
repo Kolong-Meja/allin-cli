@@ -25,6 +25,12 @@ export const BACKEND_FRAMEWORKS: __DefaultFrameworkProps = {
       language: 'ts',
       path: 'templates/backend/nest-project',
     },
+    {
+      name: 'Node.js',
+      templateName: 'node-project',
+      language: 'js',
+      path: 'templates/backend/node-project',
+    },
   ],
 };
 

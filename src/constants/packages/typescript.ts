@@ -1,4 +1,4 @@
-type _BackendFramework = 'Express.js' | 'Fastify' | 'NestJS';
+type _BackendFramework = 'Express.js' | 'Fastify' | 'NestJS' | 'Node.js';
 type _FrontendFramework = 'Next.js' | 'Vue.js' | 'Svelte' | 'SolidJS';
 
 export const TYPESCRIPT_DEPENDENCIES: {
@@ -9,6 +9,7 @@ export const TYPESCRIPT_DEPENDENCIES: {
     'Express.js': ['typescript', '@types/express'],
     Fastify: ['typescript', '@types/node'],
     NestJS: ['typescript', '@types/node', '@types/express'],
+    'Node.js': ['typescript', '@types/node'],
   },
   frontend: {
     'Next.js': [
