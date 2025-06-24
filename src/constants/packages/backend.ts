@@ -1,6 +1,6 @@
-import type { __BackendPackagesProps } from '@/types/index.js';
+import type { __BackendPackagesProps } from "@/types/general.js";
 
-export const _expressBackendPackages: __BackendPackagesProps = {
+export const EXPRESS_DEPENDENCIES: __BackendPackagesProps = {
   packages: [
     {
       name: 'Drizzle ORM',
@@ -117,7 +117,7 @@ export const _expressBackendPackages: __BackendPackagesProps = {
   ],
 };
 
-export const _fastifyBackendPackages: __BackendPackagesProps = {
+export const FASTIFY_DEPENDENCIES: __BackendPackagesProps = {
   packages: [
     {
       name: 'Drizzle ORM',
@@ -234,7 +234,7 @@ export const _fastifyBackendPackages: __BackendPackagesProps = {
   ],
 };
 
-export const _nestBackendPackages: __BackendPackagesProps = {
+export const NEST_DEPENDENCIES: __BackendPackagesProps = {
   packages: [
     {
       name: 'Drizzle ORM',

@@ -1,7 +1,7 @@
 type _BackendFramework = 'Express.js' | 'Fastify' | 'NestJS';
 type _FrontendFramework = 'Next.js' | 'Vue.js' | 'Svelte' | 'SolidJS';
 
-export const _typescriptDependencies: {
+export const TYPESCRIPT_DEPENDENCIES: {
   backend: Record<_BackendFramework, string[]>;
   frontend: Record<_FrontendFramework, string[]>;
 } = {

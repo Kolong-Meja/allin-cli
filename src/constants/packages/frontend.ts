@@ -1,6 +1,6 @@
-import type { __FrontendPackagesProps } from '@/types/index.js';
+import type { __FrontendPackagesProps } from '@/types/general.js';
 
-export const _nextFrontendPackages: __FrontendPackagesProps = {
+export const NEXT_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',
@@ -148,7 +148,7 @@ export const _nextFrontendPackages: __FrontendPackagesProps = {
   ],
 };
 
-export const _vueFrontendPackages: __FrontendPackagesProps = {
+export const VUE_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',
@@ -260,7 +260,7 @@ export const _vueFrontendPackages: __FrontendPackagesProps = {
   ],
 };
 
-export const _svelteFrontendPackages: __FrontendPackagesProps = {
+export const SVELTE_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',
@@ -376,7 +376,7 @@ export const _svelteFrontendPackages: __FrontendPackagesProps = {
   ],
 };
 
-export const _astroFrontendPackages: __FrontendPackagesProps = {
+export const ASTRO_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',
@@ -518,7 +518,7 @@ export const _astroFrontendPackages: __FrontendPackagesProps = {
   ],
 };
 
-export const _solidFrontendPackages: __FrontendPackagesProps = {
+export const SOLID_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',

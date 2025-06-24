@@ -1,13 +1,11 @@
 import type {
-  __BackendPackagesProps,
   __DefaultFrameworkProps,
   __DefaultLicenseProps,
-  __FrontendPackagesProps,
-} from '@/types/index.js';
+} from '@/types/general.js';
 
-export const _projectTypes: string[] = ['backend', 'frontend'];
+export const PROJECT_TYPES: string[] = ['backend', 'frontend'];
 
-export const _backendFrameworks: __DefaultFrameworkProps = {
+export const BACKEND_FRAMEWORKS: __DefaultFrameworkProps = {
   frameworks: [
     {
       name: 'Express.js',
@@ -30,7 +28,7 @@ export const _backendFrameworks: __DefaultFrameworkProps = {
   ],
 };
 
-export const _frontendFrameworks: __DefaultFrameworkProps = {
+export const FRONTEND_FRAMEWORKS: __DefaultFrameworkProps = {
   frameworks: [
     {
       name: 'Next.js',
@@ -65,7 +63,7 @@ export const _frontendFrameworks: __DefaultFrameworkProps = {
   ],
 };
 
-export const _licenses: __DefaultLicenseProps = {
+export const LICENSES: __DefaultLicenseProps = {
   licenses: [
     {
       name: 'Apache 2.0 License',
@@ -110,7 +108,7 @@ export const _licenses: __DefaultLicenseProps = {
   ],
 };
 
-export const _dirtyWords = [
+export const DIRTY_WORDS = [
   'fuck',
   'shit',
   'bitch',
