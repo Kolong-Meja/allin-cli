@@ -11,7 +11,11 @@ import {
 } from '@/utils/string.js';
 
 describe('String Util Functions', () => {
-  describe('__titleCase()', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('testing __titleCase() function.', () => {
     it('capitalizes the first letter and lowercases the rest', () => {
       expect(__titleCase('hello')).toBe('Hello');
       expect(__titleCase('WORLD')).toBe('World');
@@ -28,7 +32,7 @@ describe('String Util Functions', () => {
     });
   });
 
-  describe('__renewProjectName()', () => {
+  describe('testing __renewProjectName() function.', () => {
     it('converts space-separated names to kebab-case lowercase', () => {
       expect(__renewProjectName('My App')).toBe('my-app');
       expect(__renewProjectName(' multiple   Spaces Here ')).toBe(
@@ -52,7 +56,7 @@ describe('String Util Functions', () => {
     });
   });
 
-  describe('__renewStringIntoTitleCase()', () => {
+  describe('testing __renewStringIntoTitleCase() function', () => {
     it('title-cases each word in a single string', () => {
       expect(__renewStringIntoTitleCase('hello world')).toBe('Hello World');
       expect(__renewStringIntoTitleCase('MULTIPLE words HERE')).toBe(
@@ -69,7 +73,7 @@ describe('String Util Functions', () => {
     });
   });
 
-  describe('__renewStringsIntoTitleCase()', () => {
+  describe('testing __renewStringsIntoTitleCase() function.', () => {
     it('applies title case to each string in an array', () => {
       const input = ['hello world', 'foo bar', 'MixedCase Example'];
       const expected = ['Hello World', 'Foo Bar', 'Mixedcase Example'];

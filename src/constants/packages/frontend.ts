@@ -1,6 +1,6 @@
-import type { __FrontendPackagesProps } from '@/types/index.js';
+import type { __FrontendPackagesProps } from '@/types/general.js';
 
-export const _nextFrontendPackages: __FrontendPackagesProps = {
+export const NEXT_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',
@@ -145,10 +145,28 @@ export const _nextFrontendPackages: __FrontendPackagesProps = {
       summary:
         'Pure JavaScript PostgreSQL client for Node.js, offering promises and connection pooling.',
     },
+    {
+      name: 'Chart.js',
+      originName: 'chart.js',
+      summary:
+        'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
+    },
+    {
+      name: 'GSAP',
+      originName: 'gsap',
+      summary:
+        'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
+    },
+    {
+      name: 'animejs',
+      originName: 'animejs',
+      summary:
+        'Lightweight JavaScript animation engine for CSS properties, SVG, DOM attributes, and JavaScript Objects.',
+    },
   ],
 };
 
-export const _vueFrontendPackages: __FrontendPackagesProps = {
+export const VUE_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',
@@ -257,10 +275,28 @@ export const _vueFrontendPackages: __FrontendPackagesProps = {
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
     },
+    {
+      name: 'Chart.js',
+      originName: 'chart.js',
+      summary:
+        'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
+    },
+    {
+      name: 'GSAP',
+      originName: 'gsap',
+      summary:
+        'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
+    },
+    {
+      name: 'animejs',
+      originName: 'animejs',
+      summary:
+        'Lightweight JavaScript animation engine for CSS properties, SVG, DOM attributes, and JavaScript Objects.',
+    },
   ],
 };
 
-export const _svelteFrontendPackages: __FrontendPackagesProps = {
+export const SVELTE_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',
@@ -373,10 +409,28 @@ export const _svelteFrontendPackages: __FrontendPackagesProps = {
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
     },
+    {
+      name: 'Chart.js',
+      originName: 'chart.js',
+      summary:
+        'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
+    },
+    {
+      name: 'GSAP',
+      originName: 'gsap',
+      summary:
+        'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
+    },
+    {
+      name: 'animejs',
+      originName: 'animejs',
+      summary:
+        'Lightweight JavaScript animation engine for CSS properties, SVG, DOM attributes, and JavaScript Objects.',
+    },
   ],
 };
 
-export const _astroFrontendPackages: __FrontendPackagesProps = {
+export const ASTRO_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',
@@ -515,10 +569,28 @@ export const _astroFrontendPackages: __FrontendPackagesProps = {
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
     },
+    {
+      name: 'Chart.js',
+      originName: 'chart.js',
+      summary:
+        'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
+    },
+    {
+      name: 'GSAP',
+      originName: 'gsap',
+      summary:
+        'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
+    },
+    {
+      name: 'animejs',
+      originName: 'animejs',
+      summary:
+        'Lightweight JavaScript animation engine for CSS properties, SVG, DOM attributes, and JavaScript Objects.',
+    },
   ],
 };
 
-export const _solidFrontendPackages: __FrontendPackagesProps = {
+export const SOLID_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
       name: 'Tailwind CSS',
@@ -619,6 +691,118 @@ export const _solidFrontendPackages: __FrontendPackagesProps = {
       originName: '@testing-library/solid',
       summary:
         'Testing utilities for SolidJS components following the Testing Library philosophy of user-centric tests.',
+    },
+    {
+      name: 'Playwright',
+      originName: 'playwright',
+      summary:
+        'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
+    },
+    {
+      name: 'Chart.js',
+      originName: 'chart.js',
+      summary:
+        'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
+    },
+    {
+      name: 'GSAP',
+      originName: 'gsap',
+      summary:
+        'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
+    },
+    {
+      name: 'animejs',
+      originName: 'animejs',
+      summary:
+        'Lightweight JavaScript animation engine for CSS properties, SVG, DOM attributes, and JavaScript Objects.',
+    },
+  ],
+};
+
+export const VANILLA_DEPENDENCIES: __FrontendPackagesProps = {
+  packages: [
+    {
+      name: 'Tailwind CSS',
+      originName: 'tailwindcss',
+      summary:
+        'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
+    },
+    {
+      name: 'Tailwind CSS Vite',
+      originName: '@tailwindcss/vite',
+      summary:
+        'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
+    },
+    {
+      name: 'Autoprefixer',
+      originName: 'autoprefixer',
+      summary:
+        'PostCSS plugin to parse CSS and add vendor prefixes automatically, ensuring cross-browser compatibility.',
+    },
+    {
+      name: 'ESLint',
+      originName: 'eslint',
+      summary:
+        'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
+    },
+    {
+      name: 'Zod',
+      originName: 'zod',
+      summary:
+        'Type-safe schema validation library for TypeScript and JavaScript, enabling robust data parsing and type inference.',
+    },
+    {
+      name: 'Prettier',
+      originName: 'prettier',
+      summary:
+        'Opinionated code formatter supporting multiple languages, ensuring consistent style.',
+    },
+    {
+      name: 'Dotenv',
+      originName: 'dotenv',
+      summary: 'Loads environment variables from a .env file into process.env.',
+    },
+    {
+      name: 'ky',
+      originName: 'ky',
+      summary:
+        'Lightweight wrapper around the Fetch API with built-in retry, timeout, and JSON parsing for browser and Node environments.',
+    },
+    {
+      name: 'Vitest',
+      originName: 'vitest',
+      summary:
+        'Blazing fast unit test framework built on Vite, offering a Jest-compatible API optimized for Vue.js projects.',
+    },
+    {
+      name: 'Chart.js',
+      originName: 'chart.js',
+      summary:
+        'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
+    },
+    {
+      name: 'GSAP',
+      originName: 'gsap',
+      summary:
+        'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
+    },
+    {
+      name: 'animejs',
+      originName: 'animejs',
+      summary:
+        'Lightweight JavaScript animation engine for CSS properties, SVG, DOM attributes, and JavaScript Objects.',
+    },
+    {
+      name: 'date-fns',
+      originName: 'date-fns',
+      summary:
+        'Modern JavaScript date utility library with immutable, pure functions and tree-shakable modules for minimal bundle size.',
+    },
+    {
+      name: 'Playwright',
+      originName: 'playwright',
+      summary:
+        'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
     },
   ],
 };

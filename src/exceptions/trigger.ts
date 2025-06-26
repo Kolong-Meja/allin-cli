@@ -9,7 +9,7 @@ import {
 } from './error.js';
 import chalk from 'chalk';
 
-export function _pathNotFound(path: string): void {
+export function __pathNotExist(path: string): void {
   if (!fs.existsSync(path))
     throw new PathNotFoundError(
       `${chalk.bold('Path not found')}: ${chalk.bold(path)} path is not exist.`,
@@ -17,9 +17,9 @@ export function _pathNotFound(path: string): void {
   return;
 }
 
-export function _projectNotExist(
+export function __projectTemplateNotExist(
   template: string,
-  model: 'backend' | 'frontend' | 'fullstack',
+  model: 'backend' | 'frontend',
   projects: string[],
 ): void {
   if (!projects.includes(template)) {
@@ -32,7 +32,7 @@ export function _projectNotExist(
   return;
 }
 
-export function _unableOverwrite(path: string): void {
+export function __unableToOverwriteProject(path: string): void {
   if (fs.existsSync(path))
     throw new UnableOverwriteError(
       `${chalk.bold('Unable to overwrite')}: ${chalk.bold(
@@ -46,7 +46,7 @@ export function _unableOverwrite(path: string): void {
   return;
 }
 
-export function _unidentifiedTemplate(
+export function __unidentifiedProjectTemplate(
   template: string,
   templates: string[],
 ): void {
@@ -60,7 +60,7 @@ export function _unidentifiedTemplate(
   return;
 }
 
-export function _unidentifiedProject(
+export function __unidentifiedFramework(
   project: string,
   projects: string[],
 ): void {
@@ -74,7 +74,7 @@ export function _unidentifiedProject(
   return;
 }
 
-export function _harassmentWordsDetected(value: string, words: string[]): void {
+export function __containHarassmentWords(value: string, words: string[]): void {
   const _isContainDirtyWord = words.some((e) => value.includes(e));
 
   if (_isContainDirtyWord) {

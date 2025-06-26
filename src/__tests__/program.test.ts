@@ -20,46 +20,51 @@ const exitSpy = jest
   .mockImplementation((() => {}) as any);
 
 jest.unstable_mockModule('../../src/config.js', () => ({
-  __userrealname: 'Faisal',
-  _appName: 'allin',
-  _appDesc: 'desc',
-  _appCreator: 'faisal',
-  _appVersion: '1.0.0',
-  _appLicense: 'MIT',
-  _appGithubLink: 'https://github.com/…',
-  __nodeJsVersion: 'v22.16.0',
-  _os: 'linux x64',
-  _basePath: '/mocked/base',
-  _program: mockProgram,
+  program: mockProgram,
+  __config: {
+    appName: 'allin',
+    appDesc: 'This is a test description',
+    creatorName: 'Test Author',
+    appVersion: '9.9.9',
+    appLicense: 'MIT',
+    githubLnk: 'https://github.com/example/allin-cli',
+    npmLink: 'https://www.npmjs.com/package/@example/allin-cli',
+    nodeJSVersion: '22.16.0',
+    osPlatform: 'Linux Ubuntu',
+  },
 }));
 
-const mockPrintAscii = jest.fn();
+const mockAppAscii = jest.fn();
 jest.unstable_mockModule('../../src/utils/ascii.js', () => ({
-  _allinGradient: jest.fn((str: string) => str),
-  _printAscii: mockPrintAscii,
+  __gradientColor: jest.fn((str: string) => str),
+  __generateTextAscii: mockAppAscii,
 }));
 
-const mockNewCreateCommand = jest.fn();
+const mockCreateCommand = jest.fn();
 jest.unstable_mockModule('../../src/core/commands/create.js', () => ({
-  _newCreateCommand: mockNewCreateCommand,
+  CreateCommand: {
+    instance: {
+      create: mockCreateCommand,
+    },
+  },
 }));
 
-const { _generateProgram } = await import('../../src/core/program.js');
+const { generateProgram } = await import('../../src/core/program.js');
 
-describe('_generateProgram()', () => {
+describe('generateProgram()', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should register name and description on the program', async () => {
-    await _generateProgram();
+    await generateProgram();
 
     expect(mockProgram.name).toHaveBeenCalledWith('allin');
     expect(mockProgram.description).toHaveBeenCalled();
   });
 
   it('registers the version option and invokes _printAscii + exit', async () => {
-    await _generateProgram();
+    await generateProgram();
 
     const versionCall = mockProgram.option.mock.calls.find(
       ([flag]) => flag === '-v, --version',
@@ -80,12 +85,12 @@ describe('_generateProgram()', () => {
     expect(versionCallback).toBeInstanceOf(Function);
 
     await versionCallback();
-    expect(mockPrintAscii).toHaveBeenCalled();
+    expect(mockAppAscii).toHaveBeenCalled();
     expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
   it('sets up the create subcommand with correct options and action', async () => {
-    await _generateProgram();
+    await generateProgram();
 
     expect(mockProgram.command).toHaveBeenCalledWith('create');
     expect(mockProgram.option).toHaveBeenCalledWith(
@@ -95,18 +100,22 @@ describe('_generateProgram()', () => {
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
       '-g, --git',
-      'Initialize git repo automatically (default: false).',
+      'Initialize git repo automatically.',
       false,
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
-      '-l, --license',
-      'Add a LICENSE file (default: false).',
+      '-l, --li',
+      'Add a LICENSE file.',
       false,
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
-      '--ts',
-      'Initialize project with TypeScript configuration (default: false).',
+      '-t, --ts',
+      'Initialize project with TypeScript configuration.',
       false,
+    );
+    expect(mockProgram.option).toHaveBeenCalledWith(
+      '-m, --pm <pm>',
+      'Choose package manager (npm | pnpm).',
     );
     expect(mockProgram.helpOption).toHaveBeenCalledWith(
       '-h, --help',
@@ -127,11 +136,11 @@ describe('_generateProgram()', () => {
     const actionFn: Function = actionCall[0] as Function;
 
     await actionFn({ foo: 'bar' });
-    expect(mockNewCreateCommand).toHaveBeenCalledWith({ foo: 'bar' });
+    expect(mockCreateCommand).toHaveBeenCalledWith({ foo: 'bar' });
   });
 
   it('configures global helpOption, helpCommand and invokes parse()', async () => {
-    await _generateProgram();
+    await generateProgram();
     expect(mockProgram.helpOption).toHaveBeenCalledWith(
       '-h, --help',
       expect.stringContaining('Action to get more information'),

@@ -1,3 +1,14 @@
+export type Mixed =
+  | string
+  | number
+  | bigint
+  | object
+  | boolean
+  | symbol
+  | undefined
+  | null
+  | any;
+
 export type __PrintAsciiProps = {
   name: string;
   desc: string;
@@ -52,4 +63,3 @@ export type __BackendPackagesProps = {
 export type __FrontendPackagesProps = {
   packages: __PackagesProps[];
 };
-

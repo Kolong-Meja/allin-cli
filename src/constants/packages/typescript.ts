@@ -1,7 +1,12 @@
-type _BackendFramework = 'Express.js' | 'Fastify' | 'NestJS';
-type _FrontendFramework = 'Next.js' | 'Vue.js' | 'Svelte' | 'SolidJS';
+type _BackendFramework = 'Express.js' | 'Fastify' | 'NestJS' | 'Node.js';
+type _FrontendFramework =
+  | 'Next.js'
+  | 'Vue.js'
+  | 'Svelte'
+  | 'SolidJS'
+  | 'VanillaJS';
 
-export const _typescriptDependencies: {
+export const TYPESCRIPT_DEPENDENCIES: {
   backend: Record<_BackendFramework, string[]>;
   frontend: Record<_FrontendFramework, string[]>;
 } = {
@@ -9,6 +14,7 @@ export const _typescriptDependencies: {
     'Express.js': ['typescript', '@types/express'],
     Fastify: ['typescript', '@types/node'],
     NestJS: ['typescript', '@types/node', '@types/express'],
+    'Node.js': ['typescript', '@types/node'],
   },
   frontend: {
     'Next.js': [
@@ -26,5 +32,6 @@ export const _typescriptDependencies: {
     ],
     Svelte: ['typescript', 'svelte-check'],
     SolidJS: ['typescript'],
+    VanillaJS: ['typescript', '@types/node'],
   },
 };

@@ -1,48 +1,38 @@
-import { _allinGradient, _printAscii } from '@/utils/ascii.js';
 import chalk from 'chalk';
-import {
-  _appCreator,
-  _appDesc,
-  _appLicense,
-  _appName,
-  _appVersion,
-  _program,
-} from '@/config.js';
-import { _newCreateCommand } from './commands/create.js';
 import { __renewProjectName } from '@/utils/string.js';
+import { __config, program } from '@/config.js';
+import { __generateTextAscii, __gradientColor } from '@/utils/ascii.js';
+import { CreateCommand } from './commands/create.js';
 
-export async function _generateProgram(): Promise<void> {
-  _program.name(_appName.toLowerCase()).description(_appDesc);
+export async function generateProgram(): Promise<void> {
+  program.name(__config.appName.toLowerCase()).description(__config.appDesc);
 
-  _program.option(
+  program.option(
     '-v, --version',
-    `Action to get information about the current version of ${_allinGradient(
+    `Action to get information about the current version of ${__gradientColor(
       'Allin CLI',
     )} tool.`,
     () => {
-      _printAscii();
+      __generateTextAscii();
       process.exit(0);
     },
   );
 
-  _program
+  program
     .command('create')
     .option(
       '-d, --dir <dir>',
       "Path destination directory to save the project template that you've created.",
       process.cwd(),
     )
+    .option('-g, --git', 'Initialize git repo automatically.', false)
+    .option('-l, --li', 'Add a LICENSE file.', false)
     .option(
-      '-g, --git',
-      'Initialize git repo automatically (default: false).',
+      '-t, --ts',
+      'Initialize project with TypeScript configuration.',
       false,
     )
-    .option('-l, --license', 'Add a LICENSE file (default: false).', false)
-    .option(
-      '--ts',
-      'Initialize project with TypeScript configuration (default: false).',
-      false,
-    )
+    .option('-m, --pm <pm>', 'Choose package manager (npm | pnpm).')
     .helpOption(
       '-h, --help',
       `Action to get more information about ${chalk.bold('use')} command.`,
@@ -50,19 +40,20 @@ export async function _generateProgram(): Promise<void> {
     .summary('Action to create new project.')
     .description('Create new project on your own.')
     .action(async (options) => {
-      _newCreateCommand(options);
+      const command = CreateCommand.instance;
+      command.create(options);
     });
 
-  _program.helpOption(
+  program.helpOption(
     '-h, --help',
-    `Action to get more information about ${_allinGradient('Allin CLI')}.`,
+    `Action to get more information about ${__gradientColor('Allin CLI')}.`,
   );
-  _program.helpCommand(
+  program.helpCommand(
     'help [command]',
-    `Action to get more information about ${_allinGradient(
+    `Action to get more information about ${__gradientColor(
       'Allin CLI',
     )} commands.`,
   );
 
-  _program.parse();
+  program.parse();
 }

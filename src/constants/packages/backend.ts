@@ -1,6 +1,6 @@
-import type { __BackendPackagesProps } from '@/types/index.js';
+import type { __BackendPackagesProps } from '@/types/general.js';
 
-export const _expressBackendPackages: __BackendPackagesProps = {
+export const EXPRESS_DEPENDENCIES: __BackendPackagesProps = {
   packages: [
     {
       name: 'Drizzle ORM',
@@ -86,10 +86,22 @@ export const _expressBackendPackages: __BackendPackagesProps = {
         'Standalone GraphQL server framework with support for schema federation and caching.',
     },
     {
+      name: 'Redis',
+      originName: 'redis',
+      summary:
+        'Official Node.js client for Redis, a fast in-memory data store, providing promise-based APIs.',
+    },
+    {
       name: 'Connect Redis',
       originName: 'connect-redis',
       summary:
         'Redis-based session store for express-session, improving session handling performance.',
+    },
+    {
+      name: 'express-session',
+      originName: 'express-session',
+      summary:
+        'Middleware for managing session state in Express applications, supporting various storage adapters.',
     },
     {
       name: 'Express Validator',
@@ -114,10 +126,16 @@ export const _expressBackendPackages: __BackendPackagesProps = {
       summary:
         'Simple rate-limiting middleware to protect APIs from abuse and light DDoS attacks.',
     },
+    {
+      name: 'Jest',
+      originName: 'jest',
+      summary:
+        'JavaScript testing framework with a focus on simplicity, performance, and zero-configuration setup for unit and integration testing.',
+    },
   ],
 };
 
-export const _fastifyBackendPackages: __BackendPackagesProps = {
+export const FASTIFY_DEPENDENCIES: __BackendPackagesProps = {
   packages: [
     {
       name: 'Drizzle ORM',
@@ -231,10 +249,16 @@ export const _fastifyBackendPackages: __BackendPackagesProps = {
       summary:
         'Fastify plugin to serve Swagger UI for interactive API documentation.',
     },
+    {
+      name: 'Jest',
+      originName: 'jest',
+      summary:
+        'JavaScript testing framework with a focus on simplicity, performance, and zero-configuration setup for unit and integration testing.',
+    },
   ],
 };
 
-export const _nestBackendPackages: __BackendPackagesProps = {
+export const NEST_DEPENDENCIES: __BackendPackagesProps = {
   packages: [
     {
       name: 'Drizzle ORM',
@@ -355,6 +379,136 @@ export const _nestBackendPackages: __BackendPackagesProps = {
       originName: '@nestjs/swagger',
       summary:
         'Module to generate OpenAPI (Swagger) documentation from NestJS route decorators.',
+    },
+    {
+      name: 'Jest',
+      originName: 'jest',
+      summary:
+        'JavaScript testing framework with a focus on simplicity, performance, and zero-configuration setup for unit and integration testing.',
+    },
+  ],
+};
+
+export const NODE_DEPENDENCIES: __BackendPackagesProps = {
+  packages: [
+    {
+      name: 'Drizzle ORM',
+      originName: 'drizzle-orm',
+      summary:
+        'Lightweight TypeScript-first ORM for SQL, focusing on type-safety and migrations.',
+    },
+    {
+      name: 'Drizzle Kit',
+      originName: 'drizzle-kit',
+      summary:
+        'CLI toolkit for Drizzle ORM to generate and manage migrations and type-safe queries.',
+    },
+    {
+      name: 'node-postgres',
+      originName: 'pg',
+      summary:
+        'Pure JavaScript PostgreSQL client for Node.js, offering promises and connection pooling.',
+    },
+    {
+      name: 'ESLint',
+      originName: 'eslint',
+      summary:
+        'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
+    },
+    {
+      name: 'Prettier',
+      originName: 'prettier',
+      summary:
+        'Opinionated code formatter supporting multiple languages, ensuring consistent style.',
+    },
+    {
+      name: 'Winston',
+      originName: 'winston',
+      summary:
+        'Versatile logging library with support for multiple transports and configurable log levels.',
+    },
+    {
+      name: 'Axios',
+      originName: 'axios',
+      summary:
+        'Promise-based HTTP client for browsers and Node.js, with support for interceptors and transformations.',
+    },
+    {
+      name: 'Bcrypt',
+      originName: 'bcrypt',
+      summary:
+        'Library for hashing passwords using the Blowfish algorithm, secure for storing credentials.',
+    },
+    {
+      name: 'Socket.io',
+      originName: 'socket.io',
+      summary:
+        'Library for real-time bidirectional event-based communication between client and server.',
+    },
+    {
+      name: 'Dotenv',
+      originName: 'dotenv',
+      summary: 'Loads environment variables from a .env file into process.env.',
+    },
+    {
+      name: 'ioredis',
+      originName: 'ioredis',
+      summary:
+        'High-performance Redis client for Node.js with support for clusters, sentinels, and advanced features.',
+    },
+    {
+      name: 'Redis',
+      originName: 'redis',
+      summary:
+        'Official Node.js client for Redis, a fast in-memory data store, providing promise-based APIs.',
+    },
+    {
+      name: 'Connect Redis',
+      originName: 'connect-redis',
+      summary:
+        'Redis-based session store for express-session, improving session handling performance.',
+    },
+    {
+      name: 'express-session',
+      originName: 'express-session',
+      summary:
+        'Middleware for managing session state in Express applications, supporting various storage adapters.',
+    },
+    {
+      name: 'Jest',
+      originName: 'jest',
+      summary:
+        'JavaScript testing framework with a focus on simplicity, performance, and zero-configuration setup for unit and integration testing.',
+    },
+    {
+      name: 'Nodemon',
+      originName: 'nodemon',
+      summary:
+        'Development utility that monitors file changes and automatically restarts your Node.js application.',
+    },
+    {
+      name: 'JSON Web Tokn',
+      originName: 'jsonwebtoken',
+      summary:
+        'Library to sign, verify, and decode JSON Web Tokens (JWT) for secure authentication and authorization.',
+    },
+    {
+      name: 'Passport',
+      originName: 'passport',
+      summary:
+        'Flexible authentication middleware for Node.js, supporting a wide range of strategies (OAuth, JWT, etc.).',
+    },
+    {
+      name: 'Node Cron',
+      originName: 'node-cron',
+      summary:
+        'Scheduler library for Node.js that enables running tasks at specified intervals using cron syntax.',
+    },
+    {
+      name: 'Zod',
+      originName: 'zod',
+      summary:
+        'Type-safe schema validation library for TypeScript and JavaScript, enabling robust data parsing and type inference.',
     },
   ],
 };
