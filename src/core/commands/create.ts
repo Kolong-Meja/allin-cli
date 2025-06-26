@@ -19,7 +19,7 @@ import fs from 'fs';
 import fse from 'fs-extra';
 import { execa } from 'execa';
 import boxen from 'boxen';
-import { __basePath, __userRealName } from '@/config.js';
+import { __basePath, __config, __userRealName } from '@/config.js';
 import type { Mixed } from '@/types/general.js';
 import {
   BACKEND_FRAMEWORKS,
@@ -48,6 +48,7 @@ import {
   __pathNotExist,
   __unableToOverwriteProject,
 } from '@/exceptions/trigger.js';
+import { __gradientColor } from '@/utils/ascii.js';
 
 export class CreateCommand {
   static #instance: CreateCommand;
@@ -63,6 +64,19 @@ export class CreateCommand {
   }
 
   public async create(options: OptionValues) {
+    console.log(
+      boxen(
+        `Hello ${chalk.bold((await __userRealName()).split(' ')[0])}, Welcome to ${__gradientColor(__config.appName)} CLI`,
+        {
+          title: '👾 Welcome Abort Captain! 👾',
+          titleAlignment: 'center',
+          padding: 1,
+          margin: 1,
+          borderColor: 'green',
+        },
+      ),
+    );
+
     const spinner = ora({
       spinner: 'dots8',
       color: 'green',
@@ -76,7 +90,7 @@ export class CreateCommand {
         await inquirer.prompt({
           name: 'projectName',
           type: 'input',
-          message: 'What project name do you want:',
+          message: "What's the name of your project?",
           default: 'my-project',
         });
       __containHarassmentWords(
@@ -130,7 +144,9 @@ export class CreateCommand {
       }
 
       const end = performance.now();
-      spinner.succeed(`All done! ${chalk.bold((end - start).toFixed(3))} ms`);
+      spinner.succeed(
+        `All done! 🎉. Executed for ${chalk.bold((end - start).toFixed(3))} ms`,
+      );
     } catch (error: Mixed) {
       spinner.fail('⛔️ Failed to create project...\n');
 
@@ -270,13 +286,6 @@ export class CreateCommand {
           __backendFrameworkTemplateDesPath,
         );
 
-        await this.__generateInstallAndUpdateDependencies(
-          spinner,
-          __expressDependeciesSelection.expressDependencies,
-          __backendFrameworkTemplateDesPath,
-          projectName,
-        );
-
         if (__expressDockerQuestion.addDocker) {
           await this.__setupDocker(
             spinner,
@@ -286,31 +295,21 @@ export class CreateCommand {
           );
         }
 
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __expressDependeciesSelection.expressDependencies,
+          __backendFrameworkTemplateDesPath,
+          projectName,
+        );
 
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __backendFrameworkQuestion.backendFramework,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__activateOptionsGenerator(
+          spinner,
+          options,
+          projectType,
+          projectName,
+          __backendFrameworkTemplateDesPath,
+          __backendFrameworkQuestion.backendFramework,
+        );
 
         console.log(
           boxen(
@@ -373,13 +372,6 @@ export class CreateCommand {
           __backendFrameworkTemplateDesPath,
         );
 
-        await this.__generateInstallAndUpdateDependencies(
-          spinner,
-          __fastifyDependenciesSelection.backendPackages,
-          __backendFrameworkTemplateDesPath,
-          projectName,
-        );
-
         if (__fastifyDockerQuestion.addDocker) {
           await this.__setupDocker(
             spinner,
@@ -389,31 +381,21 @@ export class CreateCommand {
           );
         }
 
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __fastifyDependenciesSelection.backendPackages,
+          __backendFrameworkTemplateDesPath,
+          projectName,
+        );
 
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __backendFrameworkQuestion.backendFramework,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__activateOptionsGenerator(
+          spinner,
+          options,
+          projectType,
+          projectName,
+          __backendFrameworkTemplateDesPath,
+          __backendFrameworkQuestion.backendFramework,
+        );
 
         console.log(
           boxen(
@@ -476,13 +458,6 @@ export class CreateCommand {
           __backendFrameworkTemplateDesPath,
         );
 
-        await this.__generateInstallAndUpdateDependencies(
-          spinner,
-          __nestDependenciesSelection.nestDependencies,
-          __backendFrameworkTemplateDesPath,
-          projectName,
-        );
-
         if (!__nestDockerQuestion.addDocker) {
           await this.__setupDocker(
             spinner,
@@ -492,31 +467,21 @@ export class CreateCommand {
           );
         }
 
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __nestDependenciesSelection.nestDependencies,
+          __backendFrameworkTemplateDesPath,
+          projectName,
+        );
 
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __backendFrameworkQuestion.backendFramework,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__activateOptionsGenerator(
+          spinner,
+          options,
+          projectType,
+          projectName,
+          __backendFrameworkTemplateDesPath,
+          __backendFrameworkQuestion.backendFramework,
+        );
 
         console.log(
           boxen(
@@ -579,13 +544,6 @@ export class CreateCommand {
           __backendFrameworkTemplateDesPath,
         );
 
-        await this.__generateInstallAndUpdateDependencies(
-          spinner,
-          __nodeDependenciesSelection.nestDependencies,
-          __backendFrameworkTemplateDesPath,
-          projectName,
-        );
-
         if (!__nodeDockerQuestion.addDocker) {
           await this.__setupDocker(
             spinner,
@@ -595,31 +553,21 @@ export class CreateCommand {
           );
         }
 
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __nodeDependenciesSelection.nestDependencies,
+          __backendFrameworkTemplateDesPath,
+          projectName,
+        );
 
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __backendFrameworkQuestion.backendFramework,
-            projectName,
-            __backendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__activateOptionsGenerator(
+          spinner,
+          options,
+          projectType,
+          projectName,
+          __backendFrameworkTemplateDesPath,
+          __backendFrameworkQuestion.backendFramework,
+        );
 
         console.log(
           boxen(
@@ -738,13 +686,6 @@ export class CreateCommand {
           __frontendFrameworkTemplateDesPath,
         );
 
-        await this.__generateInstallAndUpdateDependencies(
-          spinner,
-          __astroDependenciesSelection.astroDependencies,
-          __frontendFrameworkTemplateDesPath,
-          projectName,
-        );
-
         if (__astroDockerQuestion.addDocker) {
           await this.__setupDocker(
             spinner,
@@ -754,31 +695,21 @@ export class CreateCommand {
           );
         }
 
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __astroDependenciesSelection.astroDependencies,
+          __frontendFrameworkTemplateDesPath,
+          projectName,
+        );
 
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __frontendFrameworkQuestion.frontendFramework,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__activateOptionsGenerator(
+          spinner,
+          options,
+          projectType,
+          projectName,
+          __frontendFrameworkTemplateDesPath,
+          __frontendFrameworkQuestion.frontendFramework,
+        );
 
         console.log(
           boxen(
@@ -841,6 +772,15 @@ export class CreateCommand {
           __frontendFrameworkTemplateDesPath,
         );
 
+        if (__nextDockerQuestion.addDocker) {
+          await this.__setupDocker(
+            spinner,
+            __nextDockerQuestion.addDocker,
+            __nextDockerQuestion.addDockerBake,
+            __frontendFrameworkTemplateDesPath,
+          );
+        }
+
         await this.__generateInstallAndUpdateDependencies(
           spinner,
           __nextDependenciesSelection.nextDependencies,
@@ -848,40 +788,14 @@ export class CreateCommand {
           projectName,
         );
 
-        await this.__setupDocker(
+        await this.__activateOptionsGenerator(
           spinner,
-          __nextDockerQuestion.addDocker,
-          __nextDockerQuestion.addDockerBake,
+          options,
+          projectType,
+          projectName,
           __frontendFrameworkTemplateDesPath,
+          __frontendFrameworkQuestion.frontendFramework,
         );
-        if (__nextDockerQuestion.addDocker) {
-        }
-
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __frontendFrameworkQuestion.frontendFramework,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
 
         console.log(
           boxen(
@@ -944,13 +858,6 @@ export class CreateCommand {
           __frontendFrameworkTemplateDesPath,
         );
 
-        await this.__generateInstallAndUpdateDependencies(
-          spinner,
-          __solidDependenciesSelection.solidDependencies,
-          __frontendFrameworkTemplateDesPath,
-          projectName,
-        );
-
         if (__solidDockerQuestion.addDocker) {
           await this.__setupDocker(
             spinner,
@@ -960,31 +867,21 @@ export class CreateCommand {
           );
         }
 
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __solidDependenciesSelection.solidDependencies,
+          __frontendFrameworkTemplateDesPath,
+          projectName,
+        );
 
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __frontendFrameworkQuestion.frontendFramework,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__activateOptionsGenerator(
+          spinner,
+          options,
+          projectType,
+          projectName,
+          __frontendFrameworkTemplateDesPath,
+          __frontendFrameworkQuestion.frontendFramework,
+        );
 
         console.log(
           boxen(
@@ -1047,13 +944,6 @@ export class CreateCommand {
           __frontendFrameworkTemplateDesPath,
         );
 
-        await this.__generateInstallAndUpdateDependencies(
-          spinner,
-          __svelteDependenciesSelection.svelteDependencies,
-          __frontendFrameworkTemplateDesPath,
-          projectName,
-        );
-
         if (_svelteAddDockerQuestion.addDocker) {
           await this.__setupDocker(
             spinner,
@@ -1063,31 +953,21 @@ export class CreateCommand {
           );
         }
 
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __svelteDependenciesSelection.svelteDependencies,
+          __frontendFrameworkTemplateDesPath,
+          projectName,
+        );
 
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __frontendFrameworkQuestion.frontendFramework,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__activateOptionsGenerator(
+          spinner,
+          options,
+          projectType,
+          projectName,
+          __frontendFrameworkTemplateDesPath,
+          __frontendFrameworkQuestion.frontendFramework,
+        );
 
         console.log(
           boxen(
@@ -1150,13 +1030,6 @@ export class CreateCommand {
           __frontendFrameworkTemplateDesPath,
         );
 
-        await this.__generateInstallAndUpdateDependencies(
-          spinner,
-          __vueDependenciesSelection.vueDependencies,
-          __frontendFrameworkTemplateDesPath,
-          projectName,
-        );
-
         if (__vueDockerQuestion.addDocker) {
           await this.__setupDocker(
             spinner,
@@ -1166,31 +1039,21 @@ export class CreateCommand {
           );
         }
 
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __vueDependenciesSelection.vueDependencies,
+          __frontendFrameworkTemplateDesPath,
+          projectName,
+        );
 
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __frontendFrameworkQuestion.frontendFramework,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__activateOptionsGenerator(
+          spinner,
+          options,
+          projectType,
+          projectName,
+          __frontendFrameworkTemplateDesPath,
+          __frontendFrameworkQuestion.frontendFramework,
+        );
 
         console.log(
           boxen(
@@ -1253,13 +1116,6 @@ export class CreateCommand {
           __frontendFrameworkTemplateDesPath,
         );
 
-        await this.__generateInstallAndUpdateDependencies(
-          spinner,
-          __vanillaDependenciesSelection.vanillaDependencies,
-          __frontendFrameworkTemplateDesPath,
-          projectName,
-        );
-
         if (__vanillaDockerQuestion.addDocker) {
           await this.__setupDocker(
             spinner,
@@ -1269,31 +1125,21 @@ export class CreateCommand {
           );
         }
 
-        if (options.git) {
-          await this.__runAddGit(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__generateInstallAndUpdateDependencies(
+          spinner,
+          __vanillaDependenciesSelection.vanillaDependencies,
+          __frontendFrameworkTemplateDesPath,
+          projectName,
+        );
 
-        if (options.license) {
-          await this.__runAddLicense(
-            spinner,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
-
-        if (options.ts) {
-          await this.__runAddTypescript(
-            spinner,
-            projectType.toLowerCase(),
-            __frontendFrameworkQuestion.frontendFramework,
-            projectName,
-            __frontendFrameworkTemplateDesPath,
-          );
-        }
+        await this.__activateOptionsGenerator(
+          spinner,
+          options,
+          projectType,
+          projectName,
+          __frontendFrameworkTemplateDesPath,
+          __frontendFrameworkQuestion.frontendFramework,
+        );
 
         console.log(
           boxen(
@@ -1321,19 +1167,15 @@ export class CreateCommand {
     desPath: string,
   ) {
     spinner.start(
-      `Allright ${chalk.bold(
-        (await __userRealName()).split(' ')[0],
-      )}, We are start generating ${chalk.bold(projectName)} using ${chalk.bold(
+      `Creating project skeleton 💀 ${chalk.bold(projectName)} with ${chalk.bold(
         framework,
-      )} for you, please wait...`,
+      )}, please wait for a moment...`,
     );
 
     await fse.copy(sourcePath, desPath);
 
     spinner.succeed(
-      `${chalk.bold(projectName)} using ${chalk.bold(
-        framework,
-      )} framework successfully created ✅`,
+      `It's done ${chalk.bold(await __userRealName()).split(' ')[0]} 🎉. Your ${chalk.bold(projectName)} is already created.`,
     );
   }
 
@@ -1374,8 +1216,6 @@ export class CreateCommand {
   }
 
   private async __runAddDocker(spinner: Ora, desPath: string) {
-    spinner.start('Start adding docker compose file 🐳...');
-
     const __resources = this.__getDockerResources();
 
     const __dockerComposeSources = this.__getDockersPaths(
@@ -1384,14 +1224,16 @@ export class CreateCommand {
       desPath,
     );
 
+    spinner.start(
+      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    );
+
     await fse.copy(
       __dockerComposeSources.sourcePath,
       __dockerComposeSources.desPath,
     );
 
-    spinner.succeed('Adding docker compose file succeed ✅');
-
-    spinner.start('Start adding dockerfile 🐳...');
+    spinner.succeed(`Copying ${chalk.bold('docker compose file')} succeed ✅`);
 
     const __dockerfileSources = this.__getDockersPaths(
       'npm.Dockerfile',
@@ -1399,14 +1241,16 @@ export class CreateCommand {
       desPath,
     );
 
+    spinner.start(
+      `Copying ${chalk.bold('dockerfile')} 🐳 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    );
+
     await fse.copy(__dockerfileSources.sourcePath, __dockerfileSources.desPath);
 
-    spinner.succeed('Adding dockerfile succeed ✅');
+    spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
   }
 
   private async __runAddDockerWithBake(spinner: Ora, desPath: string) {
-    spinner.start('Start adding docker compose file 🐳...');
-
     const __resources = this.__getDockerResources();
 
     const __dockerComposePaths = this.__getDockersPaths(
@@ -1415,14 +1259,16 @@ export class CreateCommand {
       desPath,
     );
 
+    spinner.start(
+      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    );
+
     await fse.copy(
       __dockerComposePaths.sourcePath,
       __dockerComposePaths.desPath,
     );
 
-    spinner.succeed('Adding docker compose file succeed ✅');
-
-    spinner.start('Start adding dockerfile 🐳...');
+    spinner.succeed(`Copying ${chalk.bold('docker compose file')} succeed ✅`);
 
     const __dockerfilePaths = this.__getDockersPaths(
       'npm.Dockerfile',
@@ -1430,11 +1276,13 @@ export class CreateCommand {
       desPath,
     );
 
+    spinner.start(
+      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    );
+
     await fse.copy(__dockerfilePaths.sourcePath, __dockerfilePaths.desPath);
 
-    spinner.succeed('Adding dockerfile succeed ✅');
-
-    spinner.start('Start adding docker bake file 🍞...');
+    spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
 
     const __dockerBakePaths = this.__getDockersPaths(
       'docker-bake.hcl',
@@ -1442,9 +1290,13 @@ export class CreateCommand {
       desPath,
     );
 
+    spinner.start(
+      `Copying ${chalk.bold('docker bake file')} 🍞 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    );
+
     await fse.copy(__dockerBakePaths.sourcePath, __dockerBakePaths.desPath);
 
-    spinner.succeed('Adding docker bake file succeed ✅');
+    spinner.succeed(`Copying ${chalk.bold('docker bake file')} succeed ✅`);
   }
 
   private async __runAddGit(
@@ -1460,31 +1312,34 @@ export class CreateCommand {
     });
 
     if (!__initializeGitQuestion.addGit) {
-      spinner.warn(
-        `${chalk.yellow(
-          `It's okay ${chalk.bold(
-            (await __userRealName()).split(' ')[0],
-          )}, you can run ${chalk.bold('git init')} later by yourself.`,
-        )}`,
+      console.warn(
+        boxen(
+          `${chalk.yellow(
+            `${chalk.bold(
+              (await __userRealName()).split(' ')[0],
+            )}, you can run ${chalk.bold('git init')} later.`,
+          )}`,
+          {
+            title: 'ⓘ Warning Information ⓘ',
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'yellow',
+          },
+        ),
       );
       return;
     }
 
     spinner.start(
-      `Allright ${chalk.bold(
-        (await __userRealName()).split(' ')[0],
-      )}, We are start running ${chalk.bold('git init')} on ${chalk.bold(
-        projectName,
-      )}, please wait...`,
+      `Initializing Git repository 📖, please wait for a moment...`,
     );
 
     await execa('git', ['init'], {
       cwd: desPath,
     });
 
-    spinner.succeed(
-      `Running ${chalk.bold('git init')} on ${projectName} succeed ✅`,
-    );
+    spinner.succeed(`Git repository successfully initialized ✅`);
   }
 
   private async __runAddLicense(
@@ -1502,12 +1357,21 @@ export class CreateCommand {
     });
 
     if (!__licenseQuestion.addLicense) {
-      spinner.warn(
-        `${chalk.yellow(
-          `It's okay ${chalk.bold(
-            (await __userRealName()).split(' ')[0],
-          )}, you can add ${chalk.bold('LICENSE')} file manually.`,
-        )}`,
+      console.warn(
+        boxen(
+          `${chalk.yellow(
+            `It's okay ${chalk.bold(
+              (await __userRealName()).split(' ')[0],
+            )}, you can add ${chalk.bold('LICENSE')} later.`,
+          )}`,
+          {
+            title: 'ⓘ Warning Information ⓘ',
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'yellow',
+          },
+        ),
       );
       return;
     }
@@ -1592,8 +1456,17 @@ export class CreateCommand {
     );
 
     if (__tsConfigFile !== undefined) {
-      spinner.warn(
-        `${chalk.yellow(`${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(projectName)}, means that ${chalk.bold('Typescript')} already installed.`)}`,
+      console.warn(
+        boxen(
+          `${chalk.yellow(`${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(projectName)}, means that ${chalk.bold('Typescript')} already installed.`)}`,
+          {
+            title: 'ⓘ Warning Information ⓘ',
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'yellow',
+          },
+        ),
       );
       return;
     }
@@ -1608,22 +1481,27 @@ export class CreateCommand {
     });
 
     if (!__typescriptFileQuestion.addTypescript) {
-      spinner.warn(
-        `${chalk.yellow(
-          `It's okay ${chalk.bold(
-            (await __userRealName()).split(' ')[0],
-          )}, you can add ${chalk.bold('Typescript')} manually.`,
-        )}`,
+      console.warn(
+        boxen(
+          `${chalk.yellow(
+            `${chalk.bold(
+              (await __userRealName()).split(' ')[0],
+            )}, you can add ${chalk.bold('Typescript')} later.`,
+          )}`,
+          {
+            title: 'ⓘ Warning Information ⓘ',
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'yellow',
+          },
+        ),
       );
       return;
     }
 
     spinner.start(
-      `Allright ${chalk.bold(
-        (await __userRealName()).split(' ')[0],
-      )}, We are adding ${chalk.bold('Typescript')} on ${chalk.bold(
-        projectName,
-      )}, please wait...`,
+      `Adding ${chalk.bold('Typescript')}, please wait for a moment...`,
     );
 
     if (projectType !== 'backend') {
@@ -1642,17 +1520,28 @@ export class CreateCommand {
     });
 
     if (!__initializeTypescriptQuestion.addTsConfig) {
-      spinner.warn(
-        `${chalk.yellow(
-          `It's okay ${chalk.bold(
-            (await __userRealName()).split(' ')[0],
-          )}, you can initialize ${chalk.bold('Typescript')} by yourself later.`,
-        )}`,
+      console.warn(
+        boxen(
+          `${chalk.yellow(
+            `${chalk.bold(
+              (await __userRealName()).split(' ')[0],
+            )}, you can initialize ${chalk.bold('Typescript')} later.`,
+          )}`,
+          {
+            title: 'ⓘ Warning Information ⓘ',
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'yellow',
+          },
+        ),
       );
       return;
     }
 
-    spinner.start(`Start initialize ${chalk.bold('Typescript')} package...`);
+    spinner.start(
+      `Initializing ${chalk.bold('Typescript')} into ${chalk.bold(projectName)}, please wait for a moment...`,
+    );
 
     await execa('npx', ['tsc', '--init'], {
       cwd: desPath,
@@ -1690,11 +1579,64 @@ export class CreateCommand {
       }
     }
 
-    spinner.succeed(`All file renames complete for ${projectName} ✅`);
+    spinner.succeed(
+      `All file renames complete for ${chalk.bold(projectName)} ✅`,
+    );
 
     spinner.succeed(
-      `Adding ${chalk.bold('Typescript')} on ${projectName} succeed ✅`,
+      `Adding ${chalk.bold('Typescript')} on ${chalk.bold(projectName)} succeed ✅`,
     );
+  }
+
+  private async __runChangePackageManager(
+    spinner: Ora,
+    pm: string,
+    projectName: string,
+    desPath: string,
+  ) {
+    const __lockFiles = [
+      'package-lock.json',
+      'yarn.lock',
+      'pnpm-lock.yaml',
+      'bun.lock',
+    ];
+
+    for (const file of __lockFiles) {
+      const __fullPath = path.join(desPath, file);
+
+      if (await fse.exists(__fullPath)) {
+        spinner.start(
+          `Start removing ${chalk.bold(file)} on ${chalk.bold(projectName)} project, please wait for a moment...`,
+        );
+
+        await fse.remove(__fullPath);
+
+        spinner.succeed(
+          `Removed ${chalk.bold(file)} on ${chalk.bold(projectName)} 🗑️`,
+        );
+      }
+    }
+
+    const __nodeModulesPath = path.join(desPath, 'node_modules');
+
+    if (await fse.exists(__nodeModulesPath)) {
+      spinner.start(
+        `Start removing ${chalk.bold('node_modules')} on ${chalk.bold(projectName)} project, please wait for a moment...`,
+      );
+
+      await fse.remove(__nodeModulesPath);
+
+      spinner.succeed(
+        `Removed ${chalk.bold('node_modules')} on ${chalk.bold(projectName)} 🗑️`,
+      );
+    }
+
+    const __selectedPm = pm === 'pnpm' ? 'pnpm' : 'npm';
+
+    await execa(__selectedPm, ['install'], {
+      cwd: desPath,
+      stdio: 'inherit',
+    });
   }
 
   private async __generateBackendTsDependencies(
@@ -1823,11 +1765,7 @@ export class CreateCommand {
     desPath: string,
   ) {
     spinner.start(
-      `Allright ${chalk.bold(
-        (await __userRealName()).split(' ')[0],
-      )}, We are start installing ${chalk.bold(
-        packages.join(', '),
-      )} packages for you 👾...`,
+      `Installing ${chalk.bold(packages.join(', '))}, please wait for a moment...`,
     );
 
     for (const p of packages) {
@@ -1856,29 +1794,38 @@ export class CreateCommand {
     });
 
     if (!__updateDependenciesQuestion.updatePackages) {
-      spinner.warn(
-        `${chalk.yellow(
-          `It's okay ${chalk.bold(
-            (await __userRealName()).split(' ')[0],
-          )}, you can update the packages later by yourself.`,
-        )}`,
+      console.warn(
+        boxen(
+          `${chalk.yellow(
+            `${chalk.bold(
+              (await __userRealName()).split(' ')[0],
+            )}, you can update the dependencies later.`,
+          )}`,
+          {
+            title: 'ⓘ Warning Information ⓘ',
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'yellow',
+          },
+        ),
       );
       return;
     }
 
     spinner.start(
-      `Allright ${chalk.bold(
-        (await __userRealName()).split(' ')[0],
-      )}, We are start updating your ${chalk.bold(
+      `Updating ${chalk.bold(
         projectName,
-      )} packages, please wait...`,
+      )} dependencies, please wait for a moment 🌎...`,
     );
 
     await execa('npm', ['update'], {
       cwd: desPath,
     });
 
-    spinner.succeed(`Updating ${projectName}  packages succeed ✅`);
+    spinner.succeed(
+      `Updating ${chalk.bold(projectName)} dependencies succeed ✅`,
+    );
   }
 
   private async __generateInstallAndUpdateDependencies(
@@ -1906,5 +1853,41 @@ export class CreateCommand {
 
     if (!addDockerBake) await this.__runAddDocker(spinner, desPath);
     else await this.__runAddDockerWithBake(spinner, desPath);
+  }
+
+  private async __activateOptionsGenerator(
+    spinner: Ora,
+    options: OptionValues,
+    projectType: string,
+    projectName: string,
+    desPath: string,
+    framework: string,
+  ) {
+    if (options.git) {
+      await this.__runAddGit(spinner, projectName, desPath);
+    }
+
+    if (options.li) {
+      await this.__runAddLicense(spinner, projectName, desPath);
+    }
+
+    if (options.ts) {
+      await this.__runAddTypescript(
+        spinner,
+        projectType.toLowerCase(),
+        framework,
+        projectName,
+        desPath,
+      );
+    }
+
+    if (options.pm && options.pm !== '') {
+      await this.__runChangePackageManager(
+        spinner,
+        options.pm,
+        projectName,
+        desPath,
+      );
+    }
   }
 }

@@ -1,5 +1,3 @@
-# Please visit https://docs.docker.com/build/bake/introduction/ to gain more information about docker bake.
-
 group "default" {
   targets = ["your-app"]
 }

@@ -1,8 +1,3 @@
-# Please visit https://docs.docker.com/reference/dockerfile/ to gain more information about Dockerfile.
-
-# See also https://stackoverflow.com/questions/26077543/how-to-name-dockerfiles
-
-# You can change all of the setup on this file, so enjoy it!
 FROM php:8.4-fpm-alpine
 
 RUN apk update && apk add --no-cache \

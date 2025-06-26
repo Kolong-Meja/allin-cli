@@ -25,17 +25,14 @@ export async function generateProgram(): Promise<void> {
       "Path destination directory to save the project template that you've created.",
       process.cwd(),
     )
+    .option('-g, --git', 'Initialize git repo automatically.', false)
+    .option('-l, --li', 'Add a LICENSE file.', false)
     .option(
-      '-g, --git',
-      'Initialize git repo automatically (default: false).',
+      '-t, --ts',
+      'Initialize project with TypeScript configuration.',
       false,
     )
-    .option('-l, --license', 'Add a LICENSE file (default: false).', false)
-    .option(
-      '--ts',
-      'Initialize project with TypeScript configuration (default: false).',
-      false,
-    )
+    .option('-m, --pm <pm>', 'Choose package manager (npm | pnpm).')
     .helpOption(
       '-h, --help',
       `Action to get more information about ${chalk.bold('use')} command.`,

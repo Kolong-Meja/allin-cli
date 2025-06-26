@@ -100,18 +100,22 @@ describe('generateProgram()', () => {
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
       '-g, --git',
-      'Initialize git repo automatically (default: false).',
+      'Initialize git repo automatically.',
       false,
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
-      '-l, --license',
-      'Add a LICENSE file (default: false).',
+      '-l, --li',
+      'Add a LICENSE file.',
       false,
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
-      '--ts',
-      'Initialize project with TypeScript configuration (default: false).',
+      '-t, --ts',
+      'Initialize project with TypeScript configuration.',
       false,
+    );
+    expect(mockProgram.option).toHaveBeenCalledWith(
+      '-m, --pm <pm>',
+      'Choose package manager (npm | pnpm).',
     );
     expect(mockProgram.helpOption).toHaveBeenCalledWith(
       '-h, --help',

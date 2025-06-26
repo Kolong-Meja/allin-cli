@@ -1,6 +1,4 @@
-# Please visit https://docs.docker.com/compose/gettingstarted/ to gain more information about docker compose.
-
-name: "your-application-name" # Change this same as your application name.
+name: "your-application-name"
 
 services:
   ${APP_NAME}:
@@ -10,19 +8,19 @@ services:
     ports:
       - "${APP_PORT}:${APP_PORT}"
     env_file:
-      - .env # load env vars tambahan jika perlu
+      - .env
     environment:
-      - NODE_ENV=production # contoh env spesifik container
+      - NODE_ENV=production
       - PORT=${APP_PORT}
     volumes:
-      - ./:${WORKDIR}:ro # mount kode (read-only) di dev
-      # - logs:/var/log/${APP_NAME}  # contoh named volume untuk logs
+      - ./:${WORKDIR}:ro
+      # - logs:/var/log/${APP_NAME} 
     depends_on:
       db:
         condition: service_healthy
     networks:
       - app-net
-    restart: unless-stopped # kebijakan restart otomatis
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}/health"]
       interval: 30s
