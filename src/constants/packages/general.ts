@@ -1,14 +1,7 @@
-type _BackendFramework = 'Express.js' | 'Fastify' | 'NestJS' | 'Node.js';
-type _FrontendFramework =
-  | 'Next.js'
-  | 'Vue.js'
-  | 'Svelte'
-  | 'SolidJS'
-  | 'VanillaJS';
+import type { Mixed } from '@/types/general.js';
 
 export const TYPESCRIPT_DEPENDENCIES: {
-  backend: Record<_BackendFramework, string[]>;
-  frontend: Record<_FrontendFramework, string[]>;
+  [key: string]: Mixed;
 } = {
   backend: {
     'Express.js': ['typescript', '@types/express'],
