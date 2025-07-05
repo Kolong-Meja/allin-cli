@@ -58,46 +58,46 @@ export type __FrontendPackagesProps = {
   packages: __PackagesProps[];
 };
 
-export type __BackendProjectTypeParams = {
+type __BaseParams = {
   spinner: Ora;
+};
+
+export type __BackendProjectTypeParams = __BaseParams & {
   optionValues: OptionValues;
   templatesFiles: fs.Dirent<string>[];
   projectName: string;
   projectType: string;
 };
 
-export type __FrontendProjectTypeParams = {
-  spinner: Ora;
+export type __FrontendProjectTypeParams = __BaseParams & {
   optionValues: OptionValues;
   templatesFiles: fs.Dirent<string>[];
   projectName: string;
   projectType: string;
 };
 
-export type __SetupUserProjectParams = {
-  spinner: Ora;
+export type __SetupUserProjectParams = __BaseParams & {
   projectName: string;
   selectedFramework: string;
   sourcePath: string;
   desPath: string;
 };
 
-export type __SetupDockerParams = {
-  spinner: Ora;
+export type __SetupDockerParams = __BaseParams & {
   isAddingDocker: boolean;
   isAddingBake: boolean;
+  selectedPackageManager: string;
   desPath: string;
 };
 
-export type __RunSystemUpdateParams = {
-  spinner: Ora;
+export type __RunSystemUpdateParams = __BaseParams & {
   selectedDependencies: string[];
+  selectedPackageManager: string;
   projectName: string;
   desPath: string;
 };
 
-export type __RunOtherOptionsParams = {
-  spinner: Ora;
+export type __RunOtherOptionsParams = __BaseParams & {
   optionValues: OptionValues;
   projectType: string;
   projectName: string;
@@ -105,24 +105,45 @@ export type __RunOtherOptionsParams = {
   desPath: string;
 };
 
-export type __RunAddTsParams = {
-  spinner: Ora;
+export type __RunAddTsParams = __BaseParams & {
   projectType: string;
   projectName: string;
   selectedframework: string;
+  selectedPackageManager: string;
   desPath: string;
 };
 
-export type __RunInstallTsParams = {
-  spinner: Ora;
-  projectType: string;
-  selectedFramework: string;
+export type __RunInstallParams = __BaseParams & {
+  selectedDependencies: string[];
+  selectedPackageManager: string;
   desPath: string;
 };
 
-export type __RunSwitchPackageManagerParams = {
-  spinner: Ora;
+export type __RunUpdateParams = __BaseParams & {
   selectedPackageManager: string;
   projectName: string;
   desPath: string;
+};
+
+export type __RunInstallTsParams = __BaseParams & {
+  projectType: string;
+  selectedFramework: string;
+  selectedPackageManager: string;
+  desPath: string;
+};
+
+export type __RunSwitchPackageManagerParams = __BaseParams & {
+  selectedPackageManager: string;
+  projectName: string;
+  desPath: string;
+};
+
+export type __RunAddDockerParams = __BaseParams & {
+  desPath: string;
+  selectedPackageManager: string;
+};
+
+export type __RunAddBakeParams = __BaseParams & {
+  desPath: string;
+  selectedPackageManager: string;
 };

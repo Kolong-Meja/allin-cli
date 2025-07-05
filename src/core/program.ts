@@ -32,10 +32,10 @@ export async function generateProgram(): Promise<void> {
       'Initialize project with TypeScript configuration.',
       false,
     )
-    .option('-m, --pm <pm>', 'Choose package manager (npm | pnpm).')
+    .option('-m, --pm <pm>', 'Choose package manager (npm | pnpm).', 'npm')
     .helpOption(
       '-h, --help',
-      `Action to get more information about ${chalk.bold('use')} command.`,
+      `Action to get more information about ${chalk.bold('create')} command.`,
     )
     .summary('Action to create new project.')
     .description('Create new project on your own.')

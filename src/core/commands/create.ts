@@ -23,11 +23,15 @@ import { __basePath, __config, __userRealName } from '@/config.js';
 import type {
   __BackendProjectTypeParams,
   __FrontendProjectTypeParams,
+  __RunAddBakeParams,
+  __RunAddDockerParams,
   __RunAddTsParams,
+  __RunInstallParams,
   __RunInstallTsParams,
   __RunOtherOptionsParams,
   __RunSwitchPackageManagerParams,
   __RunSystemUpdateParams,
+  __RunUpdateParams,
   __SetupDockerParams,
   __SetupUserProjectParams,
   Mixed,
@@ -61,6 +65,7 @@ import {
 } from '@/exceptions/trigger.js';
 import { __gradientColor } from '@/utils/ascii.js';
 import type { FrameworkConfig } from '@/interfaces/general.js';
+import { cwd } from 'process';
 
 export class CreateCommand {
   static #instance: CreateCommand;
@@ -294,23 +299,6 @@ export class CreateCommand {
         `Unsupported framework: ${__backendFrameworkQuestion.backendFramework}`,
       );
 
-    const __dependenciesSelection = await inquirer.prompt([
-      {
-        name: __selectedBackendFramework.promptKey,
-        type: 'checkbox',
-        message: 'Select npm packages to include in your project:',
-        choices: __selectedBackendFramework.packages
-          .sort((i, e) =>
-            i.name.toLowerCase().localeCompare(e.name.toLowerCase(), 'en-US'),
-          )
-          .map((p) => p.originName),
-        loop: false,
-      },
-    ]);
-
-    const __selectedDependencies =
-      __dependenciesSelection[__selectedBackendFramework.promptKey];
-
     const __dockerQuestion = await inquirer.prompt([
       {
         name: 'addDocker',
@@ -340,16 +328,10 @@ export class CreateCommand {
         spinner: params.spinner,
         isAddingDocker: __dockerQuestion.addDocker,
         isAddingBake: __dockerQuestion.addDockerBake,
+        selectedPackageManager: params.optionValues.pm,
         desPath: __selectedBackendFramework.templateDest,
       });
     }
-
-    await this.__runSystemUpdate({
-      spinner: params.spinner,
-      selectedDependencies: __selectedDependencies,
-      projectName: params.projectName,
-      desPath: __selectedBackendFramework.templateDest,
-    });
 
     await this.__runOtherOptions({
       spinner: params.spinner,
@@ -357,6 +339,31 @@ export class CreateCommand {
       projectType: params.projectType,
       projectName: params.projectName,
       selectedFramework: __backendFrameworkQuestion.backendFramework,
+      desPath: __selectedBackendFramework.templateDest,
+    });
+
+    const __dependenciesSelection = await inquirer.prompt([
+      {
+        name: __selectedBackendFramework.promptKey,
+        type: 'checkbox',
+        message: 'Select dependencies to include in your project:',
+        choices: __selectedBackendFramework.packages
+          .sort((i, e) =>
+            i.name.toLowerCase().localeCompare(e.name.toLowerCase(), 'en-US'),
+          )
+          .map((p) => p.originName),
+        loop: false,
+      },
+    ]);
+
+    const __selectedDependencies =
+      __dependenciesSelection[__selectedBackendFramework.promptKey];
+
+    await this.__runSystemUpdate({
+      spinner: params.spinner,
+      selectedDependencies: __selectedDependencies,
+      selectedPackageManager: params.optionValues.pm,
+      projectName: params.projectName,
       desPath: __selectedBackendFramework.templateDest,
     });
 
@@ -494,23 +501,6 @@ export class CreateCommand {
         `Unsupported framework: ${__frontendFrameworkSelection.frontendFramework}`,
       );
 
-    const __dependenciesSelection = await inquirer.prompt([
-      {
-        name: __selectedFrontendFramework.promptKey,
-        type: 'checkbox',
-        message: 'Select npm packages to include in your project:',
-        choices: __selectedFrontendFramework.packages
-          .sort((i, e) =>
-            i.name.toLowerCase().localeCompare(e.name.toLowerCase(), 'en-US'),
-          )
-          .map((p) => p.originName),
-        loop: false,
-      },
-    ]);
-
-    const __selectedDependencies =
-      __dependenciesSelection[__selectedFrontendFramework.promptKey];
-
     const __dockerQuestion = await inquirer.prompt([
       {
         name: 'addDocker',
@@ -540,16 +530,10 @@ export class CreateCommand {
         spinner: params.spinner,
         isAddingDocker: __dockerQuestion.addDocker,
         isAddingBake: __dockerQuestion.addDockerBake,
+        selectedPackageManager: params.optionValues.pm,
         desPath: __selectedFrontendFramework.templateDest,
       });
     }
-
-    await this.__runSystemUpdate({
-      spinner: params.spinner,
-      selectedDependencies: __selectedDependencies,
-      projectName: params.projectName,
-      desPath: __selectedFrontendFramework.templateDest,
-    });
 
     await this.__runOtherOptions({
       spinner: params.spinner,
@@ -557,6 +541,31 @@ export class CreateCommand {
       projectType: params.projectType,
       projectName: params.projectName,
       selectedFramework: __frontendFrameworkSelection.frontendFramework,
+      desPath: __selectedFrontendFramework.templateDest,
+    });
+
+    const __dependenciesSelection = await inquirer.prompt([
+      {
+        name: __selectedFrontendFramework.promptKey,
+        type: 'checkbox',
+        message: 'Select dependencies to include in your project:',
+        choices: __selectedFrontendFramework.packages
+          .sort((i, e) =>
+            i.name.toLowerCase().localeCompare(e.name.toLowerCase(), 'en-US'),
+          )
+          .map((p) => p.originName),
+        loop: false,
+      },
+    ]);
+
+    const __selectedDependencies =
+      __dependenciesSelection[__selectedFrontendFramework.promptKey];
+
+    await this.__runSystemUpdate({
+      spinner: params.spinner,
+      selectedDependencies: __selectedDependencies,
+      selectedPackageManager: params.optionValues.pm,
+      projectName: params.projectName,
       desPath: __selectedFrontendFramework.templateDest,
     });
 
@@ -620,14 +629,14 @@ export class CreateCommand {
     };
   }
 
-  private async __runAddDocker(spinner: Ora, desPath: string) {
+  private async __runAddDocker(params: __RunAddDockerParams) {
     const __dockerComposeSources = this.__getDockerPaths(
       'compose.yml',
-      desPath,
+      params.desPath,
     );
 
-    spinner.start(
-      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    params.spinner.start(
+      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
     await fse.copy(
@@ -635,27 +644,37 @@ export class CreateCommand {
       __dockerComposeSources.desPath,
     );
 
-    spinner.succeed(`Copying ${chalk.bold('docker compose file')} succeed ✅`);
-
-    const __dockerfileSources = this.__getDockerPaths(
-      'npm.Dockerfile',
-      desPath,
+    params.spinner.succeed(
+      `Copying ${chalk.bold('docker compose file')} succeed ✅`,
     );
 
-    spinner.start(
-      `Copying ${chalk.bold('dockerfile')} 🐳 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    const __dockerfileBaseOnePackageManager =
+      params.selectedPackageManager === 'npm'
+        ? 'npm.Dockerfile'
+        : 'pnpm.Dockerfile';
+
+    const __dockerfileSources = this.__getDockerPaths(
+      __dockerfileBaseOnePackageManager,
+      params.desPath,
+    );
+
+    params.spinner.start(
+      `Copying ${chalk.bold('dockerfile')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
     await fse.copy(__dockerfileSources.sourcePath, __dockerfileSources.desPath);
 
-    spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
+    params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
   }
 
-  private async __runAddBake(spinner: Ora, desPath: string) {
-    const __dockerComposePaths = this.__getDockerPaths('compose.yml', desPath);
+  private async __runAddBake(params: __RunAddBakeParams) {
+    const __dockerComposePaths = this.__getDockerPaths(
+      'compose.yml',
+      params.desPath,
+    );
 
-    spinner.start(
-      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    params.spinner.start(
+      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
     await fse.copy(
@@ -663,35 +682,59 @@ export class CreateCommand {
       __dockerComposePaths.desPath,
     );
 
-    spinner.succeed(`Copying ${chalk.bold('docker compose file')} succeed ✅`);
+    params.spinner.succeed(
+      `Copying ${chalk.bold('docker compose file')} succeed ✅`,
+    );
 
-    const __dockerfilePaths = this.__getDockerPaths('npm.Dockerfile', desPath);
+    const __dockerfileBaseOnePackageManager =
+      params.selectedPackageManager === 'npm'
+        ? 'npm.Dockerfile'
+        : 'pnpm.Dockerfile';
 
-    spinner.start(
-      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    const __dockerfilePaths = this.__getDockerPaths(
+      __dockerfileBaseOnePackageManager,
+      params.desPath,
+    );
+
+    params.spinner.start(
+      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
     await fse.copy(__dockerfilePaths.sourcePath, __dockerfilePaths.desPath);
 
-    spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
+    params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
 
-    const __dockerBakePaths = this.__getDockerPaths('docker-bake.hcl', desPath);
+    const __dockerBakePaths = this.__getDockerPaths(
+      'docker-bake.hcl',
+      params.desPath,
+    );
 
-    spinner.start(
-      `Copying ${chalk.bold('docker bake file')} 🍞 into ${chalk.bold(desPath)}, please wait for a moment...`,
+    params.spinner.start(
+      `Copying ${chalk.bold('docker bake file')} 🍞 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
     await fse.copy(__dockerBakePaths.sourcePath, __dockerBakePaths.desPath);
 
-    spinner.succeed(`Copying ${chalk.bold('docker bake file')} succeed ✅`);
+    params.spinner.succeed(
+      `Copying ${chalk.bold('docker bake file')} succeed ✅`,
+    );
   }
 
   private async __setupDocker(params: __SetupDockerParams) {
     if (!params.isAddingDocker) return;
 
     if (!params.isAddingBake)
-      await this.__runAddDocker(params.spinner, params.desPath);
-    else await this.__runAddBake(params.spinner, params.desPath);
+      await this.__runAddDocker({
+        spinner: params.spinner,
+        desPath: params.desPath,
+        selectedPackageManager: params.selectedPackageManager,
+      });
+    else
+      await this.__runAddBake({
+        spinner: params.spinner,
+        desPath: params.desPath,
+        selectedPackageManager: params.selectedPackageManager,
+      });
   }
 
   private async __runAddGit(spinner: Ora, desPath: string) {
@@ -705,7 +748,7 @@ export class CreateCommand {
     if (!__initializeGitQuestion.addGit) {
       console.warn(
         boxen(
-          `${chalk.yellow(
+          `${chalk.white(
             `${chalk.bold(
               (await __userRealName()).split(' ')[0],
             )}, you can run ${chalk.bold('git init')} later.`,
@@ -750,7 +793,7 @@ export class CreateCommand {
     if (!__licenseQuestion.addLicense) {
       console.warn(
         boxen(
-          `${chalk.yellow(
+          `${chalk.white(
             `It's okay ${chalk.bold(
               (await __userRealName()).split(' ')[0],
             )}, you can add ${chalk.bold('LICENSE')} later.`,
@@ -845,7 +888,7 @@ export class CreateCommand {
     if (__tsConfigFile !== undefined) {
       console.warn(
         boxen(
-          `${chalk.yellow(`${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(params.projectName)}, means that ${chalk.bold('Typescript')} already installed.`)}`,
+          `${chalk.white(`${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(params.projectName)}, means that ${chalk.bold('Typescript')} already installed.`)}`,
           {
             title: 'ⓘ Warning Information ⓘ',
             titleAlignment: 'center',
@@ -858,59 +901,22 @@ export class CreateCommand {
       return;
     }
 
-    const __typescriptFileQuestion = await inquirer.prompt({
-      name: 'addTypescript',
-      type: 'confirm',
-      message: `Do you want us to add ${chalk.bold(
-        'Typescript',
-      )} into your project? (optional)`,
-      default: false,
+    await this.__runInstallTs({
+      spinner: params.spinner,
+      projectType: params.projectType,
+      selectedFramework: params.selectedframework,
+      selectedPackageManager: params.selectedPackageManager,
+      desPath: params.desPath,
     });
 
-    if (!__typescriptFileQuestion.addTypescript) {
-      console.warn(
-        boxen(
-          `${chalk.yellow(
-            `${chalk.bold(
-              (await __userRealName()).split(' ')[0],
-            )}, you can add ${chalk.bold('Typescript')} later.`,
-          )}`,
-          {
-            title: 'ⓘ Warning Information ⓘ',
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'yellow',
-          },
-        ),
-      );
-      return;
-    }
-
-    params.spinner.start(
-      `Adding ${chalk.bold('Typescript')}, please wait for a moment...`,
-    );
-
-    if (params.projectType !== 'backend')
-      await this.__runInstallTs({
-        spinner: params.spinner,
-        projectType: params.projectType,
-        selectedFramework: params.selectedframework,
-        desPath: params.desPath,
-      });
-    else
-      await this.__runInstallTs({
-        spinner: params.spinner,
-        projectType: params.projectType,
-        selectedFramework: params.selectedframework,
-        desPath: params.desPath,
-      });
+    const __executeCommand =
+      params.selectedPackageManager === 'npm' ? 'npx' : 'pnpm';
 
     const __initializeTypescriptQuestion = await inquirer.prompt({
       name: 'addTsConfig',
       type: 'confirm',
-      message: `Do you want us to initialize ${chalk.bold(
-        'Typescript',
+      message: `Do you want us to execute ${chalk.bold(
+        `${__executeCommand} tsc --init`,
       )} in your project? (optional)`,
       default: false,
     });
@@ -918,7 +924,7 @@ export class CreateCommand {
     if (!__initializeTypescriptQuestion.addTsConfig) {
       console.warn(
         boxen(
-          `${chalk.yellow(
+          `${chalk.white(
             `${chalk.bold(
               (await __userRealName()).split(' ')[0],
             )}, you can initialize ${chalk.bold('Typescript')} later.`,
@@ -939,7 +945,7 @@ export class CreateCommand {
       `Initializing ${chalk.bold('Typescript')} into ${chalk.bold(params.projectName)}, please wait for a moment...`,
     );
 
-    await execa('npx', ['tsc', '--init'], {
+    await execa(__executeCommand, ['tsc', '--init'], {
       cwd: params.desPath,
     });
 
@@ -985,10 +991,6 @@ export class CreateCommand {
     params.spinner.succeed(
       `All file renames complete for ${chalk.bold(params.projectName)} ✅`,
     );
-
-    params.spinner.succeed(
-      `Adding ${chalk.bold('Typescript')} on ${chalk.bold(params.projectName)} succeed ✅`,
-    );
   }
 
   private async __runSwitchPackageManager(
@@ -1005,93 +1007,165 @@ export class CreateCommand {
       const __fullPath = path.join(params.desPath, file);
 
       if (await fse.exists(__fullPath)) {
-        params.spinner.start(
-          `Start removing ${chalk.bold(file)} on ${chalk.bold(params.projectName)} project, please wait for a moment...`,
-        );
-
         await fse.remove(__fullPath);
-
-        params.spinner.succeed(
-          `Removed ${chalk.bold(file)} on ${chalk.bold(params.projectName)} 🗑️`,
-        );
       }
     }
 
     const __nodeModulesPath = path.join(params.desPath, 'node_modules');
 
     if (await fse.exists(__nodeModulesPath)) {
-      params.spinner.start(
-        `Start removing ${chalk.bold('node_modules')} on ${chalk.bold(params.projectName)} project, please wait for a moment...`,
-      );
-
       await fse.remove(__nodeModulesPath);
-
-      params.spinner.succeed(
-        `Removed ${chalk.bold('node_modules')} on ${chalk.bold(params.projectName)} 🗑️`,
-      );
     }
 
-    const __selectedPm =
-      params.selectedPackageManager === 'pnpm' ? 'pnpm' : 'npm';
+    const __executeCommand =
+      params.selectedPackageManager === 'npm' ? 'npm' : 'pnpm';
 
-    await execa(__selectedPm, ['install'], {
+    await execa(__executeCommand, ['install'], {
       cwd: params.desPath,
       stdio: 'inherit',
     });
   }
 
   private async __runInstallTs(params: __RunInstallTsParams) {
+    const __executeCommand =
+      params.selectedPackageManager === 'npm' ? 'npm' : 'pnpm';
+
     for (const p of TYPESCRIPT_DEPENDENCIES[params.projectType][
       params.selectedFramework
     ]) {
       params.spinner.start(`Start installing ${chalk.bold(p)} package...`);
 
-      await execa('npm', ['install', '-D', `${p}`], {
-        cwd: params.desPath,
-      });
+      if (params.selectedPackageManager === 'npm') {
+        await execa(__executeCommand, ['install', '-D', p], {
+          cwd: params.desPath,
+        });
+      } else {
+        await execa(__executeCommand, ['add', '-D', p], {
+          cwd: params.desPath,
+        });
+      }
 
       params.spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
     }
   }
 
-  private async __runInstall(
-    spinner: Ora,
-    packages: string[],
-    desPath: string,
-  ) {
-    spinner.start(
-      `Installing ${chalk.bold(packages.join(', '))}, please wait for a moment...`,
+  private async __runInstall(params: __RunInstallParams) {
+    const __executeCommand =
+      params.selectedPackageManager === 'npm' ? 'npm' : 'pnpm';
+
+    params.spinner.start(
+      `Installing ${chalk.bold(params.selectedDependencies.join(', '))}, please wait for a moment...`,
     );
 
-    for (const p of packages) {
-      spinner.start(`Start installing ${chalk.bold(p)} package...`);
+    for (const p of params.selectedDependencies) {
+      params.spinner.start(`Start installing ${chalk.bold(p)} dependency...`);
 
-      await execa('npm', ['install', '--save', p], {
-        cwd: desPath,
+      await execa(__executeCommand, ['install', '--save', p], {
+        cwd: params.desPath,
       });
 
-      spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+      params.spinner.succeed(
+        `Installing ${chalk.bold(p)} dependency succeed ✅`,
+      );
     }
 
-    spinner.succeed(`Installing all packages succeed ✅`);
+    const __isPrettierSelected =
+      params.selectedDependencies.includes('prettier');
+    const __isEsLintSelected = params.selectedDependencies.includes('eslint');
+
+    if (__isPrettierSelected) {
+      const __prettierrcTemplatesPath = path.join(
+        __basePath,
+        'templates/configs',
+      );
+      __pathNotExist(__prettierrcTemplatesPath);
+
+      const __templates = fs.readdirSync(__prettierrcTemplatesPath, {
+        withFileTypes: true,
+      });
+
+      const __prettierrcFile = __templates.find(
+        (f) => f.name === '.prettierrc',
+      );
+
+      if (!__prettierrcFile) {
+        throw new UnidentifiedTemplateError(
+          `${chalk.bold('Unidentified template')}: ${chalk.bold('.prettierrc')} file template is not defined.`,
+        );
+      }
+
+      const __prettierrcFileSourcePath = path.join(
+        __prettierrcFile.parentPath,
+        __prettierrcFile.name,
+      );
+      const __prettierrcFileDesPath = path.join(
+        params.desPath,
+        __prettierrcFile.name,
+      );
+
+      params.spinner.start(`Initializing ${chalk.bold('.prettierrc')} file...`);
+
+      await fse.copy(__prettierrcFileSourcePath, __prettierrcFileDesPath);
+
+      params.spinner.succeed(
+        `Adding ${chalk.bold('.prettierrc')} configuration completed ✅`,
+      );
+    }
+
+    if (__isEsLintSelected) {
+      const __executeCommand =
+        params.selectedPackageManager === 'npm' ? 'npx' : 'pnpx';
+
+      const __initializeESLintQuestion = await inquirer.prompt({
+        name: 'addESLintConfig',
+        type: 'confirm',
+        message: `Do you want us to execute ${chalk.bold(
+          `${__executeCommand} eslint --init`,
+        )} in your project? (optional)`,
+        default: false,
+      });
+
+      if (!__initializeESLintQuestion.addESLintConfig) {
+        console.warn(
+          boxen(
+            `${chalk.white(
+              `${chalk.bold(
+                (await __userRealName()).split(' ')[0],
+              )}, you can execute ${chalk.bold(`${__executeCommand} eslint --init`)} later.`,
+            )}`,
+            {
+              title: 'ⓘ Warning Information ⓘ',
+              titleAlignment: 'center',
+              padding: 1,
+              margin: 1,
+              borderColor: 'yellow',
+            },
+          ),
+        );
+        return;
+      }
+
+      await execa(`${__executeCommand}`, ['eslint', '--init'], {
+        cwd: params.desPath,
+        stdio: 'inherit',
+      });
+    }
+
+    params.spinner.succeed(`Installing all dependencies succeed ✅`);
   }
 
-  private async __runUpdate(
-    spinner: Ora,
-    projectName: string,
-    desPath: string,
-  ) {
+  private async __runUpdate(params: __RunUpdateParams) {
     const __updateDependenciesQuestion = await inquirer.prompt({
       name: 'updatePackages',
       type: 'confirm',
-      message: `Do you want us to run ${chalk.bold('npm update')}? (optional)`,
+      message: `Do you want us to run ${chalk.bold(`${params.selectedPackageManager} update`)}? (optional)`,
       default: false,
     });
 
     if (!__updateDependenciesQuestion.updatePackages) {
       console.warn(
         boxen(
-          `${chalk.yellow(
+          `${chalk.white(
             `${chalk.bold(
               (await __userRealName()).split(' ')[0],
             )}, you can update the dependencies later.`,
@@ -1108,18 +1182,18 @@ export class CreateCommand {
       return;
     }
 
-    spinner.start(
+    params.spinner.start(
       `Updating ${chalk.bold(
-        projectName,
+        params.projectName,
       )} dependencies, please wait for a moment 🌎...`,
     );
 
-    await execa('npm', ['update'], {
-      cwd: desPath,
+    await execa(`${params.selectedPackageManager}`, ['update'], {
+      cwd: params.desPath,
     });
 
-    spinner.succeed(
-      `Updating ${chalk.bold(projectName)} dependencies succeed ✅`,
+    params.spinner.succeed(
+      `Updating ${chalk.bold(params.projectName)} dependencies succeed ✅`,
     );
   }
 
@@ -1128,12 +1202,18 @@ export class CreateCommand {
       return;
     }
 
-    await this.__runInstall(
-      params.spinner,
-      params.selectedDependencies,
-      params.desPath,
-    );
-    await this.__runUpdate(params.spinner, params.projectName, params.desPath);
+    await this.__runInstall({
+      spinner: params.spinner,
+      selectedDependencies: params.selectedDependencies,
+      selectedPackageManager: params.selectedPackageManager,
+      desPath: params.desPath,
+    });
+    await this.__runUpdate({
+      spinner: params.spinner,
+      selectedPackageManager: params.selectedPackageManager,
+      projectName: params.projectName,
+      desPath: params.desPath,
+    });
   }
 
   private async __runOtherOptions(params: __RunOtherOptionsParams) {
@@ -1149,21 +1229,22 @@ export class CreateCommand {
       );
     }
 
+    if (params.optionValues.pm && params.optionValues.pm !== '') {
+      await this.__runSwitchPackageManager({
+        spinner: params.spinner,
+        selectedPackageManager: params.optionValues.pm,
+        projectName: params.projectName,
+        desPath: params.desPath,
+      });
+    }
+
     if (params.optionValues.ts) {
       await this.__runAddTypescript({
         spinner: params.spinner,
         projectType: params.projectType.toLowerCase(),
         projectName: params.projectName,
         selectedframework: params.selectedFramework,
-        desPath: params.desPath,
-      });
-    }
-
-    if (params.optionValues.pm && params.optionValues.pm !== '') {
-      await this.__runSwitchPackageManager({
-        spinner: params.spinner,
         selectedPackageManager: params.optionValues.pm,
-        projectName: params.projectName,
         desPath: params.desPath,
       });
     }
