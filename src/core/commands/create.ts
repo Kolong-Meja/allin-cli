@@ -47,6 +47,7 @@ import {
 import {
   EXPRESS_DEPENDENCIES,
   FASTIFY_DEPENDENCIES,
+  KOA_DEPENDENCIES,
   NEST_DEPENDENCIES,
   NODE_DEPENDENCIES,
 } from '@/constants/packages/backend.js';
@@ -292,6 +293,16 @@ export class CreateCommand {
           name: 'Node.js',
           packages: NODE_DEPENDENCIES.packages,
           promptKey: 'nodeDependencies',
+          templateSource: __backendFrameworkTemplateSourcePath,
+          templateDest: __backendFrameworkTemplateDesPath,
+        },
+      ],
+      [
+        'Koa',
+        {
+          name: 'Koa',
+          packages: KOA_DEPENDENCIES.packages,
+          promptKey: 'koaDependencies',
           templateSource: __backendFrameworkTemplateSourcePath,
           templateDest: __backendFrameworkTemplateDesPath,
         },

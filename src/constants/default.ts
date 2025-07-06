@@ -31,6 +31,12 @@ export const BACKEND_FRAMEWORKS: __DefaultFrameworkProps = {
       language: 'js',
       path: 'templates/backend/node-project',
     },
+    {
+      name: 'Koa',
+      templateName: 'koa-project',
+      language: 'js',
+      path: 'templates/backend/koa-project',
+    },
   ],
 };
 
