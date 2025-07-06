@@ -1,6 +1,6 @@
 {
   "name": "@faisalrmdhn08/allin-cli",
-  "version": "1.0.8",
+  "version": "1.0.11",
   "description": "A modern full-stack CLI tool based on Typescript designed to accelerate your app development process — setup your entire stack in one seamless command.",
   "exports": {
     "./package.json": "./package.json",

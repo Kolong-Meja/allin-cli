@@ -1,20 +1,14 @@
-type _BackendFramework = 'Express.js' | 'Fastify' | 'NestJS' | 'Node.js';
-type _FrontendFramework =
-  | 'Next.js'
-  | 'Vue.js'
-  | 'Svelte'
-  | 'SolidJS'
-  | 'VanillaJS';
+import type { Mixed } from '@/types/general.js';
 
 export const TYPESCRIPT_DEPENDENCIES: {
-  backend: Record<_BackendFramework, string[]>;
-  frontend: Record<_FrontendFramework, string[]>;
+  [key: string]: Mixed;
 } = {
   backend: {
-    'Express.js': ['typescript', '@types/express'],
+    'Express.js': ['typescript', '@types/node', '@types/express'],
     Fastify: ['typescript', '@types/node'],
     NestJS: ['typescript', '@types/node', '@types/express'],
     'Node.js': ['typescript', '@types/node'],
+    Koa: ['typescript', '@types/node', '@types/koa'],
   },
   frontend: {
     'Next.js': [
@@ -30,8 +24,8 @@ export const TYPESCRIPT_DEPENDENCIES: {
       'vue-tsc',
       'npm-run-all2',
     ],
-    Svelte: ['typescript', 'svelte-check'],
-    SolidJS: ['typescript'],
+    Svelte: ['typescript', '@types/node', 'svelte-check'],
+    SolidJS: ['typescript', '@types/node'],
     VanillaJS: ['typescript', '@types/node'],
   },
 };
