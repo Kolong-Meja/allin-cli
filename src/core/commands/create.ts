@@ -6,6 +6,7 @@ import {
   UnidentifiedTemplateError,
 } from '@/exceptions/error.js';
 import {
+  __detectProjectType,
   __renewProjectName,
   __renewStringsIntoTitleCase,
 } from '@/utils/string.js';
@@ -109,10 +110,13 @@ export class CreateCommand {
         message: "What's the name of your project?",
         default: 'my-project',
       });
-      __containHarassmentWords(
-        __renewProjectName(__projectNamQuestion.projectName),
-        DIRTY_WORDS,
+
+      const __projectName = __renewProjectName(
+        __projectNamQuestion.projectName,
       );
+      __containHarassmentWords(__projectName, DIRTY_WORDS);
+
+      const __hasProjectType = __detectProjectType(__projectName);
 
       const __projectTypeQuestion = await inquirer.prompt([
         {
@@ -121,13 +125,17 @@ export class CreateCommand {
           message: 'What type of project do you want create:',
           choices: __renewStringsIntoTitleCase(PROJECT_TYPES),
           default: 'backend',
+          when: () => __hasProjectType === undefined,
         },
       ]);
+
+      const __projectType =
+        __hasProjectType ?? __projectTypeQuestion.projectType.toLowerCase();
 
       const __templatesDirPath = path.join(
         __basePath,
         'templates',
-        __projectTypeQuestion.projectType.toLowerCase(),
+        __projectType.toLowerCase(),
       );
       __pathNotExist(__templatesDirPath);
 
@@ -136,13 +144,13 @@ export class CreateCommand {
       });
       __pathNotExist(options.dir);
 
-      switch (__projectTypeQuestion.projectType.toLowerCase()) {
+      switch (__projectType) {
         case 'backend':
           await this.__backendProjectType({
             spinner: spinner,
             optionValues: options,
             templatesFiles: __templatesFiles,
-            projectName: __projectNamQuestion.projectName,
+            projectName: __projectName,
             projectType: __projectTypeQuestion.projectType,
           });
           break;
@@ -151,7 +159,7 @@ export class CreateCommand {
             spinner: spinner,
             optionValues: options,
             templatesFiles: __templatesFiles,
-            projectName: __projectNamQuestion.projectName,
+            projectName: __projectName,
             projectType: __projectTypeQuestion.projectType,
           });
           break;
@@ -159,7 +167,7 @@ export class CreateCommand {
 
       const end = performance.now();
       spinner.succeed(
-        `It's done ${chalk.bold(await __userRealName()).split(' ')[0]} 🎉. Your ${chalk.bold(__projectNamQuestion.projectName)} is already created. Executed for ${chalk.bold((end - start).toFixed(3))} ms`,
+        `It's done ${chalk.bold(await __userRealName()).split(' ')[0]} 🎉. Your ${chalk.bold(__projectName)} is already created. Executed for ${chalk.bold((end - start).toFixed(3))} ms`,
       );
     } catch (error: Mixed) {
       spinner.fail('⛔️ Failed to create project...\n');
@@ -243,7 +251,7 @@ export class CreateCommand {
     );
     const __backendFrameworkTemplateDesPath = path.join(
       params.optionValues.dir,
-      __renewProjectName(params.projectName),
+      params.projectName,
     );
     __unableToOverwriteProject(__backendFrameworkTemplateDesPath);
 
@@ -394,7 +402,7 @@ export class CreateCommand {
             i.name.toLowerCase().localeCompare(e.name.toLowerCase(), 'en-US'),
           )
           .map((f) => f.name),
-        default: 'Next.js',
+        default: 'Astro.js',
       },
     ]);
 
@@ -425,7 +433,7 @@ export class CreateCommand {
     );
     const __frontendFrameworkTemplateDesPath = path.join(
       params.optionValues.dir,
-      __renewProjectName(params.projectName),
+      params.projectName,
     );
     __unableToOverwriteProject(__frontendFrameworkTemplateDesPath);
 
