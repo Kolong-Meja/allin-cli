@@ -3,138 +3,144 @@ import type { __FrontendPackagesProps } from '@/types/general.js';
 export const NEXT_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
-      name: 'Tailwind CSS',
+      name: 'tailwindcss',
       originName: 'tailwindcss',
       summary:
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
-      name: 'Tailwind CSS PostCSS',
+      name: '@tailwindcss/postcss',
       originName: '@tailwindcss/postcss',
       summary:
         'Official PostCSS plugin for Tailwind CSS that processes your CSS files to generate utility classes, enabling JIT compilation and seamless integration into your build pipeline.',
     },
     {
-      name: 'PostCSS',
+      name: 'postcss',
       originName: 'postcss',
       summary:
         'PostCSS runner required by Tailwind CSS and other CSS transformations.',
     },
     {
-      name: 'ESLint',
+      name: 'eslint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
     },
     {
-      name: 'ESLint Plugin Next',
+      name: '@next/eslint-plugin-next',
       originName: '@next/eslint-plugin-next',
       summary:
         'Adds ESLint rules and JSX support tailored for Next.js projects to ensure best practices and prevent common mistakes.',
     },
     {
-      name: 'Prettier',
+      name: 'prettier',
       originName: 'prettier',
       summary:
         'Opinionated code formatter supporting multiple languages, ensuring consistent style.',
     },
     {
-      name: 'Dotenv',
+      name: 'dotenv',
       originName: 'dotenv',
       summary: 'Loads environment variables from a .env file into process.env.',
     },
     {
-      name: 'Axios',
+      name: 'axios',
       originName: 'axios',
       summary:
         'Promise-based HTTP client for browsers and Node.js, with support for interceptors and transformations.',
     },
     {
-      name: 'Zod',
+      name: 'ky',
+      originName: 'ky',
+      summary:
+        'A tiny, elegant HTTP client built on the Fetch API, offering a simpler API, built-in retries, hooks, and a smaller bundle size compared to Axios (mostly for browser usage).',
+    },
+    {
+      name: 'zod',
       originName: 'zod',
       summary:
         'Type-safe schema validation library for TypeScript and JavaScript, enabling robust data parsing and type inference.',
     },
     {
-      name: 'GraphQL.js',
+      name: 'graphql',
       originName: 'graphql',
       summary:
         'Reference implementation of the GraphQL specification in JavaScript, providing utilities to build schemas and execute queries.',
     },
     {
-      name: 'Apollo Client',
+      name: '@apollo/client',
       originName: '@apollo/client',
       summary:
         'Comprehensive state management library for managing GraphQL data fetching, caching, and UI integration in React applications.',
     },
     {
-      name: 'Apollo Server',
+      name: '@apollo/server',
       originName: '@apollo/server',
       summary:
         'Standalone GraphQL server framework with support for schema federation and caching.',
     },
     {
-      name: 'NextAuth.js',
+      name: 'next-auth',
       originName: 'next-auth',
       summary:
         'Authentication library for Next.js providing secure and flexible strategies with OAuth, JWT, and credentials support.',
     },
     {
-      name: 'Next SEO',
+      name: 'next-seo',
       originName: 'next-seo',
       summary:
         'Plugin for managing SEO-related meta tags such as Open Graph, Twitter Cards, and JSON-LD in Next.js applications.',
     },
     {
-      name: 'Next i18n',
+      name: 'next-i18next',
       originName: 'next-i18next',
       summary:
         'Internationalization framework integrating i18next with Next.js for server-side rendered and static multilingual sites.',
     },
     {
-      name: 'Jest',
+      name: 'jest',
       originName: 'jest',
       summary:
         'JavaScript testing framework with a focus on simplicity, performance, and zero-configuration setup for unit and integration testing.',
     },
     {
-      name: 'Jest Environment JSDom',
+      name: 'jest-environment-jsdom',
       originName: 'jest-environment-jsdom',
       summary:
         'Jest environment using jsdom to simulate browser APIs for testing React components and DOM interactions.',
     },
     {
-      name: 'Testing Library React',
+      name: '@testing-library/react',
       originName: '@testing-library/react',
       summary:
         'Simple and complete React testing utilities that encourage writing tests focused on user interactions.',
     },
     {
-      name: 'Testing Library DOM',
+      name: '@testing-library/dom',
       originName: '@testing-library/dom',
       summary:
         'Lightweight DOM testing library with utilities to query and interact with elements for pure JavaScript testing.',
     },
     {
-      name: 'Testing Library Jest DOM',
+      name: '@testing-library/jest-dom',
       originName: '@testing-library/jest-dom',
       summary:
         'Custom Jest matchers that extend Testing Library with DOM-specific assertions for more expressive tests.',
     },
     {
-      name: 'Playwright',
+      name: 'playwright',
       originName: 'playwright',
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
     },
     {
-      name: 'Drizzle ORM',
+      name: 'drizzle-orm',
       originName: 'drizzle-orm',
       summary:
         'Lightweight TypeScript-first ORM for SQL, focusing on type-safety and migrations.',
     },
     {
-      name: 'Drizzle Kit',
+      name: 'drizzle-kit',
       originName: 'drizzle-kit',
       summary:
         'CLI toolkit for Drizzle ORM to generate and manage migrations and type-safe queries.',
@@ -146,13 +152,13 @@ export const NEXT_DEPENDENCIES: __FrontendPackagesProps = {
         'Pure JavaScript PostgreSQL client for Node.js, offering promises and connection pooling.',
     },
     {
-      name: 'Chart.js',
+      name: 'chart.js',
       originName: 'chart.js',
       summary:
         'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
     },
     {
-      name: 'GSAP',
+      name: 'gsap',
       originName: 'gsap',
       summary:
         'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
@@ -169,120 +175,120 @@ export const NEXT_DEPENDENCIES: __FrontendPackagesProps = {
 export const VUE_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
-      name: 'Tailwind CSS',
+      name: 'tailwindcss',
       originName: 'tailwindcss',
       summary:
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
-      name: 'Tailwind CSS Vite',
+      name: '@tailwindcss/vite',
       originName: '@tailwindcss/vite',
       summary:
         'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
     },
     {
-      name: 'ESLint',
+      name: 'eslint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
     },
     {
-      name: 'ESLint Plugin Vue',
+      name: 'eslint-plugin-vue',
       originName: 'eslint-plugin-vue',
       summary:
         'Adds ESLint rules and JSX support tailored for Vue.js projects to ensure best practices and prevent common mistakes.',
     },
     {
-      name: 'Prettier',
+      name: 'prettier',
       originName: 'prettier',
       summary:
         'Opinionated code formatter supporting multiple languages, ensuring consistent style.',
     },
     {
-      name: 'Dotenv',
+      name: 'dotenv',
       originName: 'dotenv',
       summary: 'Loads environment variables from a .env file into process.env.',
     },
     {
-      name: 'Axios',
+      name: 'axios',
       originName: 'axios',
       summary:
         'Promise-based HTTP client for browsers and Node.js, with support for interceptors and transformations.',
     },
     {
-      name: 'Pinia',
+      name: 'pinia',
       originName: 'pinia',
       summary:
         'State management library for Vue.js with a simple API, fully typed support, and modular store architecture.',
     },
     {
-      name: 'Vue Router',
+      name: 'vue-router@4',
       originName: 'vue-router@4',
       summary:
         'Official routing library for Vue.js, supporting nested routes, dynamic routing, and navigation guards.',
     },
     {
-      name: 'VeeValidate',
+      name: 'vee-validate',
       originName: 'vee-validate',
       summary:
         'Flexible form validation library for Vue.js, offering both schema-based and field-level validation via the Composition API.',
     },
     {
-      name: 'Auth Vue SDK',
+      name: '@auth0/auth0-vue',
       originName: '@auth0/auth0-vue',
       summary:
         'Auth0 official SDK for Vue.js, providing easy integration of authentication flows and secure token management.',
     },
     {
-      name: 'Vue i18n',
+      name: 'vue-i18n@11',
       originName: 'vue-i18n@11',
       summary:
         'Internationalization plugin for Vue.js, enabling translations, pluralization, and date/number formatting with lazy-loading support.',
     },
     {
-      name: 'Vue Use',
+      name: '@vueuse/core',
       originName: '@vueuse/core',
       summary:
         'Collection of utility Composition API functions for Vue.js, offering reactive abstractions like useFetch, useLocalStorage, and more.',
     },
     {
-      name: 'Vitest',
+      name: 'vitest',
       originName: 'vitest',
       summary:
         'Blazing fast unit test framework built on Vite, offering a Jest-compatible API optimized for Vue.js projects.',
     },
     {
-      name: 'Vue Test Utils',
+      name: '@vue/test-utils',
       originName: '@vue/test-utils',
       summary:
         'Official testing utilities for Vue.js, providing methods to mount components and assert rendered output and behavior.',
     },
     {
-      name: 'Zod',
+      name: 'zod',
       originName: 'zod',
       summary:
         'Type-safe schema validation library for TypeScript and JavaScript, enabling robust data parsing and type inference.',
     },
     {
-      name: 'Apollo Client',
+      name: '@apollo/client',
       originName: '@apollo/client',
       summary:
         'Comprehensive state management library for managing GraphQL data fetching, caching, and UI integration in React applications.',
     },
     {
-      name: 'Playwright',
+      name: 'playwright',
       originName: 'playwright',
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
     },
     {
-      name: 'Chart.js',
+      name: 'chart.js',
       originName: 'chart.js',
       summary:
         'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
     },
     {
-      name: 'GSAP',
+      name: 'gsap',
       originName: 'gsap',
       summary:
         'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
@@ -299,42 +305,42 @@ export const VUE_DEPENDENCIES: __FrontendPackagesProps = {
 export const SVELTE_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
-      name: 'Tailwind CSS',
+      name: 'tailwindcss',
       originName: 'tailwindcss',
       summary:
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
-      name: 'Tailwind CSS Vite',
+      name: '@tailwindcss/vite',
       originName: '@tailwindcss/vite',
       summary:
         'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
     },
     {
-      name: 'ESLint',
+      name: 'eslint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
     },
     {
-      name: 'ESLint Plugin Svelte',
+      name: 'eslint-plugin-svelte',
       originName: 'eslint-plugin-svelte',
       summary:
         'Adds ESLint rules and JSX support tailored for Svelte projects to ensure best practices and prevent common mistakes.',
     },
     {
-      name: 'Prettier',
+      name: 'prettier',
       originName: 'prettier',
       summary:
         'Opinionated code formatter supporting multiple languages, ensuring consistent style.',
     },
     {
-      name: 'Dotenv',
+      name: 'dotenv',
       originName: 'dotenv',
       summary: 'Loads environment variables from a .env file into process.env.',
     },
     {
-      name: 'Axios',
+      name: 'axios',
       originName: 'axios',
       summary:
         'Promise-based HTTP client for browsers and Node.js, with support for interceptors and transformations.',
@@ -350,13 +356,13 @@ export const SVELTE_DEPENDENCIES: __FrontendPackagesProps = {
       summary: 'A highly customizable and versatile GraphQL client.',
     },
     {
-      name: 'Svelte Query',
+      name: '@sveltestack/svelte-query',
       originName: '@sveltestack/svelte-query',
       summary:
         'Adaptation of TanStack Query for Svelte, providing powerful data fetching, caching, and synchronization hooks.',
     },
     {
-      name: 'Sveltekit Auth',
+      name: '@auth/sveltekit',
       originName: '@auth/sveltekit',
       summary:
         'Authentication library for SvelteKit with built-in support for OAuth, JWT, and secure session management.',
@@ -368,13 +374,13 @@ export const SVELTE_DEPENDENCIES: __FrontendPackagesProps = {
         'Internationalization library for Svelte, supporting reactive translations, lazy-loading, pluralization, and locale management.',
     },
     {
-      name: 'Svelte Meta Tags',
+      name: 'svelte-meta-tags',
       originName: 'svelte-meta-tags',
       summary:
         'Utility for managing document head elements in Svelte, enabling declarative control over title, meta, and Open Graph tags.',
     },
     {
-      name: 'Svelte Testing Library',
+      name: '@testing-library/svelte',
       originName: '@testing-library/svelte',
       summary:
         'User-centric testing utilities for Svelte components, focusing on interactions and accessibility queries.',
@@ -386,37 +392,37 @@ export const SVELTE_DEPENDENCIES: __FrontendPackagesProps = {
         'Modern JavaScript date utility library for parsing, formatting, and manipulating dates with tree-shaking support.',
     },
     {
-      name: 'Zod',
+      name: 'zod',
       originName: 'zod',
       summary:
         'Type-safe schema validation library for TypeScript and JavaScript, enabling robust data parsing and type inference.',
     },
     {
-      name: 'Vite Plugin PWA',
+      name: 'vite-plugin-pwa',
       originName: 'vite-plugin-pwa',
       summary:
         'Vite plugin to add PWA features to SvelteKit including service worker registration, manifest generation, and offline caching strategies.',
     },
     {
-      name: 'Vitest',
+      name: 'vitest',
       originName: 'vitest',
       summary:
         'Blazing fast unit test framework built on Vite, offering a Jest-compatible API optimized for Vue.js projects.',
     },
     {
-      name: 'Playwright',
+      name: 'playwright',
       originName: 'playwright',
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
     },
     {
-      name: 'Chart.js',
+      name: 'chart.js',
       originName: 'chart.js',
       summary:
         'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
     },
     {
-      name: 'GSAP',
+      name: 'gsap',
       originName: 'gsap',
       summary:
         'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
@@ -433,42 +439,42 @@ export const SVELTE_DEPENDENCIES: __FrontendPackagesProps = {
 export const ASTRO_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
-      name: 'Tailwind CSS',
+      name: 'tailwindcss',
       originName: 'tailwindcss',
       summary:
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
-      name: 'Tailwind CSS Vite',
+      name: '@tailwindcss/vite',
       originName: '@tailwindcss/vite',
       summary:
         'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
     },
     {
-      name: 'ESLint',
+      name: 'eslint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
     },
     {
-      name: 'ESLint Plugin Astro',
+      name: 'eslint-plugin-astro',
       originName: 'eslint-plugin-astro',
       summary:
         'Adds ESLint rules and JSX support tailored for Astro projects to ensure best practices and prevent common mistakes.',
     },
     {
-      name: 'Prettier',
+      name: 'prettier',
       originName: 'prettier',
       summary:
         'Opinionated code formatter supporting multiple languages, ensuring consistent style.',
     },
     {
-      name: 'Dotenv',
+      name: 'dotenv',
       originName: 'dotenv',
       summary: 'Loads environment variables from a .env file into process.env.',
     },
     {
-      name: 'Axios',
+      name: 'axios',
       originName: 'axios',
       summary:
         'Promise-based HTTP client for browsers and Node.js, with support for interceptors and transformations.',
@@ -480,103 +486,103 @@ export const ASTRO_DEPENDENCIES: __FrontendPackagesProps = {
         'Modern JavaScript date utility library for parsing, formatting, and manipulating dates with tree-shaking support.',
     },
     {
-      name: 'Auth Astro',
+      name: 'auth-astro',
       originName: 'auth-astro',
       summary:
         'Authentication integration for Astro, providing server-side and client-side auth flows and secure session management.',
     },
     {
-      name: 'AstroJS React',
+      name: '@astrojs/react',
       originName: '@astrojs/react',
       summary:
         'Official Astro integration that enables rendering React components in Astro projects with optimized bundling.',
     },
     {
-      name: 'AstroJS Vue',
+      name: '@astrojs/vue',
       originName: '@astrojs/vue',
       summary:
         'Official Astro integration for Vue, allowing seamless inclusion of Vue components with server-side rendering support.',
     },
     {
-      name: 'AstroJS Svelte',
+      name: '@astrojs/svelte',
       originName: '@astrojs/svelte',
       summary:
         'Official Astro integration for Svelte, enabling Svelte components and reactive syntax within Astro pages.',
     },
     {
-      name: 'AstroJS MDX',
+      name: '@astrojs/mdx',
       originName: '@astrojs/mdx',
       summary:
         'MDX integration for Astro, allowing JSX/TSX components in markdown files for interactive documentation and content.',
     },
     {
-      name: 'Astro Icon',
+      name: 'astro-icon',
       originName: 'astro-icon',
       summary:
         'Icon component for Astro that simplifies importing and optimizing SVG icons from popular icon sets.',
     },
     {
-      name: 'AstroJS Sitemap',
+      name: '@astrojs/sitemap',
       originName: '@astrojs/sitemap',
       summary:
         'Automated sitemap generator for Astro projects, creating sitemap.xml based on your site’s routes.',
     },
     {
-      name: 'AstroJS RSS',
+      name: '@astrojs/rss',
       originName: '@astrojs/rss',
       summary:
         'RSS feed generator for Astro, producing RSS/Atom feeds from content collections or markdown files.',
     },
     {
-      name: 'Astro Robots',
+      name: 'astro-robots',
       originName: 'astro-robots',
       summary:
         'Robots.txt generator for Astro, automatically creating robots.txt based on your configuration.',
     },
     {
-      name: 'AstroJS Vercel',
+      name: '@astrojs/vercel',
       originName: '@astrojs/vercel',
       summary:
         'Astro adapter for Vercel, facilitating deployment and edge functions integration for Astro sites.',
     },
     {
-      name: 'AstroJS Netlify',
+      name: '@astrojs/netlify',
       originName: '@astrojs/netlify',
       summary:
         'Astro adapter for Netlify, providing build and deployment configuration for Netlify hosting.',
     },
     {
-      name: 'AstroJS Google Analytics',
+      name: '@digi4care/astro-google-analytics',
       originName: '@digi4care/astro-google-analytics',
       summary:
         'Google Analytics integration for Astro, enabling automatic insertion of GA4 tracking scripts.',
     },
     {
-      name: 'AstroJS Partytown',
+      name: '@astrojs/partytown',
       originName: '@astrojs/partytown',
       summary:
         'Partytown integration for Astro, offloading third-party scripts to web workers for improved performance.',
     },
     {
-      name: 'Vitest',
+      name: 'vitest',
       originName: 'vitest',
       summary:
         'Blazing fast unit test framework built on Vite, offering a Jest-compatible API optimized for Vue.js projects.',
     },
     {
-      name: 'Playwright',
+      name: 'playwright',
       originName: 'playwright',
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
     },
     {
-      name: 'Chart.js',
+      name: 'chart.js',
       originName: 'chart.js',
       summary:
         'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
     },
     {
-      name: 'GSAP',
+      name: 'gsap',
       originName: 'gsap',
       summary:
         'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
@@ -593,72 +599,72 @@ export const ASTRO_DEPENDENCIES: __FrontendPackagesProps = {
 export const SOLID_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
-      name: 'Tailwind CSS',
+      name: 'tailwindcss',
       originName: 'tailwindcss',
       summary:
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
-      name: 'Tailwind CSS Vite',
+      name: '@tailwindcss/vite',
       originName: '@tailwindcss/vite',
       summary:
         'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
     },
     {
-      name: 'Autoprefixer',
+      name: 'autoprefixer',
       originName: 'autoprefixer',
       summary:
         'PostCSS plugin to parse CSS and add vendor prefixes automatically, ensuring cross-browser compatibility.',
     },
     {
-      name: 'ESLint',
+      name: 'eslint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
     },
     {
-      name: 'ESLint Plugin Solid',
+      name: 'eslint-plugin-solid',
       originName: 'eslint-plugin-solid',
       summary:
         'Adds ESLint rules and JSX support tailored for SolidJS projects to ensure best practices and prevent common mistakes.',
     },
     {
-      name: 'Prettier',
+      name: 'prettier',
       originName: 'prettier',
       summary:
         'Opinionated code formatter supporting multiple languages, ensuring consistent style.',
     },
     {
-      name: 'Dotenv',
+      name: 'dotenv',
       originName: 'dotenv',
       summary: 'Loads environment variables from a .env file into process.env.',
     },
     {
-      name: 'Axios',
+      name: 'axios',
       originName: 'axios',
       summary:
         'Promise-based HTTP client for browsers and Node.js, with support for interceptors and transformations.',
     },
     {
-      name: 'Vite',
+      name: 'vite',
       originName: 'vite',
       summary:
         'Next-generation frontend build tool with lightning-fast HMR, pre-bundling, and optimized production builds.',
     },
     {
-      name: 'Vite Plugin Solid',
+      name: 'vite-plugin-solid',
       originName: 'vite-plugin-solid',
       summary:
         'Official plugin to compile SolidJS components in Vite, enabling fast refresh and JSX/TSX support.',
     },
     {
-      name: 'Vitest',
+      name: 'vitest',
       originName: 'vitest',
       summary:
         'Blazing fast unit test framework built on Vite, offering a Jest-compatible API optimized for Vue.js projects.',
     },
     {
-      name: 'SolidJS Router',
+      name: '@solidjs/router',
       originName: '@solidjs/router',
       summary:
         'Lightweight, client-side router for SolidJS with nested routes, route parameters, and lazy loading support.',
@@ -669,43 +675,43 @@ export const SOLID_DEPENDENCIES: __FrontendPackagesProps = {
       summary: 'Minimal GraphQL client.',
     },
     {
-      name: 'Zod',
+      name: 'zod',
       originName: 'zod',
       summary:
         'Type-safe schema validation library for TypeScript and JavaScript, enabling robust data parsing and type inference.',
     },
     {
-      name: 'Felte Solid',
+      name: '@felte/solid',
       originName: '@felte/solid',
       summary:
         'Form state management library for SolidJS, providing validation, field arrays, and submission helpers.',
     },
     {
-      name: 'Solid Primitives i18n',
+      name: '@solid-primitives/i18n',
       originName: '@solid-primitives/i18n',
       summary:
         'Collection of reactive internationalization primitives for SolidJS, handling translations, pluralization, and locale changes.',
     },
     {
-      name: 'Solid Testing Library',
+      name: '@testing-library/solid',
       originName: '@testing-library/solid',
       summary:
         'Testing utilities for SolidJS components following the Testing Library philosophy of user-centric tests.',
     },
     {
-      name: 'Playwright',
+      name: 'playwright',
       originName: 'playwright',
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',
     },
     {
-      name: 'Chart.js',
+      name: 'chart.js',
       originName: 'chart.js',
       summary:
         'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
     },
     {
-      name: 'GSAP',
+      name: 'gsap',
       originName: 'gsap',
       summary:
         'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
@@ -722,43 +728,43 @@ export const SOLID_DEPENDENCIES: __FrontendPackagesProps = {
 export const VANILLA_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
     {
-      name: 'Tailwind CSS',
+      name: 'tailwindcss',
       originName: 'tailwindcss',
       summary:
         'Utility-first CSS framework for rapidly building custom user interfaces using predefined classes.',
     },
     {
-      name: 'Tailwind CSS Vite',
+      name: '@tailwindcss/vite',
       originName: '@tailwindcss/vite',
       summary:
         'Official Vite plugin to integrate Tailwind CSS into your build process, enabling JIT compilation and automatic class scanning.',
     },
     {
-      name: 'Autoprefixer',
+      name: 'autoprefixer',
       originName: 'autoprefixer',
       summary:
         'PostCSS plugin to parse CSS and add vendor prefixes automatically, ensuring cross-browser compatibility.',
     },
     {
-      name: 'ESLint',
+      name: 'eslint',
       originName: 'eslint',
       summary:
         'Pluggable linting utility for JavaScript/TypeScript, helping maintain code consistency.',
     },
     {
-      name: 'Zod',
+      name: 'zod',
       originName: 'zod',
       summary:
         'Type-safe schema validation library for TypeScript and JavaScript, enabling robust data parsing and type inference.',
     },
     {
-      name: 'Prettier',
+      name: 'prettier',
       originName: 'prettier',
       summary:
         'Opinionated code formatter supporting multiple languages, ensuring consistent style.',
     },
     {
-      name: 'Dotenv',
+      name: 'dotenv',
       originName: 'dotenv',
       summary: 'Loads environment variables from a .env file into process.env.',
     },
@@ -769,19 +775,19 @@ export const VANILLA_DEPENDENCIES: __FrontendPackagesProps = {
         'Lightweight wrapper around the Fetch API with built-in retry, timeout, and JSON parsing for browser and Node environments.',
     },
     {
-      name: 'Vitest',
+      name: 'vitest',
       originName: 'vitest',
       summary:
         'Blazing fast unit test framework built on Vite, offering a Jest-compatible API optimized for Vue.js projects.',
     },
     {
-      name: 'Chart.js',
+      name: 'chart.js',
       originName: 'chart.js',
       summary:
         'Simple yet flexible JavaScript charting library for creating interactive, responsive charts using HTML5 canvas.',
     },
     {
-      name: 'GSAP',
+      name: 'gsap',
       originName: 'gsap',
       summary:
         'High-performance animation library for timelines, tweens, and complex sequences on DOM, SVG, and canvas elements.',
@@ -799,7 +805,7 @@ export const VANILLA_DEPENDENCIES: __FrontendPackagesProps = {
         'Modern JavaScript date utility library with immutable, pure functions and tree-shakable modules for minimal bundle size.',
     },
     {
-      name: 'Playwright',
+      name: 'playwright',
       originName: 'playwright',
       summary:
         'End-to-end testing library for automating browser interactions across Chromium, Firefox, and WebKit with reliable cross-browser support.',

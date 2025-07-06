@@ -1,23 +1,24 @@
 /**
  * __tests__/program.test.ts
  */
+import type { Mixed } from '@/types/general.js';
 import { jest } from '@jest/globals';
 
 const mockProgram = {
   name: jest.fn().mockReturnThis(),
   description: jest.fn().mockReturnThis(),
   option: jest.fn().mockReturnThis(),
-  summary: jest.fn().mockReturnThis(),
   command: jest.fn().mockReturnThis(),
   helpOption: jest.fn().mockReturnThis(),
   helpCommand: jest.fn().mockReturnThis(),
+  summary: jest.fn().mockReturnThis(),
   action: jest.fn().mockReturnThis(),
   parse: jest.fn(),
 };
 
 const exitSpy = jest
   .spyOn(process, 'exit')
-  .mockImplementation((() => {}) as any);
+  .mockImplementation((() => {}) as Mixed);
 
 jest.unstable_mockModule('../../src/config.js', () => ({
   program: mockProgram,
@@ -60,7 +61,9 @@ describe('generateProgram()', () => {
     await generateProgram();
 
     expect(mockProgram.name).toHaveBeenCalledWith('allin');
-    expect(mockProgram.description).toHaveBeenCalled();
+    expect(mockProgram.description).toHaveBeenCalledWith(
+      'This is a test description',
+    );
   });
 
   it('registers the version option and invokes _printAscii + exit', async () => {
@@ -68,34 +71,28 @@ describe('generateProgram()', () => {
 
     const versionCall = mockProgram.option.mock.calls.find(
       ([flag]) => flag === '-v, --version',
-    ) as unknown[];
-
+    );
     expect(versionCall).toBeDefined();
 
-    const versionFlag: string = versionCall[0] as string;
-    const versionDesc: string = versionCall[1] as string;
-    const versionCallback: Function = versionCall[2] as Function;
+    const [, versionDesc, versionCb] = versionCall!;
+    expect(versionDesc).toMatch(
+      /Action to get information about the current version of Allin CLI tool/,
+    );
+    expect(typeof versionCb).toBe('function');
 
-    expect(versionFlag).not.toBeNull();
-    expect(versionFlag).toEqual('-v, --version');
-
-    expect(versionDesc).not.toBeNull();
-    expect(versionDesc).toContain('Allin CLI');
-
-    expect(versionCallback).toBeInstanceOf(Function);
-
-    await versionCallback();
+    (versionCb as () => void)();
     expect(mockAppAscii).toHaveBeenCalled();
     expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  it('sets up the create subcommand with correct options and action', async () => {
+  it('sets up the create subcommand with correct options, help, summary, description and action', async () => {
     await generateProgram();
 
     expect(mockProgram.command).toHaveBeenCalledWith('create');
+
     expect(mockProgram.option).toHaveBeenCalledWith(
       '-d, --dir <dir>',
-      "Path destination directory to save the project template that you've created.",
+      expect.stringContaining('Path destination directory'),
       process.cwd(),
     );
     expect(mockProgram.option).toHaveBeenCalledWith(
@@ -113,14 +110,18 @@ describe('generateProgram()', () => {
       'Initialize project with TypeScript configuration.',
       false,
     );
-    expect(mockProgram.option).toHaveBeenCalledWith(
-      '-m, --pm <pm>',
-      'Choose package manager (npm | pnpm).',
+
+    const pmCall = mockProgram.option.mock.calls.find(
+      ([flag]) => flag === '-m, --pm <pm>',
+    )!;
+    expect(pmCall[1]).toBe('Choose package manager (npm | pnpm).');
+    expect(pmCall[2]).toBe('npm');
+
+    const createHelpCall = mockProgram.helpOption.mock.calls.find(
+      ([flag, text]) => flag === '-h, --help' && /create/.test(text as string),
     );
-    expect(mockProgram.helpOption).toHaveBeenCalledWith(
-      '-h, --help',
-      expect.stringContaining('Action to get more information'),
-    );
+    expect(createHelpCall).toBeDefined();
+
     expect(mockProgram.summary).toHaveBeenCalledWith(
       'Action to create new project.',
     );
@@ -129,26 +130,30 @@ describe('generateProgram()', () => {
     );
 
     const actionCall = mockProgram.action.mock.calls.find(
-      ([fn]) => typeof fn === 'function',
-    ) as unknown[];
+      (call) => typeof call[0] === 'function',
+    );
     expect(actionCall).toBeDefined();
 
-    const actionFn: Function = actionCall[0] as Function;
-
-    await actionFn({ foo: 'bar' });
+    const createCb = actionCall![0] as (opts: Mixed) => Promise<void>;
+    await createCb({ foo: 'bar' });
     expect(mockCreateCommand).toHaveBeenCalledWith({ foo: 'bar' });
   });
 
   it('configures global helpOption, helpCommand and invokes parse()', async () => {
     await generateProgram();
-    expect(mockProgram.helpOption).toHaveBeenCalledWith(
-      '-h, --help',
-      expect.stringContaining('Action to get more information'),
+
+    const globalHelpCall = mockProgram.helpOption.mock.calls.find(
+      ([flag, text]) =>
+        flag === '-h, --help' &&
+        /Action to get more information about Allin CLI/.test(text as string),
     );
+    expect(globalHelpCall).toBeDefined();
+
     expect(mockProgram.helpCommand).toHaveBeenCalledWith(
       'help [command]',
       expect.stringContaining('commands'),
     );
+
     expect(mockProgram.parse).toHaveBeenCalled();
   });
 });

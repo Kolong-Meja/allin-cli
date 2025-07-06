@@ -8,9 +8,10 @@ import {
   __renewProjectName,
   __renewStringIntoTitleCase,
   __renewStringsIntoTitleCase,
+  __detectProjectType,
 } from '@/utils/string.js';
 
-describe('String Util Functions', () => {
+describe('string.ts util functions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -82,6 +83,39 @@ describe('String Util Functions', () => {
 
     it('returns an empty array when given an empty array', () => {
       expect(__renewStringsIntoTitleCase([])).toEqual([]);
+    });
+  });
+
+  describe('testing __detectProjectType() function.', () => {
+    it('returns "backend" when the word backend is present (case-insensitive)', () => {
+      expect(__detectProjectType('backend')).toBe('backend');
+      expect(__detectProjectType('BACKEND')).toBe('backend');
+      expect(__detectProjectType('awesome BACKEND tool')).toBe('backend');
+      expect(__detectProjectType('  backend  ')).toBe('backend');
+    });
+
+    it('returns "frontend" when the word frontend is present (case-insensitive)', () => {
+      expect(__detectProjectType('frontend')).toBe('frontend');
+      expect(__detectProjectType('FRONTEND')).toBe('frontend');
+      expect(__detectProjectType('the FRONTEND module')).toBe('frontend');
+      expect(__detectProjectType('   frontend')).toBe('frontend');
+    });
+
+    it('returns the first match if both appear, preferring the earliest', () => {
+      expect(__detectProjectType('frontend-backend')).toBe('frontend');
+      expect(__detectProjectType('backend and frontend')).toBe('backend');
+    });
+
+    it('does not match substrings inside larger words or camelCase', () => {
+      expect(__detectProjectType('MyBackendService')).toBeNull();
+      expect(__detectProjectType('myfrontendtool')).toBeNull();
+      expect(__detectProjectType('123backendify')).toBeNull();
+      expect(__detectProjectType('frontenders')).toBeNull();
+    });
+
+    it('returns null when neither backend nor frontend is present', () => {
+      expect(__detectProjectType('some random name')).toBeNull();
+      expect(__detectProjectType('nothing to see here')).toBeNull();
     });
   });
 });
