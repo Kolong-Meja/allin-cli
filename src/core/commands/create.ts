@@ -6,7 +6,7 @@ import {
   UnidentifiedTemplateError,
 } from '@/exceptions/error.js';
 import {
-  __detectProjectType,
+  __detectProjectTypeFromInput,
   __renewProjectName,
   __renewStringsIntoTitleCase,
 } from '@/utils/string.js';
@@ -24,6 +24,7 @@ import { __basePath, __config, __userRealName } from '@/config.js';
 import type {
   __BackendProjectTypeParams,
   __FrontendProjectTypeParams,
+  __FullstackProjectTypeParams,
   __RunAddBakeParams,
   __RunAddDockerParams,
   __RunAddTsParams,
@@ -117,26 +118,26 @@ export class CreateCommand {
       );
       __containHarassmentWords(__projectName, DIRTY_WORDS);
 
-      const __hasProjectType = __detectProjectType(__projectName);
+      const __detectedProjectType = __detectProjectTypeFromInput(__projectName);
 
       const __projectTypeQuestion = await inquirer.prompt([
         {
           name: 'projectType',
           type: 'list',
           message: 'What type of project do you want create:',
-          choices: __renewStringsIntoTitleCase(PROJECT_TYPES),
+          choices: PROJECT_TYPES,
           default: 'backend',
-          when: () => __hasProjectType === undefined,
+          when: __detectedProjectType === null,
         },
       ]);
 
       const __projectType =
-        __hasProjectType ?? __projectTypeQuestion.projectType.toLowerCase();
+        __detectedProjectType ?? __projectTypeQuestion.projectType;
 
       const __templatesDirPath = path.join(
         __basePath,
         'templates',
-        __projectType.toLowerCase(),
+        __projectType,
       );
       __pathNotExist(__templatesDirPath);
 
@@ -603,6 +604,8 @@ export class CreateCommand {
       ),
     );
   }
+
+  private async __fullstackProjectType(params: __FullstackProjectTypeParams) {}
 
   private async __setupUserProject(params: __SetupUserProjectParams) {
     params.spinner.start(

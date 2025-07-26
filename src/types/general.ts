@@ -76,6 +76,13 @@ export type __FrontendProjectTypeParams = __BaseParams & {
   projectType: string;
 };
 
+export type __FullstackProjectTypeParams = __BaseParams & {
+  optionValues: OptionValues;
+  templatesFiles: fs.Dirent<string>[];
+  projectName: string;
+  projectType: string;
+};
+
 export type __SetupUserProjectParams = __BaseParams & {
   projectName: string;
   selectedFramework: string;
