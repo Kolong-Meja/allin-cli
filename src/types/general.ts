@@ -25,6 +25,7 @@ export type __ProjectResourcePathProps = {
 
 export type __FrameworkProps = {
   name: string;
+  actualName: string;
   templateName: string;
   language: string;
   path: string;
@@ -36,6 +37,7 @@ export type __DefaultFrameworkProps = {
 
 export type __LicenseProps = {
   name: string;
+  actualName: string;
   templateName: string;
   path: string;
 };
@@ -69,21 +71,11 @@ export type __BackendProjectTypeParams = __BaseParams & {
   projectType: string;
 };
 
-export type __FrontendProjectTypeParams = __BaseParams & {
-  optionValues: OptionValues;
-  templatesFiles: fs.Dirent<string>[];
-  projectName: string;
-  projectType: string;
-};
+export type __FrontendProjectTypeParams = __BackendProjectTypeParams;
 
-export type __FullstackProjectTypeParams = __BaseParams & {
-  optionValues: OptionValues;
-  templatesFiles: fs.Dirent<string>[];
-  projectName: string;
-  projectType: string;
-};
+export type __FullStackProjectTypeParams = __BackendProjectTypeParams;
 
-export type __SetupUserProjectParams = __BaseParams & {
+export type __SetupProjectParams = __BaseParams & {
   projectName: string;
   selectedFramework: string;
   sourcePath: string;
@@ -97,14 +89,14 @@ export type __SetupDockerParams = __BaseParams & {
   desPath: string;
 };
 
-export type __RunSystemUpdateParams = __BaseParams & {
+export type __SetupInstallationParams = __BaseParams & {
   selectedDependencies: string[];
   selectedPackageManager: string;
   projectName: string;
   desPath: string;
 };
 
-export type __RunOtherOptionsParams = __BaseParams & {
+export type __SetupOthersParams = __BaseParams & {
   optionValues: OptionValues;
   projectType: string;
   projectName: string;
@@ -112,7 +104,7 @@ export type __RunOtherOptionsParams = __BaseParams & {
   desPath: string;
 };
 
-export type __RunAddTsParams = __BaseParams & {
+export type __UseTypescriptParams = __BaseParams & {
   projectType: string;
   projectName: string;
   selectedframework: string;
@@ -120,37 +112,40 @@ export type __RunAddTsParams = __BaseParams & {
   desPath: string;
 };
 
-export type __RunInstallParams = __BaseParams & {
+export type __InstallDependenciesParams = __BaseParams & {
   selectedDependencies: string[];
   selectedPackageManager: string;
   desPath: string;
 };
 
-export type __RunUpdateParams = __BaseParams & {
+export type __UpdateDependenciesParams = __BaseParams & {
   selectedPackageManager: string;
   projectName: string;
   desPath: string;
 };
 
-export type __RunInstallTsParams = __BaseParams & {
+export type __InstallTypescriptParams = __BaseParams & {
   projectType: string;
   selectedFramework: string;
   selectedPackageManager: string;
   desPath: string;
 };
 
-export type __RunSwitchPackageManagerParams = __BaseParams & {
+export type __AddLicenseParams = __BaseParams & {
+  optionValues: OptionValues;
+  projectName: string;
+  desPath: string;
+};
+
+export type __SwitchPackageManagerParams = __BaseParams & {
   selectedPackageManager: string;
   projectName: string;
   desPath: string;
 };
 
-export type __RunAddDockerParams = __BaseParams & {
+export type __AddDockerParams = __BaseParams & {
   desPath: string;
   selectedPackageManager: string;
 };
 
-export type __RunAddBakeParams = __BaseParams & {
-  desPath: string;
-  selectedPackageManager: string;
-};
+export type __AddDockerBakeParams = __AddDockerParams;

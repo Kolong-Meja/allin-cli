@@ -95,26 +95,46 @@ describe('generateProgram()', () => {
       expect.stringContaining('Path destination directory'),
       process.cwd(),
     );
+
     expect(mockProgram.option).toHaveBeenCalledWith(
-      '-g, --git',
+      '--git',
       'Initialize git repo automatically.',
       false,
     );
+
     expect(mockProgram.option).toHaveBeenCalledWith(
-      '-l, --li',
+      '--li, --license <license>',
       'Add a LICENSE file.',
-      false,
     );
+
     expect(mockProgram.option).toHaveBeenCalledWith(
-      '-t, --ts',
+      '--ts, --typescript',
       'Initialize project with TypeScript configuration.',
       false,
     );
 
+    expect(mockProgram.option).toHaveBeenCalledWith(
+      '--backend <backend>',
+      'Set default framework for backend project at first run.',
+    );
+
+    expect(mockProgram.option).toHaveBeenCalledWith(
+      '--frontend <frontend>',
+      'Set default framework for frontend project at first run.',
+    );
+
+    expect(mockProgram.option).toHaveBeenCalledWith(
+      '--dk, --docker',
+      'Initialize project with docker configuration.',
+      false,
+    );
+
     const pmCall = mockProgram.option.mock.calls.find(
-      ([flag]) => flag === '-m, --pm <pm>',
+      ([flag]) => flag === '--pm <pm>',
     )!;
-    expect(pmCall[1]).toBe('Choose package manager (npm | pnpm).');
+    expect(pmCall[1]).toBe(
+      'Choose or switching default package manager of the project.',
+    );
     expect(pmCall[2]).toBe('npm');
 
     const createHelpCall = mockProgram.helpOption.mock.calls.find(

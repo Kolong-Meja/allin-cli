@@ -16,7 +16,10 @@ export const __renewProjectName = <T extends string>(s: T) => {
 };
 
 export const __detectProjectTypeFromInput = <T extends string>(s: T) => {
-  const words = s.split(/(?=[A-Z])|[.\-_]/);
+  const words = s
+    .toLowerCase()
+    .split(/(?=[A-Z])|[.\-_\s]/)
+    .filter(Boolean);
   if (words.includes('backend')) return 'backend';
   if (words.includes('frontend')) return 'frontend';
   return null;

@@ -43,12 +43,10 @@ export const __config = (() => {
         : 'Faisal Ramadhan';
     },
     get appVersion() {
-      return process.env.APP_VERSION ? process.env.APP_VERSION : '1.0.11';
+      return process.env.APP_VERSION ? process.env.APP_VERSION : '1.0.13';
     },
     get appLicense() {
-      return process.env.APP_LICENSE
-        ? process.env.APP_LICENSE
-        : 'GNU General Public License version 3 (GPLv3)';
+      return process.env.APP_LICENSE ? process.env.APP_LICENSE : 'MIT License';
     },
     get githubLink() {
       return process.env.APP_GITHUB_LINK

@@ -8,6 +8,7 @@ import {
   __renewProjectName,
   __renewStringIntoTitleCase,
   __renewStringsIntoTitleCase,
+  __detectProjectTypeFromInput,
 } from '@/utils/string.js';
 
 describe('string.ts util functions', () => {
@@ -82,6 +83,33 @@ describe('string.ts util functions', () => {
 
     it('returns an empty array when given an empty array', () => {
       expect(__renewStringsIntoTitleCase([])).toEqual([]);
+    });
+  });
+
+  describe('testing __detectProjectTypeFromInput() function.', () => {
+    it('return "backend" when the word backend is exist.', () => {
+      expect(__detectProjectTypeFromInput('backend')).toBe('backend');
+      expect(__detectProjectTypeFromInput('BACKEND')).toBe('backend');
+      expect(__detectProjectTypeFromInput('awesome BACKEND tool')).toBe(
+        'backend',
+      );
+      expect(__detectProjectTypeFromInput('  backend  ')).toBe('backend');
+    });
+
+    it('return "frontend" when the word frontend is exist.', () => {
+      expect(__detectProjectTypeFromInput('frontend')).toBe('frontend');
+      expect(__detectProjectTypeFromInput('FRONTEND')).toBe('frontend');
+      expect(__detectProjectTypeFromInput('the FRONTEND module')).toBe(
+        'frontend',
+      );
+      expect(__detectProjectTypeFromInput('  frontend  ')).toBe('frontend');
+    });
+
+    it("return 'null' when the word doesn't match with frontend or backend.", () => {
+      expect(__detectProjectTypeFromInput('MyBackendService')).toBeNull();
+      expect(__detectProjectTypeFromInput('myfrontendtool')).toBeNull();
+      expect(__detectProjectTypeFromInput('123backendify')).toBeNull();
+      expect(__detectProjectTypeFromInput('frontenders')).toBeNull();
     });
   });
 });

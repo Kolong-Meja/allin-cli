@@ -32,7 +32,7 @@ export function __projectTemplateNotExist(
   return;
 }
 
-export function __unableToOverwriteProject(path: string): void {
+export function __unableOverwriteProject(path: string): void {
   if (fs.existsSync(path))
     throw new UnableOverwriteError(
       `${chalk.bold('Unable to overwrite')}: ${chalk.bold(
