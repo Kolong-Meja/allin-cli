@@ -83,7 +83,7 @@ export class BackendGenerator {
       params.optionValues.dir,
       params.projectName,
     );
-    __unableOverwriteProject(__backendFrameworkTemplateDesPath);
+    __unableOverwriteProject(__backendFrameworkTemplateDesPath, params.optionValues);
 
     const __backendFrameworkMap = new Map<string, FrameworkConfig>([
       [
@@ -167,6 +167,7 @@ export class BackendGenerator {
       selectedFramework: __selectedBackendFramework.actualName,
       sourcePath: __selectedBackendFramework.templateSource,
       desPath: __selectedBackendFramework.templateDest,
+      optionValues: params.optionValues,
     });
 
     if (params.optionValues.docker) {
@@ -197,15 +198,6 @@ export class BackendGenerator {
       }
     }
 
-    await microGenerator.setupOthers({
-      spinner: params.spinner,
-      optionValues: params.optionValues,
-      projectType: params.projectType,
-      projectName: params.projectName,
-      selectedFramework: __backendFrameworkQuestion.backendFramework,
-      desPath: __selectedBackendFramework.templateDest,
-    });
-
     const __dependenciesSelection = await inquirer.prompt([
       {
         name: __selectedBackendFramework.promptKey,
@@ -228,6 +220,15 @@ export class BackendGenerator {
       selectedDependencies: __selectedDependencies,
       selectedPackageManager: params.optionValues.pm,
       projectName: params.projectName,
+      desPath: __selectedBackendFramework.templateDest,
+    });
+
+    await microGenerator.setupOthers({
+      spinner: params.spinner,
+      optionValues: params.optionValues,
+      projectType: params.projectType,
+      projectName: params.projectName,
+      selectedFramework: __backendFrameworkQuestion.backendFramework,
       desPath: __selectedBackendFramework.templateDest,
     });
 

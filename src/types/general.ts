@@ -80,6 +80,7 @@ export type __SetupProjectParams = __BaseParams & {
   selectedFramework: string;
   sourcePath: string;
   desPath: string;
+  optionValues: OptionValues;
 };
 
 export type __SetupDockerParams = __BaseParams & {

@@ -84,7 +84,10 @@ export class FrontendGenerator {
       params.optionValues.dir,
       params.projectName,
     );
-    __unableOverwriteProject(__frontendFrameworkTemplateDesPath);
+    __unableOverwriteProject(
+      __frontendFrameworkTemplateDesPath,
+      params.optionValues,
+    );
 
     const __frontendFrameworkMap = new Map<string, FrameworkConfig>([
       [
@@ -179,6 +182,7 @@ export class FrontendGenerator {
       selectedFramework: __selectedFrontendFramework.actualName,
       sourcePath: __selectedFrontendFramework.templateSource,
       desPath: __selectedFrontendFramework.templateDest,
+      optionValues: params.optionValues,
     });
 
     if (params.optionValues.docker) {
@@ -209,15 +213,6 @@ export class FrontendGenerator {
       }
     }
 
-    await microGenerator.setupOthers({
-      spinner: params.spinner,
-      optionValues: params.optionValues,
-      projectType: params.projectType,
-      projectName: params.projectName,
-      selectedFramework: __frontendFrameworkSelection.frontendFramework,
-      desPath: __selectedFrontendFramework.templateDest,
-    });
-
     const __dependenciesSelection = await inquirer.prompt([
       {
         name: __selectedFrontendFramework.promptKey,
@@ -240,6 +235,15 @@ export class FrontendGenerator {
       selectedDependencies: __selectedDependencies,
       selectedPackageManager: params.optionValues.pm,
       projectName: params.projectName,
+      desPath: __selectedFrontendFramework.templateDest,
+    });
+
+    await microGenerator.setupOthers({
+      spinner: params.spinner,
+      optionValues: params.optionValues,
+      projectType: params.projectType,
+      projectName: params.projectName,
+      selectedFramework: __frontendFrameworkSelection.frontendFramework,
       desPath: __selectedFrontendFramework.templateDest,
     });
 

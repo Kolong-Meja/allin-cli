@@ -28,6 +28,10 @@ export async function generateProgram(): Promise<void> {
       '--frontend <frontend>',
       'Set default framework for frontend project at first run.',
     )
+    .option('--name <name>', 'Set project name at first run.')
+    .option('-f, --force', 'Overwrite project that existed.', false)
+    .option('--author <author>', 'Add author name for the project.')
+    .option('--description <description>', 'Add description for the project.')
     .option(
       '-d, --dir <dir>',
       "Path destination directory to save the project template that you've created.",
@@ -65,6 +69,7 @@ export async function generateProgram(): Promise<void> {
     '-h, --help',
     `Action to get more information about ${__gradientColor('Allin CLI')}.`,
   );
+
   program.helpCommand(
     'help [command]',
     `Action to get more information about ${__gradientColor(

@@ -84,11 +84,13 @@ export class CreateCommand {
         type: 'input',
         message: "What's the name of your project?",
         default: 'my-project',
+        when: () => typeof options.name === 'undefined',
       });
 
-      const __projectName = __renewProjectName(
-        __projectNamQuestion.projectName,
-      );
+      const __projectName =
+        typeof options.name === 'undefined'
+          ? __renewProjectName(__projectNamQuestion.projectName)
+          : __renewProjectName(options.name);
       __containHarassmentWords(__projectName, DIRTY_WORDS);
 
       const __detectedProjectType = __detectProjectTypeFromInput(__projectName);
@@ -109,16 +111,14 @@ export class CreateCommand {
 
       let __projectType: string;
 
-      if (__detectedProjectType) {
+      if (__detectedProjectType !== null) {
         __projectType = __detectedProjectType;
       } else if (options.frontend) {
         __projectType = 'frontend';
       } else if (options.backend) {
         __projectType = 'backend';
       } else {
-        throw new Error(
-          'Unable to detect project type. Please specify --backend or --frontend.',
-        );
+        __projectType = __projectTypeQuestion.projectType;
       }
 
       switch (__projectType) {
