@@ -45,20 +45,29 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   public async setupProject(params: __SetupProjectParams) {
-    if (!params.optionValues.force) {
-      await fse.copy(params.sourcePath, params.desPath);
-    } else {
-      const __forceOverwriteProject = await inquirer.prompt({
-        name: 'forceOverwrite',
-        type: 'confirm',
-        message: `Are you sure to overwrite ${params.projectName} that exist at ${params.desPath} path? (optional)`,
-        default: false,
-      });
+    const isPathExist = fs.existsSync(params.desPath);
 
-      if (__forceOverwriteProject.forceOverwrite) {
-        await fse.remove(params.desPath);
-        await fse.copy(params.sourcePath, params.desPath);
-      }
+    if (!isPathExist) {
+      await fse.copy(params.sourcePath, params.desPath);
+      return;
+    }
+
+    if (params.optionValues.force) {
+      await fse.remove(params.desPath);
+      await fse.copy(params.sourcePath, params.desPath);
+      return;
+    }
+
+    const __forceOverwriteProject = await inquirer.prompt({
+      name: 'forceOverwrite',
+      type: 'confirm',
+      message: `Are you sure to overwrite ${params.projectName} that exist at ${params.desPath} path? (optional)`,
+      default: false,
+    });
+
+    if (__forceOverwriteProject.forceOverwrite) {
+      await fse.remove(params.desPath);
+      await fse.copy(params.sourcePath, params.desPath);
     }
   }
 
