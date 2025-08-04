@@ -12,6 +12,7 @@ import type {
   __SetupProjectParams,
   __SwitchPackageManagerParams,
   __UpdateDependenciesParams,
+  __UpdatePackageMetadataParams,
   __UseTypescriptParams,
 } from '@/types/general.js';
 import chalk from 'chalk';
@@ -109,6 +110,18 @@ export class MicroGenerator implements MicroGeneratorBuilder {
         projectName: params.projectName,
         selectedframework: params.selectedFramework,
         selectedPackageManager: params.optionValues.pm,
+        desPath: params.desPath,
+      });
+    }
+
+    if (
+      params.optionValues.author !== '' ||
+      params.optionValues.description !== ''
+    ) {
+      await this.__updatePackageMetadata({
+        spinner: params.spinner,
+        optionValues: params.optionValues,
+        projectName: params.projectName,
         desPath: params.desPath,
       });
     }
@@ -689,6 +702,31 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     params.spinner.succeed(
       `Updating ${chalk.bold(params.projectName)} dependencies succeed ✅`,
+    );
+  }
+
+  private async __updatePackageMetadata(params: __UpdatePackageMetadataParams) {
+    params.spinner.start(
+      `Updating ${chalk.bold(
+        params.projectName,
+      )} package metadata, please wait for a moment 🌎...`,
+    );
+
+    const jsonPackagePath = path.join(params.desPath, 'package.json');
+    const jsonPackage = await fse.readJSON(jsonPackagePath);
+    jsonPackage.author =
+      typeof params.optionValues.author !== 'undefined'
+        ? params.optionValues.author
+        : '';
+    jsonPackage.description =
+      typeof params.optionValues.description !== 'undefined'
+        ? params.optionValues.description
+        : '';
+
+    await fse.writeJSON(jsonPackagePath, jsonPackage, { spaces: 2 });
+
+    params.spinner.succeed(
+      `Updating ${chalk.bold(params.projectName)} package metadata succeed ✅`,
     );
   }
 }

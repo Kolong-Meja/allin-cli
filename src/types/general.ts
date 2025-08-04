@@ -125,6 +125,12 @@ export type __UpdateDependenciesParams = __BaseParams & {
   desPath: string;
 };
 
+export type __UpdatePackageMetadataParams = __BaseParams & {
+  optionValues: OptionValues;
+  projectName: string;
+  desPath: string;
+}
+
 export type __InstallTypescriptParams = __BaseParams & {
   projectType: string;
   selectedFramework: string;
