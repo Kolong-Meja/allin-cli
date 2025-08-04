@@ -21,18 +21,39 @@ export async function generateProgram(): Promise<void> {
   program
     .command('create')
     .option(
+      '--backend <backend>',
+      'Set default framework for backend project at first run.',
+    )
+    .option(
+      '--frontend <frontend>',
+      'Set default framework for frontend project at first run.',
+    )
+    .option('--name <name>', 'Set project name at first run.')
+    .option('-f, --force', 'Overwrite project that existed.', false)
+    .option('--author <author>', 'Add author name for the project.')
+    .option('--description <description>', 'Add description for the project.')
+    .option(
       '-d, --dir <dir>',
       "Path destination directory to save the project template that you've created.",
       process.cwd(),
     )
-    .option('-g, --git', 'Initialize git repo automatically.', false)
-    .option('-l, --li', 'Add a LICENSE file.', false)
+    .option('--li, --license <license>', 'Add a LICENSE file.')
     .option(
-      '-t, --ts',
+      '--ts, --typescript',
       'Initialize project with TypeScript configuration.',
       false,
     )
-    .option('-m, --pm <pm>', 'Choose package manager (npm | pnpm).', 'npm')
+    .option(
+      '--dk, --docker',
+      'Initialize project with docker configuration.',
+      false,
+    )
+    .option('--git', 'Initialize git repo automatically.', false)
+    .option(
+      '--pm <pm>',
+      'Choose or switching default package manager of the project.',
+      'npm',
+    )
     .helpOption(
       '-h, --help',
       `Action to get more information about ${chalk.bold('create')} command.`,
@@ -48,6 +69,7 @@ export async function generateProgram(): Promise<void> {
     '-h, --help',
     `Action to get more information about ${__gradientColor('Allin CLI')}.`,
   );
+
   program.helpCommand(
     'help [command]',
     `Action to get more information about ${__gradientColor(

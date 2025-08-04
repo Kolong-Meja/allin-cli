@@ -8,6 +8,7 @@ import {
   UnidentifiedTemplateError,
 } from './error.js';
 import chalk from 'chalk';
+import type { OptionValues } from 'commander';
 
 export function __pathNotExist(path: string): void {
   if (!fs.existsSync(path))
@@ -32,8 +33,11 @@ export function __projectTemplateNotExist(
   return;
 }
 
-export function __unableToOverwriteProject(path: string): void {
-  if (fs.existsSync(path))
+export function __unableOverwriteProject(
+  path: string,
+  optionValues: OptionValues,
+): void {
+  if (fs.existsSync(path) && !optionValues.force)
     throw new UnableOverwriteError(
       `${chalk.bold('Unable to overwrite')}: ${chalk.bold(
         path,
