@@ -11,7 +11,8 @@ export type Mixed =
   | symbol
   | undefined
   | null
-  | any;
+  | any
+  | unknown;
 
 export type __PrintAsciiProps = {
   name: string;
@@ -49,7 +50,6 @@ export type __DefaultLicenseProps = {
 export type __PackagesProps = {
   name: string;
   originName: string;
-  summary: string;
 };
 
 export type __BackendPackagesProps = {
@@ -65,6 +65,8 @@ type __BaseParams = {
 };
 
 export type __BackendProjectTypeParams = __BaseParams & {
+  projectNameArg: Mixed;
+  projectDirArg: Mixed;
   optionValues: OptionValues;
   templatesFiles: fs.Dirent<string>[];
   projectName: string;
@@ -129,7 +131,7 @@ export type __UpdatePackageMetadataParams = __BaseParams & {
   optionValues: OptionValues;
   projectName: string;
   desPath: string;
-}
+};
 
 export type __InstallTypescriptParams = __BaseParams & {
   projectType: string;

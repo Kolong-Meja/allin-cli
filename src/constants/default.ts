@@ -22,6 +22,13 @@ export const BACKEND_FRAMEWORKS: __DefaultFrameworkProps = {
       path: 'templates/backend/fastify-project',
     },
     {
+      name: 'feather',
+      actualName: 'FeatherJS',
+      templateName: 'feather-project',
+      language: 'ts',
+      path: 'templates/backend/feather-project',
+    },
+    {
       name: 'nest',
       actualName: 'NestJS',
       templateName: 'nest-project',

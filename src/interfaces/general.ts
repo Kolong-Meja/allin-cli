@@ -16,7 +16,7 @@ export interface FrameworkConfig {
 }
 
 export interface MicroGeneratorBuilder {
-  setupProject(params: __SetupProjectParams): Promise<void>;
+  setupProject(params: __SetupProjectParams): Promise<() => Promise<void>>;
   setupDocker(params: __SetupDockerParams): Promise<void>;
   setupOthers(params: __SetupOthersParams): Promise<void>;
   setupInstallation(params: __SetupInstallationParams): Promise<void>;

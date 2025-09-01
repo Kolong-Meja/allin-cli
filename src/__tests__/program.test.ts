@@ -4,11 +4,20 @@
 import type { Mixed } from '@/types/general.js';
 import { jest } from '@jest/globals';
 
+const mockCommand = {
+  argument: jest.fn().mockReturnThis(),
+  option: jest.fn().mockReturnThis(),
+  helpOption: jest.fn().mockReturnThis(),
+  summary: jest.fn().mockReturnThis(),
+  description: jest.fn().mockReturnThis(),
+  action: jest.fn().mockReturnThis(),
+};
+
 const mockProgram = {
   name: jest.fn().mockReturnThis(),
   description: jest.fn().mockReturnThis(),
   option: jest.fn().mockReturnThis(),
-  command: jest.fn().mockReturnThis(),
+  command: jest.fn().mockReturnValue(mockCommand),
   helpOption: jest.fn().mockReturnThis(),
   helpCommand: jest.fn().mockReturnThis(),
   summary: jest.fn().mockReturnThis(),
@@ -90,73 +99,100 @@ describe('generateProgram()', () => {
 
     expect(mockProgram.command).toHaveBeenCalledWith('create');
 
-    expect(mockProgram.option).toHaveBeenCalledWith(
+    expect(mockCommand.option).toHaveBeenCalledWith(
+      '-n, --name <name>',
+      expect.stringContaining(
+        'Specify the project name to use for the initial setup.',
+      ),
+      'allin-project',
+    );
+
+    expect(mockCommand.option).toHaveBeenCalledWith(
       '-d, --dir <dir>',
-      expect.stringContaining('Path destination directory'),
-      process.cwd(),
+      expect.stringContaining(
+        'Destination folder where the generated project will be created. Defaults to the current working directory.',
+      ),
     );
 
-    expect(mockProgram.option).toHaveBeenCalledWith(
+    expect(mockCommand.option).toHaveBeenCalledWith(
+      '-f, --force',
+      expect.stringContaining(
+        'Overwrite the target directory if it already exists.',
+      ),
+      false,
+    );
+
+    expect(mockCommand.option).toHaveBeenCalledWith(
       '--git',
-      'Initialize git repo automatically.',
+      'Automatically initialize a Git repository and make the first commit.',
       false,
     );
 
-    expect(mockProgram.option).toHaveBeenCalledWith(
+    expect(mockCommand.option).toHaveBeenCalledWith(
       '--li, --license <license>',
-      'Add a LICENSE file.',
+      'Add a LICENSE file to the project.',
     );
 
-    expect(mockProgram.option).toHaveBeenCalledWith(
+    expect(mockCommand.option).toHaveBeenCalledWith(
       '--ts, --typescript',
-      'Initialize project with TypeScript configuration.',
+      'Initialize the project with TypeScript configuration and typings.',
       false,
     );
 
-    expect(mockProgram.option).toHaveBeenCalledWith(
+    expect(mockCommand.option).toHaveBeenCalledWith(
       '--backend <backend>',
-      'Set default framework for backend project at first run.',
+      'Select the backend framework to use for the project.',
     );
 
-    expect(mockProgram.option).toHaveBeenCalledWith(
+    expect(mockCommand.option).toHaveBeenCalledWith(
       '--frontend <frontend>',
-      'Set default framework for frontend project at first run.',
+      'Select the frontend framework to use for the project.',
     );
 
-    expect(mockProgram.option).toHaveBeenCalledWith(
+    expect(mockCommand.option).toHaveBeenCalledWith(
       '--dk, --docker',
-      'Initialize project with docker configuration.',
+      'Include Docker configuration files for containerized setup.',
       false,
     );
 
-    const pmCall = mockProgram.option.mock.calls.find(
-      ([flag]) => flag === '--pm <pm>',
+    const pmCall = mockCommand.option.mock.calls.find(
+      ([flag]) => flag === '--pm, --package-manager <pm>',
     )!;
     expect(pmCall[1]).toBe(
-      'Choose or switching default package manager of the project.',
+      'Choose the package manager for dependency installation.',
     );
     expect(pmCall[2]).toBe('npm');
 
-    const createHelpCall = mockProgram.helpOption.mock.calls.find(
+    const createHelpCall = mockCommand.helpOption.mock.calls.find(
       ([flag, text]) => flag === '-h, --help' && /create/.test(text as string),
     );
     expect(createHelpCall).toBeDefined();
 
-    expect(mockProgram.summary).toHaveBeenCalledWith(
+    expect(mockCommand.summary).toHaveBeenCalledWith(
       'Action to create new project.',
     );
-    expect(mockProgram.description).toHaveBeenCalledWith(
-      'Create new project on your own.',
-    );
+    expect(mockCommand.description).toHaveBeenCalledWith('Create new project.');
 
-    const actionCall = mockProgram.action.mock.calls.find(
+    const actionCall = mockCommand.action.mock.calls.find(
       (call) => typeof call[0] === 'function',
     );
     expect(actionCall).toBeDefined();
 
-    const createCb = actionCall![0] as (opts: Mixed) => Promise<void>;
-    await createCb({ foo: 'bar' });
-    expect(mockCreateCommand).toHaveBeenCalledWith({ foo: 'bar' });
+    const createCb = actionCall![0] as (
+      name: string,
+      dir: string,
+      type: string,
+      opts: Mixed,
+    ) => Promise<void>;
+
+    await createCb('myapp', './dir', 'backend', { foo: 'bar' });
+
+    expect(mockCreateCommand).toHaveBeenCalledWith(
+      'myapp',
+      './dir',
+      'backend',
+      { foo: 'bar' },
+    );
   });
 
   it('configures global helpOption, helpCommand and invokes parse()', async () => {

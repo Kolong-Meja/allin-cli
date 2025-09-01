@@ -42,6 +42,9 @@ build/Release
 node_modules/
 jspm_packages/
 
+# temp directory
+templates/temp
+
 # Ignore all Git-related files in templates
 **/.git
 **/.gitignore

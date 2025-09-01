@@ -4,28 +4,24 @@ export const TYPESCRIPT_DEPENDENCIES: {
   [key: string]: Mixed;
 } = {
   backend: {
-    'Express.js': ['typescript', '@types/node', '@types/express'],
-    Fastify: ['typescript', '@types/node'],
-    NestJS: ['typescript', '@types/node', '@types/express'],
-    'Node.js': ['typescript', '@types/node'],
-    Koa: ['typescript', '@types/node', '@types/koa'],
+    express: ['typescript', '@types/node', '@types/express'],
+    fastify: ['typescript', '@types/node'],
+    feather: ['typescript', '@types/node', 'ts-node'],
+    nest: ['typescript', '@types/node', '@types/express'],
+    node: ['typescript', '@types/node'],
+    koa: ['typescript', '@types/node', '@types/koa'],
   },
   frontend: {
-    'Next.js': [
-      'typescript',
-      '@types/node',
-      '@types/react',
-      '@types/react-dom',
-    ],
-    'Vue.js': [
+    next: ['typescript', '@types/node', '@types/react', '@types/react-dom'],
+    vue: [
       'typescript',
       '@types/node',
       '@vue/tsconfig',
       'vue-tsc',
       'npm-run-all2',
     ],
-    Svelte: ['typescript', '@types/node', 'svelte-check'],
-    SolidJS: ['typescript', '@types/node'],
-    VanillaJS: ['typescript', '@types/node'],
+    svelte: ['typescript', '@types/node', 'svelte-check'],
+    solid: ['typescript', '@types/node'],
+    vanilla: ['typescript', '@types/node'],
   },
 };

@@ -30,6 +30,14 @@ export class UnableOverwriteError extends Error {
   }
 }
 
+export class UnidentifiedProjectTypeError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = 'UnidentifiedProjectTypeError';
+    Object.setPrototypeOf(this, UnidentifiedProjectTypeError.prototype);
+  }
+}
+
 export class UnidentifiedTemplateError extends Error {
   constructor(message: string | undefined) {
     super(message);

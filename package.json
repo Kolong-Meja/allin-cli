@@ -1,6 +1,6 @@
 {
   "name": "allin",
-  "version": "1.0.13",
+  "version": "1.0.17",
   "description": "A modern full-stack CLI tool based on Typescript designed to accelerate your app development process — setup your entire stack in one seamless command.",
   "exports": {
     "./package.json": "./package.json",
@@ -66,9 +66,10 @@
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@eslint/create-config": "^1.10.0",
     "boxen": "^8.0.1",
     "chalk": "^5.4.1",
     "commander": "^14.0.0",
