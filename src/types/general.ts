@@ -1,6 +1,6 @@
 import type { OptionValues } from 'commander';
-import type { Ora } from 'ora';
 import fs from 'fs';
+import type { Ora } from 'ora';
 
 export type Mixed =
   | string
@@ -66,11 +66,11 @@ type __BaseParams = {
 
 export type __BackendProjectTypeParams = __BaseParams & {
   projectNameArg: Mixed;
-  projectDirArg: Mixed;
   optionValues: OptionValues;
   templatesFiles: fs.Dirent<string>[];
   projectName: string;
   projectType: string;
+  projectDir: string;
 };
 
 export type __FrontendProjectTypeParams = __BackendProjectTypeParams;

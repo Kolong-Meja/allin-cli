@@ -14,11 +14,11 @@ export class ProjectNotExistError extends Error {
   }
 }
 
-export class HarassmentWordsDetected extends Error {
+export class HarassmentWordsDetectedError extends Error {
   constructor(message: string | undefined) {
     super(message);
-    this.name = 'HarassmentWordsDetected';
-    Object.setPrototypeOf(this, HarassmentWordsDetected.prototype);
+    this.name = 'HarassmentWordsDetectedError';
+    Object.setPrototypeOf(this, HarassmentWordsDetectedError.prototype);
   }
 }
 

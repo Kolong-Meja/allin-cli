@@ -1,5 +1,13 @@
-import { __basePath, __userRealName } from '@/config.js';
-import { __pathNotExist } from '@/exceptions/trigger.js';
+import { __basePath } from '@/config.js';
+import {
+  BACKEND_FRAMEWORKS,
+  FRONTEND_FRAMEWORKS,
+  LICENSES,
+} from '@/constants/default.js';
+import { TYPESCRIPT_DEPENDENCIES } from '@/constants/packages/general.js';
+import { UnidentifiedTemplateError } from '@/exceptions/error.js';
+import { __pathNotFound } from '@/exceptions/trigger.js';
+import type { MicroGeneratorBuilder } from '@/interfaces/general.js';
 import type {
   __AddDockerBakeParams,
   __AddDockerParams,
@@ -15,23 +23,15 @@ import type {
   __UpdatePackageMetadataParams,
   __UseTypescriptParams,
 } from '@/types/general.js';
-import chalk from 'chalk';
-import fse from 'fs-extra';
-import fs from 'fs';
-import path from 'path';
-import { UnidentifiedTemplateError } from '@/exceptions/error.js';
-import type { Ora } from 'ora';
-import { execa } from 'execa';
+import { isBackend, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
+import chalk from 'chalk';
+import { execa } from 'execa';
+import fs from 'fs';
+import fse from 'fs-extra';
 import inquirer from 'inquirer';
-import {
-  BACKEND_FRAMEWORKS,
-  FRONTEND_FRAMEWORKS,
-  LICENSES,
-} from '@/constants/default.js';
-import { TYPESCRIPT_DEPENDENCIES } from '@/constants/packages/general.js';
-import type { MicroGeneratorBuilder } from '@/interfaces/general.js';
-import { isUndefined } from '@/utils/guard.js';
+import type { Ora } from 'ora';
+import path from 'path';
 
 export class MicroGenerator implements MicroGeneratorBuilder {
   static #instance: MicroGenerator;
@@ -300,8 +300,6 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       : LICENSES.licenses.find((l) => l.name === params.optionValues.license);
 
     if (!licenseFile) {
-      console.error('Error on __addLicense() function.');
-
       throw new UnidentifiedTemplateError(
         `${chalk.bold('Unidentified template')}: ${chalk.bold(licenseSelection.license)} file template is not defined.`,
       );
@@ -372,8 +370,6 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     console.log();
 
     if (!frameworkFile) {
-      console.error('Error on __useTypescript() function.');
-
       throw new UnidentifiedTemplateError(
         `${chalk.bold('Unidentified template')}: ${chalk.bold(params.selectedframework)} file template is not defined.`,
       );
@@ -387,7 +383,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     const tsConfigFile = frameworkFiles.find((f) => f.name === 'tsconfig.json');
 
-    if (tsConfigFile !== undefined) {
+    if (!isUndefined(tsConfigFile)) {
       console.warn(
         boxen(
           `${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(params.projectName)}, means that ${chalk.bold('Typescript')} already installed.`,
@@ -452,24 +448,23 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     params.spinner.start(`Start renaming .js files to .ts`);
 
-    const renamePairs: [string, string][] =
-      params.projectType === 'backend'
-        ? [
-            [
-              path.join(params.desPath, 'index.js'),
-              path.join(params.desPath, 'index.ts'),
-            ],
-          ]
-        : [
-            [
-              path.join(params.desPath, 'src', 'main.js'),
-              path.join(params.desPath, 'src', 'main.ts'),
-            ],
-            [
-              path.join(params.desPath, 'src', 'counter.js'),
-              path.join(params.desPath, 'src', 'counter.ts'),
-            ],
-          ];
+    const renamePairs: [string, string][] = isBackend(params.projectType)
+      ? [
+          [
+            path.join(params.desPath, 'index.js'),
+            path.join(params.desPath, 'index.ts'),
+          ],
+        ]
+      : [
+          [
+            path.join(params.desPath, 'src', 'main.js'),
+            path.join(params.desPath, 'src', 'main.ts'),
+          ],
+          [
+            path.join(params.desPath, 'src', 'counter.js'),
+            path.join(params.desPath, 'src', 'counter.ts'),
+          ],
+        ];
 
     for (const [__sourcePath, __desPath] of renamePairs) {
       if (fs.existsSync(__sourcePath)) {
@@ -491,8 +486,11 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private __getDockerPaths(filename: string, desPath: string) {
-    const dockerTemplatesPath = path.join(__basePath, 'templates/docker');
-    __pathNotExist(dockerTemplatesPath);
+    const dockerTemplatesPath = path.join(
+      __basePath,
+      'templates/addons/docker',
+    );
+    __pathNotFound(dockerTemplatesPath);
 
     const dockerTemplates = fs.readdirSync(dockerTemplatesPath, {
       withFileTypes: true,
@@ -501,8 +499,6 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const dockerFile = dockerTemplates.find((f) => f.name === filename);
 
     if (!dockerFile) {
-      console.error('Error on __getDockerPaths() function.');
-
       throw new UnidentifiedTemplateError(
         `${chalk.bold('Unidentified template')}: ${chalk.bold(filename)} file template is not defined.`,
       );
@@ -572,8 +568,11 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const isEsLintSelected = params.selectedDependencies.includes('eslint');
 
     if (isPrettierSelected) {
-      const prettierTemplatesPath = path.join(__basePath, 'templates/configs');
-      __pathNotExist(prettierTemplatesPath);
+      const prettierTemplatesPath = path.join(
+        __basePath,
+        'templates/addons/config',
+      );
+      __pathNotFound(prettierTemplatesPath);
 
       const dockerTemplates = fs.readdirSync(prettierTemplatesPath, {
         withFileTypes: true,
@@ -584,8 +583,6 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       );
 
       if (!prettierFile) {
-        console.error('Error on __installDependencies() function.');
-
         throw new UnidentifiedTemplateError(
           `${chalk.bold('Unidentified template')}: ${chalk.bold('.prettierrc')} file template is not defined.`,
         );
@@ -688,16 +685,19 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       )} package metadata, please wait for a moment 🌎...`,
     );
 
-    const jsonPackagePath = path.join(params.desPath, 'package.json');
-    const jsonPackage = await fse.readJSON(jsonPackagePath);
-    jsonPackage.author = isUndefined(params.optionValues.author)
+    const packageJsonFilePath = path.join(params.desPath, 'package.json');
+    const packageJsonFile = await fse.readJSON(packageJsonFilePath);
+    packageJsonFile.author = isUndefined(params.optionValues.author)
       ? ''
       : params.optionValues.author;
-    jsonPackage.description = isUndefined(params.optionValues.description)
+    packageJsonFile.description = isUndefined(params.optionValues.description)
       ? ''
       : params.optionValues.description;
+    packageJsonFile.version = isUndefined(params.optionValues.version)
+      ? '1.0.0'
+      : params.optionValues.version;
 
-    await fse.writeJSON(jsonPackagePath, jsonPackage, { spaces: 2 });
+    await fse.writeJSON(packageJsonFilePath, packageJsonFile, { spaces: 2 });
 
     params.spinner.succeed(
       `Updating ${chalk.bold(params.projectName)} package metadata succeed ✅`,

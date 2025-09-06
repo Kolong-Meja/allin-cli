@@ -4,14 +4,14 @@ import {
   __renewProjectName,
 } from '@/utils/string.js';
 
-import { __basePath, __config, __userRealName } from '@/config.js';
+import { __basePath } from '@/config.js';
 import { DIRTY_WORDS, PROJECT_TYPES } from '@/constants/default.js';
 import {
   __containHarassmentWords,
-  __pathNotExist,
+  __pathNotFound,
 } from '@/exceptions/trigger.js';
 import type { Mixed } from '@/types/general.js';
-import { __gradientColor } from '@/utils/ascii.js';
+import { isNull, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import type { OptionValues } from 'commander';
@@ -21,7 +21,6 @@ import ora from 'ora';
 import path from 'path';
 import { BackendGenerator } from '../generators/backend.js';
 import { FrontendGenerator } from '../generators/frontend.js';
-import { isNull, isUndefined } from '@/utils/guard.js';
 
 export class CreateCommand {
   static #instance: CreateCommand;
@@ -51,7 +50,7 @@ export class CreateCommand {
     const start = performance.now();
 
     try {
-      if (projectType !== undefined && !PROJECT_TYPES.includes(projectType)) {
+      if (!isUndefined(projectType) && !PROJECT_TYPES.includes(projectType)) {
         throw new UnidentifiedProjectTypeError(
           `${projectType} is not found or exist. Choose between ${PROJECT_TYPES.join(', ')}`,
         );
@@ -65,20 +64,21 @@ export class CreateCommand {
         when: () => isUndefined(options.name) && isUndefined(projectName),
       });
 
-      const userProjectName = !isUndefined(options.name)
-        ? __renewProjectName(options.name)
-        : !isUndefined(projectName)
-          ? __renewProjectName(projectName)
-          : __renewProjectName(projectNameQuestion.projectName);
+      const resolveProjectName = (): string => {
+        return (
+          (!isUndefined(options.name) && options.name) ??
+          (!isUndefined(projectName) && projectName) ??
+          projectNameQuestion.projectName
+        );
+      };
+
+      const userProjectName = __renewProjectName(resolveProjectName());
       __containHarassmentWords(userProjectName, DIRTY_WORDS);
 
       const isProjectTypeDetected =
         __detectProjectTypeFromInput(userProjectName);
 
-      if (
-        isProjectTypeDetected !== null &&
-        typeof projectType !== 'undefined'
-      ) {
+      if (!isNull(isProjectTypeDetected) && !isUndefined(projectType)) {
         console.warn(
           boxen(
             'The [type] argument will not be used, as the system detects the project type from the project name.',
@@ -121,6 +121,27 @@ export class CreateCommand {
 
       const userProjectType = resolveProjectType();
 
+      const projectDirQuestion = await inquirer.prompt([
+        {
+          name: 'projectDir',
+          type: 'input',
+          message: 'Where do you want to save your project?',
+          default: process.cwd(),
+          when: () => isUndefined(options.dir) && isUndefined(projectDir),
+        },
+      ]);
+
+      const resolveProjectDir = (): string => {
+        return (
+          (options.dir ? options.dir : undefined) ??
+          projectDir ??
+          projectDirQuestion.projectDir
+        );
+      };
+
+      const userProjectDir = resolveProjectDir();
+      __pathNotFound(userProjectDir);
+
       switch (userProjectType) {
         case 'backend':
           const backendProjectTemplateDirPath = path.join(
@@ -128,7 +149,7 @@ export class CreateCommand {
             'templates',
             userProjectType,
           );
-          __pathNotExist(backendProjectTemplateDirPath);
+          __pathNotFound(backendProjectTemplateDirPath);
 
           const backendProjectTemplateFiles = fs.readdirSync(
             backendProjectTemplateDirPath,
@@ -136,18 +157,16 @@ export class CreateCommand {
               withFileTypes: true,
             },
           );
-          __pathNotExist(options.dir ?? projectDir);
-
           const backendGenerator = BackendGenerator.instance;
 
           await backendGenerator.generate({
             projectNameArg: userProjectName,
-            projectDirArg: projectDir,
             spinner: spinner,
             optionValues: options,
             templatesFiles: backendProjectTemplateFiles,
             projectName: userProjectName,
             projectType: userProjectType,
+            projectDir: userProjectDir,
           });
           break;
         case 'frontend':
@@ -156,7 +175,7 @@ export class CreateCommand {
             'templates',
             userProjectType,
           );
-          __pathNotExist(frontendProjectTemplateDirPath);
+          __pathNotFound(frontendProjectTemplateDirPath);
 
           const frontendProjectTemplateFiles = fs.readdirSync(
             frontendProjectTemplateDirPath,
@@ -164,18 +183,16 @@ export class CreateCommand {
               withFileTypes: true,
             },
           );
-          __pathNotExist(options.dir ?? projectDir);
-
           const frontendGenerator = FrontendGenerator.instance;
 
           await frontendGenerator.generate({
             projectNameArg: projectName,
-            projectDirArg: projectDir,
             spinner: spinner,
             optionValues: options,
             templatesFiles: frontendProjectTemplateFiles,
             projectName: userProjectName,
             projectType: userProjectType,
+            projectDir: userProjectDir,
           });
           break;
       }

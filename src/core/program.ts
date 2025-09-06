@@ -1,7 +1,6 @@
-import chalk from 'chalk';
-import { __renewProjectName } from '@/utils/string.js';
 import { __config, program } from '@/config.js';
 import { __generateTextAscii, __gradientColor } from '@/utils/ascii.js';
+import chalk from 'chalk';
 import { CreateCommand } from './commands/create.js';
 
 export async function generateProgram(): Promise<void> {
@@ -23,14 +22,12 @@ export async function generateProgram(): Promise<void> {
     .argument(
       '[name]',
       'Specify the project name to use for the initial setup.',
-      'allin-project',
     )
     .argument('[directory]', 'Target directory for the project.')
     .argument('[type]', 'Type of project to be executed.')
     .option(
       '-n, --name <name>',
       'Specify the project name to use for the initial setup.',
-      'allin-project',
     )
     .option(
       '-d, --dir <dir>',
@@ -49,6 +46,7 @@ export async function generateProgram(): Promise<void> {
       '--desc, --description <desc>',
       'Provide a short description for the project.',
     )
+    .option('--ver, --version <version>', 'Set the version of the project.')
     .option(
       '--backend <backend>',
       'Select the backend framework to use for the project.',

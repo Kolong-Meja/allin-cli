@@ -1,16 +1,16 @@
+import chalk from 'chalk';
+import type { OptionValues } from 'commander';
 import fs from 'fs';
 import {
-  HarassmentWordsDetected,
+  HarassmentWordsDetectedError,
   PathNotFoundError,
   ProjectNotExistError,
   UnableOverwriteError,
   UnidentifiedFrameworkError,
   UnidentifiedTemplateError,
 } from './error.js';
-import chalk from 'chalk';
-import type { OptionValues } from 'commander';
 
-export function __pathNotExist(path: string): void {
+export function __pathNotFound(path: string): void {
   if (!fs.existsSync(path))
     throw new PathNotFoundError(
       `${chalk.bold('Path not found')}: ${chalk.bold(path)} path is not exist.`,
@@ -18,7 +18,7 @@ export function __pathNotExist(path: string): void {
   return;
 }
 
-export function __projectTemplateNotExist(
+export function __projectNotExist(
   template: string,
   model: 'backend' | 'frontend',
   projects: string[],
@@ -82,7 +82,7 @@ export function __containHarassmentWords(value: string, words: string[]): void {
   const _isContainDirtyWord = words.some((e) => value.includes(e));
 
   if (_isContainDirtyWord) {
-    throw new HarassmentWordsDetected(
+    throw new HarassmentWordsDetectedError(
       `${chalk.bold('Harassment words detected')}: ${chalk.bold(
         value,
       )} is a harassment word.`,

@@ -3,7 +3,9 @@ import type {
   __DefaultLicenseProps,
 } from '@/types/general.js';
 
-export const PROJECT_TYPES: string[] = ['backend', 'frontend'];
+export const PROJECT_TYPES: string[] = ['backend', 'frontend'] as const;
+
+export const DATABASES: string[] = ['pgsql', 'mysql'] as const;
 
 export const BACKEND_FRAMEWORKS: __DefaultFrameworkProps = {
   frameworks: [

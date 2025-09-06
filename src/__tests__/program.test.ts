@@ -104,7 +104,6 @@ describe('generateProgram()', () => {
       expect.stringContaining(
         'Specify the project name to use for the initial setup.',
       ),
-      'allin-project',
     );
 
     expect(mockCommand.option).toHaveBeenCalledWith(
@@ -123,10 +122,39 @@ describe('generateProgram()', () => {
     );
 
     expect(mockCommand.option).toHaveBeenCalledWith(
-      '--git',
-      'Automatically initialize a Git repository and make the first commit.',
-      false,
+      '--au, --author <author>',
+      expect.stringContaining(
+        'Set the author name to include in the project metadata.',
+      ),
     );
+
+    expect(mockCommand.option).toHaveBeenCalledWith(
+      '--desc, --description <desc>',
+      expect.stringContaining('Provide a short description for the project.'),
+    );
+
+    expect(mockCommand.option).toHaveBeenCalledWith(
+      '--ver, --version <version>',
+      expect.stringContaining('Set the version of the project.'),
+    );
+
+    expect(mockCommand.option).toHaveBeenCalledWith(
+      '--backend <backend>',
+      'Select the backend framework to use for the project.',
+    );
+
+    expect(mockCommand.option).toHaveBeenCalledWith(
+      '--frontend <frontend>',
+      'Select the frontend framework to use for the project.',
+    );
+
+    const pmCall = mockCommand.option.mock.calls.find(
+      ([flag]) => flag === '--pm, --package-manager <pm>',
+    )!;
+    expect(pmCall[1]).toBe(
+      'Choose the package manager for dependency installation.',
+    );
+    expect(pmCall[2]).toBe('npm');
 
     expect(mockCommand.option).toHaveBeenCalledWith(
       '--li, --license <license>',
@@ -140,28 +168,16 @@ describe('generateProgram()', () => {
     );
 
     expect(mockCommand.option).toHaveBeenCalledWith(
-      '--backend <backend>',
-      'Select the backend framework to use for the project.',
-    );
-
-    expect(mockCommand.option).toHaveBeenCalledWith(
-      '--frontend <frontend>',
-      'Select the frontend framework to use for the project.',
-    );
-
-    expect(mockCommand.option).toHaveBeenCalledWith(
       '--dk, --docker',
       'Include Docker configuration files for containerized setup.',
       false,
     );
 
-    const pmCall = mockCommand.option.mock.calls.find(
-      ([flag]) => flag === '--pm, --package-manager <pm>',
-    )!;
-    expect(pmCall[1]).toBe(
-      'Choose the package manager for dependency installation.',
+    expect(mockCommand.option).toHaveBeenCalledWith(
+      '--git',
+      'Automatically initialize a Git repository and make the first commit.',
+      false,
     );
-    expect(pmCall[2]).toBe('npm');
 
     const createHelpCall = mockCommand.helpOption.mock.calls.find(
       ([flag, text]) => flag === '-h, --help' && /create/.test(text as string),

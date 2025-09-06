@@ -1,9 +1,9 @@
 import { Command } from 'commander';
+import dotenv from 'dotenv';
+import { execa } from 'execa';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
-import os from 'os';
-import { execa } from 'execa';
 
 export const program = new Command();
 

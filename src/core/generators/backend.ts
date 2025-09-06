@@ -1,3 +1,4 @@
+import { __basePath } from '@/config.js';
 import { BACKEND_FRAMEWORKS } from '@/constants/default.js';
 import {
   EXPRESS_DEPENDENCIES,
@@ -14,14 +15,13 @@ import {
 import { __unableOverwriteProject } from '@/exceptions/trigger.js';
 import type { FrameworkConfig } from '@/interfaces/general.js';
 import type { __BackendProjectTypeParams } from '@/types/general.js';
+import { isUndefined } from '@/utils/guard.js';
+import boxen from 'boxen';
 import chalk from 'chalk';
+import fs from 'fs';
 import inquirer from 'inquirer';
 import path from 'path';
 import { MicroGenerator } from './micro.js';
-import boxen from 'boxen';
-import { isUndefined } from '@/utils/guard.js';
-import { __basePath } from '@/config.js';
-import fs from 'fs';
 
 export class BackendGenerator {
   static #instance: BackendGenerator;
@@ -83,7 +83,7 @@ export class BackendGenerator {
       backendFrameworkTemplateFolder.name,
     );
     const backendFrameworkTemplateDesPath = path.join(
-      params.optionValues.dir ?? params.projectDirArg,
+      params.projectDir,
       params.projectName ?? params.projectNameArg,
     );
     __unableOverwriteProject(

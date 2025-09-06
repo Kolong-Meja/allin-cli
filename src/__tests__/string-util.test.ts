@@ -11,12 +11,12 @@ import {
   __detectProjectTypeFromInput,
 } from '@/utils/string.js';
 
-describe('string.ts util functions', () => {
+describe('Testing string.ts util functions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('testing __titleCase() function.', () => {
+  describe('Testing __titleCase() function.', () => {
     it('capitalizes the first letter and lowercases the rest', () => {
       expect(__titleCase('hello')).toBe('Hello');
       expect(__titleCase('WORLD')).toBe('World');
@@ -33,7 +33,7 @@ describe('string.ts util functions', () => {
     });
   });
 
-  describe('testing __renewProjectName() function.', () => {
+  describe('Testing __renewProjectName() function.', () => {
     it('converts space-separated names to kebab-case lowercase', () => {
       expect(__renewProjectName('My App')).toBe('my-app');
       expect(__renewProjectName(' multiple   Spaces Here ')).toBe(
@@ -57,7 +57,7 @@ describe('string.ts util functions', () => {
     });
   });
 
-  describe('testing __renewStringIntoTitleCase() function', () => {
+  describe('Testing __renewStringIntoTitleCase() function', () => {
     it('title-cases each word in a single string', () => {
       expect(__renewStringIntoTitleCase('hello world')).toBe('Hello World');
       expect(__renewStringIntoTitleCase('MULTIPLE words HERE')).toBe(
@@ -74,7 +74,7 @@ describe('string.ts util functions', () => {
     });
   });
 
-  describe('testing __renewStringsIntoTitleCase() function.', () => {
+  describe('Testing __renewStringsIntoTitleCase() function.', () => {
     it('applies title case to each string in an array', () => {
       const input = ['hello world', 'foo bar', 'MixedCase Example'];
       const expected = ['Hello World', 'Foo Bar', 'Mixedcase Example'];
@@ -86,7 +86,7 @@ describe('string.ts util functions', () => {
     });
   });
 
-  describe('testing __detectProjectTypeFromInput() function.', () => {
+  describe('Testing __detectProjectTypeFromInput() function.', () => {
     it('return "backend" when the word backend is exist.', () => {
       expect(__detectProjectTypeFromInput('backend')).toBe('backend');
       expect(__detectProjectTypeFromInput('BACKEND')).toBe('backend');
