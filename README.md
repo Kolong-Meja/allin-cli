@@ -19,6 +19,7 @@ stack—backend, frontend or both—in one seamless command.
 ![Fastify](https://img.shields.io/badge/fastify-202020?style=for-the-badge&logo=fastify&logoColor=white)
 ![NestJS](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node%20js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Feathers](https://img.shields.io/badge/FeathersJS-333333?style=for-the-badge&logo=feathersjs&logoColor=white)
 ![Koa](https://img.shields.io/badge/Koa.js-333333?style=for-the-badge&logo=koajs&logoColor=white)
 ![Next.js](https://img.shields.io/badge/next%20js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
 ![Vue](https://img.shields.io/badge/Vue%20js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D)
@@ -44,8 +45,8 @@ Before using Allin CLI, ensure you have:
 
 - **Node.js** v22.16.0 (LTS) or later
 - **npm** v10.9.2 or later
-- **pnpm** (optional, if you use `-m pnpm`)
-- **git** (optional, if you use `-g`)
+- **pnpm** (optional, if you use `--pm pnpm`)
+- **git** (optional, if you use `--git`)
 
 You can verify your versions with:
 
@@ -107,9 +108,12 @@ allin --version
 Scaffold a new project from templates.
 
 ```bash
-allin create [options]
+allin create [name] [directory] [type] [options]
 ```
-
+- **Arguments**:
+  - `[name]`: Specify the project name.
+  - `[directory]`: Target directory for the project.
+  - `[type]`: Type of project (frontend, backend, or fullstack).
 - **Summary**: Action to create a new project.
 - **Description**: Create a new frontend, backend, or full-stack project with
   your choice of frameworks.
@@ -118,18 +122,20 @@ allin create [options]
 
 | Flag                          | Description                                              | Default                   |
 | ----------------------------- | -------------------------------------------------------- | ------------------------- |
-| `--backend <backend>`         | Set default framework for backend project at first run.  | —                         |
-| `--frontend <frontend>`       | Set default framework for frontend project at first run. | —                         |
-| `-f, --force`                 | Overwrite project that existed.                          | `false`                   |
-| `--name <name>`               | Set project name at first run.                           | —                         |
-| `--author <author>`           | Add author name for the project.                         | —                         |
-| `--description <description>` | Set project name at first run.                           | —                         |
-| `-d, --dir <dir>`             | Destination directory for the generated project.         | current working directory |
-| `--git`                       | Initialize a Git repository.                             | `false`                   |
-| `--li, --license <license>`   | Add a LICENSE file.                                      | —                         |
-| `--ts, --typescript`          | Initialize project with TypeScript configuration.        | `false`                   |
-| `--dk, --docker`              | Initialize project with docker configuration.            | `false`                   |
-| `--pm <pm>`                   | Choose package manager -> `npm` or `pnpm`.               | `npm`                     |
+| `-n, --name <name>`           | Specify the project name to use for the initial setup.                           | —                         |
+| `-d, --dir <dir>`             | Destination folder for the generated project.            | current working directory |
+| `-f, --force`                 | Overwrite the target directory if it already exists.                          | `false`                   |
+| `--au, --author <author>`     | Set the author name to include in the project metadata                         | —                         |
+| `--desc, --description <description>` | Provide a short description for the project.                           | —                         |
+| `--ver, --version <version>` | Set the version of the project.                           | —                         |
+| `--backend <backend>`         | Select the backend framework to use for the project.  | —                         |
+| `--frontend <frontend>`       | Select the frontend framework to use for the project. | —                         |
+| `--pm, --package-manager <pm>`                   | Choose the package manager (`npm`, `pnpm`, `bun`, `yarn`)               | `npm`                     |
+| `--li, --license <license>`   | Add a LICENSE file to the project.                                      | —                         |
+| `--readme`                       | Add a README file to the project.                             | `false`                   |
+| `--ts, --typescript`          | Initialize the project with TypeScript configuration and typings.        | `false`                   |
+| `--dk, --docker`              | Include Docker configuration files for containerized setup.           | `false`                   |
+| `--git`                       | Automatically initialize a Git repository and make the first commit.                           | `false`                   |
 | `-h, --help`                  | Display help for a specific command.                     | —                         |
 | `-v, --version`               | Display the CLI version and exit.                        | —                         |
 
