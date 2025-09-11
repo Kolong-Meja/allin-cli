@@ -65,11 +65,7 @@ export class CreateCommand {
       });
 
       const resolveProjectName = (): string => {
-        return (
-          (!isUndefined(options.name) && options.name) ??
-          (!isUndefined(projectName) && projectName) ??
-          projectNameQuestion.projectName
-        );
+        return options.name ?? projectName ?? projectNameQuestion.projectName;
       };
 
       const userProjectName = __renewProjectName(resolveProjectName());

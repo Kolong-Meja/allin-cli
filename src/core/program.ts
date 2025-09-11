@@ -61,6 +61,7 @@ export async function generateProgram(): Promise<void> {
       'npm',
     )
     .option('--li, --license <license>', 'Add a LICENSE file to the project.')
+    .option('--readme', 'Add a README file to the project.', false)
     .option(
       '--ts, --typescript',
       'Initialize the project with TypeScript configuration and typings.',

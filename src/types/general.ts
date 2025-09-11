@@ -146,6 +146,13 @@ export type __AddLicenseParams = __BaseParams & {
   desPath: string;
 };
 
+export type __AddReadmeParams = __BaseParams & {
+  optionValues: OptionValues;
+  projectName: string;
+  projectType: string;
+  desPath: string;
+};
+
 export type __SwitchPackageManagerParams = __BaseParams & {
   selectedPackageManager: string;
   projectName: string;

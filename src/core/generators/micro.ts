@@ -12,6 +12,7 @@ import type {
   __AddDockerBakeParams,
   __AddDockerParams,
   __AddLicenseParams,
+  __AddReadmeParams,
   __InstallDependenciesParams,
   __InstallTypescriptParams,
   __SetupDockerParams,
@@ -138,6 +139,16 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       projectName: params.projectName,
       desPath: params.desPath,
     });
+
+    if (params.optionValues.readme) {
+      await this.__addReadme({
+        spinner: params.spinner,
+        optionValues: params.optionValues,
+        projectName: params.projectName,
+        projectType: params.projectType,
+        desPath: params.desPath,
+      });
+    }
   }
 
   public async setupInstallation(params: __SetupInstallationParams) {
@@ -320,6 +331,32 @@ export class MicroGenerator implements MicroGeneratorBuilder {
         licenseFile.actualName,
       )} file on ${chalk.bold(params.projectName)} succeed ✅`,
     );
+  }
+
+  private async __addReadme(params: __AddReadmeParams) {
+    const backendReadmePaths = this.__getReadmePaths(
+      'BACKEND_README.md',
+      params.desPath,
+    );
+    const frontendReadmePaths = this.__getReadmePaths(
+      'FRONTEND_README.md',
+      params.desPath,
+    );
+
+    params.spinner.start(
+      `Copying ${chalk.bold('readme')} file into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+    );
+
+    const readmeSourcePath =
+      params.projectType !== 'backend'
+        ? frontendReadmePaths.sourcePath
+        : backendReadmePaths.sourcePath;
+
+    const readmeTargetPath = path.join(params.desPath, 'README.md');
+
+    await fse.copy(readmeSourcePath, readmeTargetPath);
+
+    params.spinner.succeed(`Copying ${chalk.bold('readme')} file succeed ✅`);
   }
 
   private async __switchPackageManager(params: __SwitchPackageManagerParams) {
@@ -510,6 +547,34 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     return {
       sourcePath: dockerFileSrcPath,
       desPath: dockerFileDesPath,
+    };
+  }
+
+  private __getReadmePaths(filename: string, desPath: string) {
+    const readmeTemplatesPath = path.join(
+      __basePath,
+      'templates/addons/others',
+    );
+    __pathNotFound(readmeTemplatesPath);
+
+    const readmeTemplates = fs.readdirSync(readmeTemplatesPath, {
+      withFileTypes: true,
+    });
+
+    const readmeFile = readmeTemplates.find((f) => f.name === filename);
+
+    if (!readmeFile) {
+      throw new UnidentifiedTemplateError(
+        `${chalk.bold('Unidentified template')}: ${chalk.bold(filename)} file template is not defined.`,
+      );
+    }
+
+    const readmeFileSrcPath = path.join(readmeFile.parentPath, readmeFile.name);
+    const readmeFileDesPath = path.join(desPath, readmeFile.name);
+
+    return {
+      sourcePath: readmeFileSrcPath,
+      desPath: readmeFileDesPath,
     };
   }
 
