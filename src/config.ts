@@ -1,9 +1,9 @@
 import { Command } from 'commander';
+import dotenv from 'dotenv';
+import { execa } from 'execa';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
-import os from 'os';
-import { execa } from 'execa';
 
 export const program = new Command();
 
@@ -43,7 +43,7 @@ export const __config = (() => {
         : 'Faisal Ramadhan';
     },
     get appVersion() {
-      return process.env.APP_VERSION ? process.env.APP_VERSION : '1.0.13';
+      return process.env.APP_VERSION ? process.env.APP_VERSION : '1.0.17';
     },
     get appLicense() {
       return process.env.APP_LICENSE ? process.env.APP_LICENSE : 'MIT License';

@@ -1,8 +1,8 @@
+import { __config } from '@/config.js';
+import chalk from 'chalk';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
 import { getBorderCharacters, table } from 'table';
-import chalk from 'chalk';
-import { __config } from '@/config.js';
 
 export const __gradientColor = gradient(['#3CB371', '#81E7AF', '#FFD63A']);
 

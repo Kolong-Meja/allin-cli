@@ -1,9 +1,18 @@
-import { __basePath, __userRealName } from '@/config.js';
-import { __pathNotExist } from '@/exceptions/trigger.js';
+import { __basePath } from '@/config.js';
+import {
+  BACKEND_FRAMEWORKS,
+  FRONTEND_FRAMEWORKS,
+  LICENSES,
+} from '@/constants/default.js';
+import { TYPESCRIPT_DEPENDENCIES } from '@/constants/packages/general.js';
+import { UnidentifiedTemplateError } from '@/exceptions/error.js';
+import { __pathNotFound } from '@/exceptions/trigger.js';
+import type { MicroGeneratorBuilder } from '@/interfaces/general.js';
 import type {
   __AddDockerBakeParams,
   __AddDockerParams,
   __AddLicenseParams,
+  __AddReadmeParams,
   __InstallDependenciesParams,
   __InstallTypescriptParams,
   __SetupDockerParams,
@@ -15,22 +24,15 @@ import type {
   __UpdatePackageMetadataParams,
   __UseTypescriptParams,
 } from '@/types/general.js';
-import chalk from 'chalk';
-import fse from 'fs-extra';
-import fs from 'fs';
-import path from 'path';
-import { UnidentifiedTemplateError } from '@/exceptions/error.js';
-import type { Ora } from 'ora';
-import { execa } from 'execa';
+import { isBackend, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
+import chalk from 'chalk';
+import { execa } from 'execa';
+import fs from 'fs';
+import fse from 'fs-extra';
 import inquirer from 'inquirer';
-import {
-  BACKEND_FRAMEWORKS,
-  FRONTEND_FRAMEWORKS,
-  LICENSES,
-} from '@/constants/default.js';
-import { TYPESCRIPT_DEPENDENCIES } from '@/constants/packages/general.js';
-import type { MicroGeneratorBuilder } from '@/interfaces/general.js';
+import type { Ora } from 'ora';
+import path from 'path';
 
 export class MicroGenerator implements MicroGeneratorBuilder {
   static #instance: MicroGenerator;
@@ -48,28 +50,30 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   public async setupProject(params: __SetupProjectParams) {
     const isPathExist = fs.existsSync(params.desPath);
 
-    if (!isPathExist) {
-      await fse.copy(params.sourcePath, params.desPath);
-      return;
+    if (params.optionValues.force && isPathExist) {
+      const forceOverwriteProjectConfirmation = await inquirer.prompt({
+        name: 'forceOverwrite',
+        type: 'confirm',
+        message: `Are you sure to overwrite ${params.desPath} project?`,
+        default: false,
+        when: () => isPathExist,
+      });
+
+      if (forceOverwriteProjectConfirmation.forceOverwrite) {
+        await fse.remove(params.desPath);
+      } else {
+        process.exit(0);
+      }
     }
 
-    if (params.optionValues.force) {
-      await fse.remove(params.desPath);
-      await fse.copy(params.sourcePath, params.desPath);
-      return;
-    }
+    const tempDir = path.join(__basePath, 'templates/temp', params.projectName);
 
-    const __forceOverwriteProject = await inquirer.prompt({
-      name: 'forceOverwrite',
-      type: 'confirm',
-      message: `Are you sure to overwrite ${params.projectName} that exist at ${params.desPath} path? (optional)`,
-      default: false,
-    });
+    await fse.copy(params.sourcePath, tempDir);
 
-    if (__forceOverwriteProject.forceOverwrite) {
-      await fse.remove(params.desPath);
-      await fse.copy(params.sourcePath, params.desPath);
-    }
+    return async () => {
+      await fse.copy(tempDir, params.desPath);
+      await fse.remove(tempDir);
+    };
   }
 
   public async setupDocker(params: __SetupDockerParams) {
@@ -94,10 +98,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       await this.__addGit(params.spinner, params.desPath);
     }
 
-    if (params.optionValues.pm && params.optionValues.pm !== '') {
+    if (
+      params.optionValues.packageManager &&
+      params.optionValues.packageManager !== ''
+    ) {
       await this.__switchPackageManager({
         spinner: params.spinner,
-        selectedPackageManager: params.optionValues.pm,
+        selectedPackageManager: params.optionValues.packageManager,
         projectName: params.projectName,
         desPath: params.desPath,
       });
@@ -106,10 +113,10 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     if (params.optionValues.typescript) {
       await this.__useTypescript({
         spinner: params.spinner,
-        projectType: params.projectType.toLowerCase(),
+        projectType: params.projectType,
         projectName: params.projectName,
         selectedframework: params.selectedFramework,
-        selectedPackageManager: params.optionValues.pm,
+        selectedPackageManager: params.optionValues.packageManager,
         desPath: params.desPath,
       });
     }
@@ -132,6 +139,16 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       projectName: params.projectName,
       desPath: params.desPath,
     });
+
+    if (params.optionValues.readme) {
+      await this.__addReadme({
+        spinner: params.spinner,
+        optionValues: params.optionValues,
+        projectName: params.projectName,
+        projectType: params.projectType,
+        desPath: params.desPath,
+      });
+    }
   }
 
   public async setupInstallation(params: __SetupInstallationParams) {
@@ -155,7 +172,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private async __addDocker(params: __AddDockerParams) {
-    const __dockerComposeSources = this.__getDockerPaths(
+    const dockerComposeSrc = this.__getDockerPaths(
       'compose.yml',
       params.desPath,
     );
@@ -164,22 +181,21 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
-    await fse.copy(
-      __dockerComposeSources.sourcePath,
-      __dockerComposeSources.desPath,
-    );
+    await fse.copy(dockerComposeSrc.sourcePath, dockerComposeSrc.desPath);
 
     params.spinner.succeed(
       `Copying ${chalk.bold('docker compose file')} succeed ✅`,
     );
 
-    const __dockerfileBaseOnePackageManager =
+    const dockerFileBasedOnPm =
       params.selectedPackageManager === 'npm'
         ? 'npm.Dockerfile'
-        : 'pnpm.Dockerfile';
+        : params.selectedPackageManager === 'pnpm'
+          ? 'pnpm.Dockerfile'
+          : 'bun.Dockerfile';
 
-    const __dockerfileSources = this.__getDockerPaths(
-      __dockerfileBaseOnePackageManager,
+    const dockerFileSrc = this.__getDockerPaths(
+      dockerFileBasedOnPm,
       params.desPath,
     );
 
@@ -187,13 +203,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Copying ${chalk.bold('dockerfile')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
-    await fse.copy(__dockerfileSources.sourcePath, __dockerfileSources.desPath);
+    await fse.copy(dockerFileSrc.sourcePath, dockerFileSrc.desPath);
 
     params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
   }
 
   private async __addDockerBake(params: __AddDockerBakeParams) {
-    const __dockerComposePaths = this.__getDockerPaths(
+    const dockerComposePaths = this.__getDockerPaths(
       'compose.yml',
       params.desPath,
     );
@@ -202,22 +218,21 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
-    await fse.copy(
-      __dockerComposePaths.sourcePath,
-      __dockerComposePaths.desPath,
-    );
+    await fse.copy(dockerComposePaths.sourcePath, dockerComposePaths.desPath);
 
     params.spinner.succeed(
       `Copying ${chalk.bold('docker compose file')} succeed ✅`,
     );
 
-    const __dockerfileBaseOnePackageManager =
+    const dockerFileBasedOnPm =
       params.selectedPackageManager === 'npm'
         ? 'npm.Dockerfile'
-        : 'pnpm.Dockerfile';
+        : params.selectedPackageManager === 'pnpm'
+          ? 'pnpm.Dockerfile'
+          : 'bun.Dockerfile';
 
-    const __dockerfilePaths = this.__getDockerPaths(
-      __dockerfileBaseOnePackageManager,
+    const dockerFilePaths = this.__getDockerPaths(
+      dockerFileBasedOnPm,
       params.desPath,
     );
 
@@ -225,11 +240,11 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
-    await fse.copy(__dockerfilePaths.sourcePath, __dockerfilePaths.desPath);
+    await fse.copy(dockerFilePaths.sourcePath, dockerFilePaths.desPath);
 
     params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
 
-    const __dockerBakePaths = this.__getDockerPaths(
+    const dockerBakePaths = this.__getDockerPaths(
       'docker-bake.hcl',
       params.desPath,
     );
@@ -238,7 +253,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Copying ${chalk.bold('docker bake file')} 🍞 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
     );
 
-    await fse.copy(__dockerBakePaths.sourcePath, __dockerBakePaths.desPath);
+    await fse.copy(dockerBakePaths.sourcePath, dockerBakePaths.desPath);
 
     params.spinner.succeed(
       `Copying ${chalk.bold('docker bake file')} succeed ✅`,
@@ -246,31 +261,23 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private async __addGit(spinner: Ora, desPath: string) {
-    const __initializeGitQuestion = await inquirer.prompt({
+    const initializeGitQuestion = await inquirer.prompt({
       name: 'addGit',
       type: 'confirm',
-      message: `Do you want us to run ${chalk.bold('git init')}? (optional)`,
+      message: `Do you want us to run git init?`,
       default: false,
     });
 
-    if (!__initializeGitQuestion.addGit) {
+    if (!initializeGitQuestion.addGit) {
       console.warn(
-        boxen(
-          chalk.white(
-            `⚠️  ${chalk.bold(
-              (await __userRealName()).split(' ')[0],
-            )}, you can run ${chalk.bold('git init')} later.`,
-          ),
-          {
-            title: 'ⓘ Warning Information ⓘ',
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'yellow',
-          },
-        ),
+        boxen(`You can run ${chalk.bold('git init')} later.`, {
+          title: 'Warning Information',
+          titleAlignment: 'center',
+          padding: 1,
+          margin: 1,
+          borderColor: 'yellow',
+        }),
       );
-      return;
     }
 
     spinner.start(
@@ -285,17 +292,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private async __addLicense(params: __AddLicenseParams) {
-    const __licenseSelection: {
-      license:
-        | 'Apache 2.0 License'
-        | 'BSD 2-Clause License'
-        | 'BSD 3-Clause License'
-        | 'GNU General Public License v3.0'
-        | 'ISC License'
-        | 'GNU Lesser General Public License v3.0'
-        | 'MIT License'
-        | 'Unlicense';
-    } = await inquirer.prompt({
+    const licenseSelection = await inquirer.prompt({
       name: 'license',
       type: 'list',
       message: 'Which license do you want to use:',
@@ -306,37 +303,60 @@ export class MicroGenerator implements MicroGeneratorBuilder {
         .map((l) => l.actualName),
       default: 'MIT License',
       loop: false,
-      when: () => typeof params.optionValues.license === 'undefined',
+      when: () => isUndefined(params.optionValues.license),
     });
 
-    const __licenseFile =
-      typeof params.optionValues.license !== 'undefined'
-        ? LICENSES.licenses.find((l) => l.name === params.optionValues.license)
-        : LICENSES.licenses.find(
-            (l) => l.actualName === __licenseSelection.license,
-          );
+    const licenseFile = isUndefined(params.optionValues.license)
+      ? LICENSES.licenses.find((l) => l.actualName === licenseSelection.license)
+      : LICENSES.licenses.find((l) => l.name === params.optionValues.license);
 
-    if (!__licenseFile) {
+    if (!licenseFile) {
       throw new UnidentifiedTemplateError(
-        `${chalk.bold('Unidentified template')}: ${chalk.bold(__licenseSelection.license)} file template is not defined.`,
+        `${chalk.bold('Unidentified template')}: ${chalk.bold(licenseSelection.license)} file template is not defined.`,
       );
     }
 
     params.spinner.start(
       `Start adding ${chalk.bold(
-        __licenseFile.actualName,
+        licenseFile.actualName,
       )} file into ${chalk.bold(params.projectName)} 🧾...`,
     );
 
-    const __licenseSourcePath = path.join(__basePath, __licenseFile.path);
+    const licenseSrcPath = path.join(__basePath, licenseFile.path);
 
-    await fse.copy(__licenseSourcePath, params.desPath);
+    await fse.copy(licenseSrcPath, params.desPath);
 
     params.spinner.succeed(
       `Adding ${chalk.bold(
-        __licenseFile.actualName,
+        licenseFile.actualName,
       )} file on ${chalk.bold(params.projectName)} succeed ✅`,
     );
+  }
+
+  private async __addReadme(params: __AddReadmeParams) {
+    const backendReadmePaths = this.__getReadmePaths(
+      'BACKEND_README.md',
+      params.desPath,
+    );
+    const frontendReadmePaths = this.__getReadmePaths(
+      'FRONTEND_README.md',
+      params.desPath,
+    );
+
+    params.spinner.start(
+      `Copying ${chalk.bold('readme')} file into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+    );
+
+    const readmeSourcePath =
+      params.projectType !== 'backend'
+        ? frontendReadmePaths.sourcePath
+        : backendReadmePaths.sourcePath;
+
+    const readmeTargetPath = path.join(params.desPath, 'README.md');
+
+    await fse.copy(readmeSourcePath, readmeTargetPath);
+
+    params.spinner.succeed(`Copying ${chalk.bold('readme')} file succeed ✅`);
   }
 
   private async __switchPackageManager(params: __SwitchPackageManagerParams) {
@@ -348,62 +368,64 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     ];
 
     for (const file of __lockFiles) {
-      const __fullPath = path.join(params.desPath, file);
+      const lockFilePath = path.join(params.desPath, file);
 
-      if (await fse.exists(__fullPath)) {
-        await fse.remove(__fullPath);
+      if (await fse.exists(lockFilePath)) {
+        await fse.remove(lockFilePath);
       }
     }
 
-    const __nodeModulesPath = path.join(params.desPath, 'node_modules');
+    const nodeModulePath = path.join(params.desPath, 'node_modules');
 
-    if (await fse.exists(__nodeModulesPath)) {
-      await fse.remove(__nodeModulesPath);
+    if (await fse.exists(nodeModulePath)) {
+      await fse.remove(nodeModulePath);
     }
 
-    const __executeCommand =
-      params.selectedPackageManager === 'npm' ? 'npm' : 'pnpm';
+    const executeChangingPmCommand =
+      params.selectedPackageManager === 'npm'
+        ? 'npm'
+        : params.selectedPackageManager === 'pnpm'
+          ? 'pnpm'
+          : 'bun';
 
-    await execa(__executeCommand, ['install'], {
+    await execa(executeChangingPmCommand, ['install'], {
       cwd: params.desPath,
       stdio: 'inherit',
     });
   }
 
   private async __useTypescript(params: __UseTypescriptParams) {
-    const __frameworkList =
+    const frameworks =
       params.projectType !== 'backend'
         ? FRONTEND_FRAMEWORKS.frameworks
         : BACKEND_FRAMEWORKS.frameworks;
 
-    const __frameworkFile = __frameworkList.find(
+    const frameworkFile = frameworks.find(
       (f) => f.name === params.selectedframework,
     );
 
-    if (!__frameworkFile) {
+    console.log();
+
+    if (!frameworkFile) {
       throw new UnidentifiedTemplateError(
         `${chalk.bold('Unidentified template')}: ${chalk.bold(params.selectedframework)} file template is not defined.`,
       );
     }
 
-    const _frameworkPath = path.join(__basePath, __frameworkFile.path);
+    const frameworkPath = path.join(__basePath, frameworkFile.path);
 
-    const _frameworkFiles = fs.readdirSync(_frameworkPath, {
+    const frameworkFiles = fs.readdirSync(frameworkPath, {
       withFileTypes: true,
     });
 
-    const __tsConfigFile = _frameworkFiles.find(
-      (f) => f.name === 'tsconfig.json',
-    );
+    const tsConfigFile = frameworkFiles.find((f) => f.name === 'tsconfig.json');
 
-    if (__tsConfigFile !== undefined) {
+    if (!isUndefined(tsConfigFile)) {
       console.warn(
         boxen(
-          chalk.white(
-            `⚠️  ${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(params.projectName)}, means that ${chalk.bold('Typescript')} already installed.`,
-          ),
+          `${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(params.projectName)}, means that ${chalk.bold('Typescript')} already installed.`,
           {
-            title: 'ⓘ Warning Information ⓘ',
+            title: 'Warning Information',
             titleAlignment: 'center',
             padding: 1,
             margin: 1,
@@ -411,7 +433,6 @@ export class MicroGenerator implements MicroGeneratorBuilder {
           },
         ),
       );
-      return;
     }
 
     await this.__installTypescript({
@@ -422,43 +443,39 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       desPath: params.desPath,
     });
 
-    const __executeCommand =
-      params.selectedPackageManager === 'npm' ? 'npx' : 'pnpm';
+    const executeConditioningPmCommand =
+      params.selectedPackageManager === 'npm'
+        ? 'npx'
+        : params.selectedPackageManager === 'pnpm'
+          ? 'pnpm'
+          : 'bunx';
 
-    const __initializeTypescriptQuestion = await inquirer.prompt({
+    const initializeTsQuestion = await inquirer.prompt({
       name: 'addTsConfig',
       type: 'confirm',
       message: `Do you want us to execute ${chalk.bold(
-        `${__executeCommand} tsc --init`,
+        `${executeConditioningPmCommand} tsc --init`,
       )} in your project? (optional)`,
       default: false,
     });
 
-    if (!__initializeTypescriptQuestion.addTsConfig) {
+    if (!initializeTsQuestion.addTsConfig) {
       console.warn(
-        boxen(
-          chalk.white(
-            `⚠️  ${chalk.bold(
-              (await __userRealName()).split(' ')[0],
-            )}, you can initialize ${chalk.bold('Typescript')} later.`,
-          ),
-          {
-            title: 'ⓘ Warning Information ⓘ',
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'yellow',
-          },
-        ),
+        boxen(`You can initialize ${chalk.bold('Typescript')} later.`, {
+          title: 'Warning Information',
+          titleAlignment: 'center',
+          padding: 1,
+          margin: 1,
+          borderColor: 'yellow',
+        }),
       );
-      return;
     }
 
     params.spinner.start(
       `Initializing ${chalk.bold('Typescript')} into ${chalk.bold(params.projectName)}, please wait for a moment...`,
     );
 
-    await execa(__executeCommand, ['tsc', '--init'], {
+    await execa(executeConditioningPmCommand, ['tsc', '--init'], {
       cwd: params.desPath,
     });
 
@@ -468,24 +485,23 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     params.spinner.start(`Start renaming .js files to .ts`);
 
-    const renamePairs: [string, string][] =
-      params.projectType === 'backend'
-        ? [
-            [
-              path.join(params.desPath, 'index.js'),
-              path.join(params.desPath, 'index.ts'),
-            ],
-          ]
-        : [
-            [
-              path.join(params.desPath, 'src', 'main.js'),
-              path.join(params.desPath, 'src', 'main.ts'),
-            ],
-            [
-              path.join(params.desPath, 'src', 'counter.js'),
-              path.join(params.desPath, 'src', 'counter.ts'),
-            ],
-          ];
+    const renamePairs: [string, string][] = isBackend(params.projectType)
+      ? [
+          [
+            path.join(params.desPath, 'index.js'),
+            path.join(params.desPath, 'index.ts'),
+          ],
+        ]
+      : [
+          [
+            path.join(params.desPath, 'src', 'main.js'),
+            path.join(params.desPath, 'src', 'main.ts'),
+          ],
+          [
+            path.join(params.desPath, 'src', 'counter.js'),
+            path.join(params.desPath, 'src', 'counter.ts'),
+          ],
+        ];
 
     for (const [__sourcePath, __desPath] of renamePairs) {
       if (fs.existsSync(__sourcePath)) {
@@ -507,36 +523,68 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private __getDockerPaths(filename: string, desPath: string) {
-    const __dockerTemplatesPath = path.join(__basePath, 'templates/docker');
-    __pathNotExist(__dockerTemplatesPath);
+    const dockerTemplatesPath = path.join(
+      __basePath,
+      'templates/addons/docker',
+    );
+    __pathNotFound(dockerTemplatesPath);
 
-    const __templates = fs.readdirSync(__dockerTemplatesPath, {
+    const dockerTemplates = fs.readdirSync(dockerTemplatesPath, {
       withFileTypes: true,
     });
 
-    const __dockerFile = __templates.find((f) => f.name === filename);
+    const dockerFile = dockerTemplates.find((f) => f.name === filename);
 
-    if (!__dockerFile) {
+    if (!dockerFile) {
       throw new UnidentifiedTemplateError(
         `${chalk.bold('Unidentified template')}: ${chalk.bold(filename)} file template is not defined.`,
       );
     }
 
-    const __dockerFileSourcePath = path.join(
-      __dockerFile.parentPath,
-      __dockerFile.name,
-    );
-    const __dockerFileDesPath = path.join(desPath, __dockerFile.name);
+    const dockerFileSrcPath = path.join(dockerFile.parentPath, dockerFile.name);
+    const dockerFileDesPath = path.join(desPath, dockerFile.name);
 
     return {
-      sourcePath: __dockerFileSourcePath,
-      desPath: __dockerFileDesPath,
+      sourcePath: dockerFileSrcPath,
+      desPath: dockerFileDesPath,
+    };
+  }
+
+  private __getReadmePaths(filename: string, desPath: string) {
+    const readmeTemplatesPath = path.join(
+      __basePath,
+      'templates/addons/others',
+    );
+    __pathNotFound(readmeTemplatesPath);
+
+    const readmeTemplates = fs.readdirSync(readmeTemplatesPath, {
+      withFileTypes: true,
+    });
+
+    const readmeFile = readmeTemplates.find((f) => f.name === filename);
+
+    if (!readmeFile) {
+      throw new UnidentifiedTemplateError(
+        `${chalk.bold('Unidentified template')}: ${chalk.bold(filename)} file template is not defined.`,
+      );
+    }
+
+    const readmeFileSrcPath = path.join(readmeFile.parentPath, readmeFile.name);
+    const readmeFileDesPath = path.join(desPath, readmeFile.name);
+
+    return {
+      sourcePath: readmeFileSrcPath,
+      desPath: readmeFileDesPath,
     };
   }
 
   private async __installTypescript(params: __InstallTypescriptParams) {
-    const __executeCommand =
-      params.selectedPackageManager === 'npm' ? 'npm' : 'pnpm';
+    const executeInstallBasedOnPm =
+      params.selectedPackageManager === 'npm'
+        ? 'npm'
+        : params.selectedPackageManager === 'pnpm'
+          ? 'pnpm'
+          : 'bun';
 
     for (const p of TYPESCRIPT_DEPENDENCIES[params.projectType][
       params.selectedFramework
@@ -544,11 +592,11 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       params.spinner.start(`Start installing ${chalk.bold(p)} package...`);
 
       if (params.selectedPackageManager === 'npm') {
-        await execa(__executeCommand, ['install', '-D', p], {
+        await execa(executeInstallBasedOnPm, ['install', '-D', p], {
           cwd: params.desPath,
         });
       } else {
-        await execa(__executeCommand, ['add', '-D', p], {
+        await execa(executeInstallBasedOnPm, ['add', '-D', p], {
           cwd: params.desPath,
         });
       }
@@ -558,8 +606,12 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private async __installDependencies(params: __InstallDependenciesParams) {
-    const __executeCommand =
-      params.selectedPackageManager === 'npm' ? 'npm' : 'pnpm';
+    const executeInstallBasedOnPm =
+      params.selectedPackageManager === 'npm'
+        ? 'npm'
+        : params.selectedPackageManager === 'pnpm'
+          ? 'pnpm'
+          : 'bun';
 
     params.spinner.start(
       `Installing ${chalk.bold(params.selectedDependencies.join(', '))}, please wait for a moment...`,
@@ -568,7 +620,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     for (const p of params.selectedDependencies) {
       params.spinner.start(`Start installing ${chalk.bold(p)} dependency...`);
 
-      await execa(__executeCommand, ['install', '--save', p], {
+      await execa(executeInstallBasedOnPm, ['install', '--save', p], {
         cwd: params.desPath,
       });
 
@@ -577,72 +629,67 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       );
     }
 
-    const __isPrettierSelected =
-      params.selectedDependencies.includes('prettier');
-    const __isEsLintSelected = params.selectedDependencies.includes('eslint');
+    const isPrettierSelected = params.selectedDependencies.includes('prettier');
+    const isEsLintSelected = params.selectedDependencies.includes('eslint');
 
-    if (__isPrettierSelected) {
-      const __prettierrcTemplatesPath = path.join(
+    if (isPrettierSelected) {
+      const prettierTemplatesPath = path.join(
         __basePath,
-        'templates/configs',
+        'templates/addons/config',
       );
-      __pathNotExist(__prettierrcTemplatesPath);
+      __pathNotFound(prettierTemplatesPath);
 
-      const __templates = fs.readdirSync(__prettierrcTemplatesPath, {
+      const dockerTemplates = fs.readdirSync(prettierTemplatesPath, {
         withFileTypes: true,
       });
 
-      const __prettierrcFile = __templates.find(
+      const prettierFile = dockerTemplates.find(
         (f) => f.name === '.prettierrc',
       );
 
-      if (!__prettierrcFile) {
+      if (!prettierFile) {
         throw new UnidentifiedTemplateError(
           `${chalk.bold('Unidentified template')}: ${chalk.bold('.prettierrc')} file template is not defined.`,
         );
       }
 
-      const __prettierrcFileSourcePath = path.join(
-        __prettierrcFile.parentPath,
-        __prettierrcFile.name,
+      const prettierFileSrcPath = path.join(
+        prettierFile.parentPath,
+        prettierFile.name,
       );
-      const __prettierrcFileDesPath = path.join(
-        params.desPath,
-        __prettierrcFile.name,
-      );
+      const prettierFileDesPath = path.join(params.desPath, prettierFile.name);
 
       params.spinner.start(`Initializing ${chalk.bold('.prettierrc')} file...`);
 
-      await fse.copy(__prettierrcFileSourcePath, __prettierrcFileDesPath);
+      await fse.copy(prettierFileSrcPath, prettierFileDesPath);
 
       params.spinner.succeed(
         `Adding ${chalk.bold('.prettierrc')} configuration completed ✅`,
       );
     }
 
-    if (__isEsLintSelected) {
-      const __executeCommand =
-        params.selectedPackageManager === 'npm' ? 'npx' : 'pnpx';
+    if (isEsLintSelected) {
+      const executeInstallBasedOnPm = {
+        npm: 'npx',
+        pnpm: 'pnpx',
+        bun: 'bunx',
+      }[params.selectedPackageManager];
 
-      const __initializeESLintQuestion = await inquirer.prompt({
+      const initializeEsLintQuestion = await inquirer.prompt({
         name: 'addESLintConfig',
         type: 'confirm',
         message: `Do you want us to execute ${chalk.bold(
-          `${__executeCommand} eslint --init`,
+          `${executeInstallBasedOnPm} eslint --init`,
         )} in your project? (optional)`,
         default: false,
       });
 
-      if (!__initializeESLintQuestion.addESLintConfig) {
+      if (!initializeEsLintQuestion.addESLintConfig) {
         console.warn(
           boxen(
-            chalk.white(
-              `⚠️  ${chalk.bold(
-                (await __userRealName()).split(' ')[0],
-              )}, you can execute ${chalk.bold(`${__executeCommand} eslint --init`)} later.`,
-            ),
+            `You can execute ${chalk.bold(`${executeInstallBasedOnPm} eslint --init`)} later.`,
             {
-              title: 'ⓘ Warning Information ⓘ',
+              title: 'Warning Information',
               titleAlignment: 'center',
               padding: 1,
               margin: 1,
@@ -650,10 +697,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
             },
           ),
         );
-        return;
       }
 
-      await execa(`${__executeCommand}`, ['eslint', '--init'], {
+      await execa(`${executeInstallBasedOnPm}`, ['@eslint/create-config'], {
         cwd: params.desPath,
         stdio: 'inherit',
       });
@@ -663,31 +709,23 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private async __updateDependencies(params: __UpdateDependenciesParams) {
-    const __updateDependenciesQuestion = await inquirer.prompt({
+    const updateDependenciesQuestion = await inquirer.prompt({
       name: 'updatePackages',
       type: 'confirm',
       message: `Do you want us to run ${chalk.bold(`${params.selectedPackageManager} update`)}? (optional)`,
       default: false,
     });
 
-    if (!__updateDependenciesQuestion.updatePackages) {
+    if (!updateDependenciesQuestion.updatePackages) {
       console.warn(
-        boxen(
-          chalk.white(
-            `⚠️  ${chalk.bold(
-              (await __userRealName()).split(' ')[0],
-            )}, you can update the dependencies later.`,
-          ),
-          {
-            title: 'ⓘ Warning Information ⓘ',
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'yellow',
-          },
-        ),
+        boxen('You can update the dependencies later.', {
+          title: 'Warning Information',
+          titleAlignment: 'center',
+          padding: 1,
+          margin: 1,
+          borderColor: 'yellow',
+        }),
       );
-      return;
     }
 
     params.spinner.start(
@@ -712,18 +750,19 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       )} package metadata, please wait for a moment 🌎...`,
     );
 
-    const jsonPackagePath = path.join(params.desPath, 'package.json');
-    const jsonPackage = await fse.readJSON(jsonPackagePath);
-    jsonPackage.author =
-      typeof params.optionValues.author !== 'undefined'
-        ? params.optionValues.author
-        : '';
-    jsonPackage.description =
-      typeof params.optionValues.description !== 'undefined'
-        ? params.optionValues.description
-        : '';
+    const packageJsonFilePath = path.join(params.desPath, 'package.json');
+    const packageJsonFile = await fse.readJSON(packageJsonFilePath);
+    packageJsonFile.author = isUndefined(params.optionValues.author)
+      ? ''
+      : params.optionValues.author;
+    packageJsonFile.description = isUndefined(params.optionValues.description)
+      ? ''
+      : params.optionValues.description;
+    packageJsonFile.version = isUndefined(params.optionValues.version)
+      ? '1.0.0'
+      : params.optionValues.version;
 
-    await fse.writeJSON(jsonPackagePath, jsonPackage, { spaces: 2 });
+    await fse.writeJSON(packageJsonFilePath, packageJsonFile, { spaces: 2 });
 
     params.spinner.succeed(
       `Updating ${chalk.bold(params.projectName)} package metadata succeed ✅`,

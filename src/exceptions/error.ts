@@ -14,11 +14,11 @@ export class ProjectNotExistError extends Error {
   }
 }
 
-export class HarassmentWordsDetected extends Error {
+export class HarassmentWordsDetectedError extends Error {
   constructor(message: string | undefined) {
     super(message);
-    this.name = 'HarassmentWordsDetected';
-    Object.setPrototypeOf(this, HarassmentWordsDetected.prototype);
+    this.name = 'HarassmentWordsDetectedError';
+    Object.setPrototypeOf(this, HarassmentWordsDetectedError.prototype);
   }
 }
 
@@ -27,6 +27,14 @@ export class UnableOverwriteError extends Error {
     super(message);
     this.name = 'UnableOverwriteError';
     Object.setPrototypeOf(this, UnableOverwriteError.prototype);
+  }
+}
+
+export class UnidentifiedProjectTypeError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = 'UnidentifiedProjectTypeError';
+    Object.setPrototypeOf(this, UnidentifiedProjectTypeError.prototype);
   }
 }
 

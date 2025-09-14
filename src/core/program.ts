@@ -1,7 +1,6 @@
-import chalk from 'chalk';
-import { __renewProjectName } from '@/utils/string.js';
 import { __config, program } from '@/config.js';
 import { __generateTextAscii, __gradientColor } from '@/utils/ascii.js';
+import chalk from 'chalk';
 import { CreateCommand } from './commands/create.js';
 
 export async function generateProgram(): Promise<void> {
@@ -20,49 +19,73 @@ export async function generateProgram(): Promise<void> {
 
   program
     .command('create')
+    .argument(
+      '[name]',
+      'Specify the project name to use for the initial setup.',
+    )
+    .argument('[directory]', 'Target directory for the project.')
+    .argument('[type]', 'Type of project to be executed.')
+    .option(
+      '-n, --name <name>',
+      'Specify the project name to use for the initial setup.',
+    )
+    .option(
+      '-d, --dir <dir>',
+      'Destination folder where the generated project will be created. Defaults to the current working directory.',
+    )
+    .option(
+      '-f, --force',
+      'Overwrite the target directory if it already exists.',
+      false,
+    )
+    .option(
+      '--au, --author <author>',
+      'Set the author name to include in the project metadata.',
+    )
+    .option(
+      '--desc, --description <desc>',
+      'Provide a short description for the project.',
+    )
+    .option('--ver, --version <version>', 'Set the version of the project.')
     .option(
       '--backend <backend>',
-      'Set default framework for backend project at first run.',
+      'Select the backend framework to use for the project.',
     )
     .option(
       '--frontend <frontend>',
-      'Set default framework for frontend project at first run.',
+      'Select the frontend framework to use for the project.',
     )
-    .option('--name <name>', 'Set project name at first run.')
-    .option('-f, --force', 'Overwrite project that existed.', false)
-    .option('--author <author>', 'Add author name for the project.')
-    .option('--description <description>', 'Add description for the project.')
     .option(
-      '-d, --dir <dir>',
-      "Path destination directory to save the project template that you've created.",
-      process.cwd(),
+      '--pm, --package-manager <pm>',
+      'Choose the package manager for dependency installation.',
+      'npm',
     )
-    .option('--li, --license <license>', 'Add a LICENSE file.')
+    .option('--li, --license <license>', 'Add a LICENSE file to the project.')
+    .option('--readme', 'Add a README file to the project.', false)
     .option(
       '--ts, --typescript',
-      'Initialize project with TypeScript configuration.',
+      'Initialize the project with TypeScript configuration and typings.',
       false,
     )
     .option(
       '--dk, --docker',
-      'Initialize project with docker configuration.',
+      'Include Docker configuration files for containerized setup.',
       false,
     )
-    .option('--git', 'Initialize git repo automatically.', false)
     .option(
-      '--pm <pm>',
-      'Choose or switching default package manager of the project.',
-      'npm',
+      '--git',
+      'Automatically initialize a Git repository and make the first commit.',
+      false,
     )
     .helpOption(
       '-h, --help',
       `Action to get more information about ${chalk.bold('create')} command.`,
     )
     .summary('Action to create new project.')
-    .description('Create new project on your own.')
-    .action(async (options) => {
+    .description('Create new project.')
+    .action(async (name, directory, type, options) => {
       const command = CreateCommand.instance;
-      command.create(options);
+      command.create(name, directory, type, options);
     });
 
   program.helpOption(

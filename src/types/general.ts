@@ -1,6 +1,6 @@
 import type { OptionValues } from 'commander';
-import type { Ora } from 'ora';
 import fs from 'fs';
+import type { Ora } from 'ora';
 
 export type Mixed =
   | string
@@ -11,7 +11,8 @@ export type Mixed =
   | symbol
   | undefined
   | null
-  | any;
+  | any
+  | unknown;
 
 export type __PrintAsciiProps = {
   name: string;
@@ -49,7 +50,6 @@ export type __DefaultLicenseProps = {
 export type __PackagesProps = {
   name: string;
   originName: string;
-  summary: string;
 };
 
 export type __BackendPackagesProps = {
@@ -65,10 +65,12 @@ type __BaseParams = {
 };
 
 export type __BackendProjectTypeParams = __BaseParams & {
+  projectNameArg: Mixed;
   optionValues: OptionValues;
   templatesFiles: fs.Dirent<string>[];
   projectName: string;
   projectType: string;
+  projectDir: string;
 };
 
 export type __FrontendProjectTypeParams = __BackendProjectTypeParams;
@@ -129,7 +131,7 @@ export type __UpdatePackageMetadataParams = __BaseParams & {
   optionValues: OptionValues;
   projectName: string;
   desPath: string;
-}
+};
 
 export type __InstallTypescriptParams = __BaseParams & {
   projectType: string;
@@ -141,6 +143,13 @@ export type __InstallTypescriptParams = __BaseParams & {
 export type __AddLicenseParams = __BaseParams & {
   optionValues: OptionValues;
   projectName: string;
+  desPath: string;
+};
+
+export type __AddReadmeParams = __BaseParams & {
+  optionValues: OptionValues;
+  projectName: string;
+  projectType: string;
   desPath: string;
 };
 

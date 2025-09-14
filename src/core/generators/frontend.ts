@@ -1,3 +1,4 @@
+import { __basePath } from '@/config.js';
 import { FRONTEND_FRAMEWORKS } from '@/constants/default.js';
 import {
   ASTRO_DEPENDENCIES,
@@ -14,8 +15,10 @@ import {
 import { __unableOverwriteProject } from '@/exceptions/trigger.js';
 import type { FrameworkConfig } from '@/interfaces/general.js';
 import type { __FrontendProjectTypeParams } from '@/types/general.js';
+import { isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
+import fs from 'fs';
 import inquirer from 'inquirer';
 import path from 'path';
 import { MicroGenerator } from './micro.js';
@@ -34,7 +37,7 @@ export class FrontendGenerator {
   }
 
   public async generate(params: __FrontendProjectTypeParams) {
-    const __frontendFrameworkSelection = await inquirer.prompt([
+    const chooseFrontendFrameworkQuestion = await inquirer.prompt([
       {
         name: 'frontendFramework',
         type: 'list',
@@ -46,50 +49,67 @@ export class FrontendGenerator {
           .map((f) => f.name),
         default: 'astro',
         loop: false,
-        when: () => typeof params.optionValues.frontend === 'undefined',
+        when: () => isUndefined(params.optionValues.frontend),
       },
     ]);
 
-    const __frontendFrameworkResource =
-      typeof params.optionValues.frontend !== 'undefined'
-        ? FRONTEND_FRAMEWORKS.frameworks.find(
-            (f) => f.name === params.optionValues.frontend,
-          )
-        : FRONTEND_FRAMEWORKS.frameworks.find(
-            (f) => f.name === __frontendFrameworkSelection.frontendFramework,
-          );
+    const frontendFrameworkResource = isUndefined(params.optionValues.frontend)
+      ? FRONTEND_FRAMEWORKS.frameworks.find(
+          (f) =>
+            f.actualName === chooseFrontendFrameworkQuestion.frontendFramework,
+        )
+      : FRONTEND_FRAMEWORKS.frameworks.find(
+          (f) => f.name === params.optionValues.frontend,
+        );
 
-    if (!__frontendFrameworkResource) {
+    if (!frontendFrameworkResource) {
       throw new UnidentifiedFrameworkError(
         `${chalk.bold('Unidentified framework project')}: Frontend framework resource is not defined.`,
       );
     }
 
-    const _frontendFrameworkFolder = params.templatesFiles.find(
+    const frontendFrameworkFolder = params.templatesFiles.find(
       (f) =>
-        f.name === __frontendFrameworkResource.templateName && f.isDirectory(),
+        f.name === frontendFrameworkResource.templateName && f.isDirectory(),
     );
 
-    if (!_frontendFrameworkFolder) {
+    if (!frontendFrameworkFolder) {
       throw new PathNotFoundError(
         `${chalk.bold('Path not found')}: Frontend framework folder not found.`,
       );
     }
 
-    const __frontendFrameworkTemplateSourcePath = path.join(
-      _frontendFrameworkFolder.parentPath,
-      _frontendFrameworkFolder.name,
+    const frontendFrameworkTemplateSrcPath = path.join(
+      frontendFrameworkFolder.parentPath,
+      frontendFrameworkFolder.name,
     );
-    const __frontendFrameworkTemplateDesPath = path.join(
-      params.optionValues.dir,
-      params.projectName,
+    const frontendFrameworkTemplateDesPath = path.join(
+      params.projectDir,
+      params.projectName ?? params.projectNameArg,
     );
     __unableOverwriteProject(
-      __frontendFrameworkTemplateDesPath,
+      frontendFrameworkTemplateDesPath,
       params.optionValues,
     );
 
-    const __frontendFrameworkMap = new Map<string, FrameworkConfig>([
+    const isPathExist = fs.existsSync(frontendFrameworkTemplateDesPath);
+
+    if (params.optionValues.force && !isPathExist) {
+      console.warn(
+        boxen(
+          '-f, --force option will be not use, because project is not exist.',
+          {
+            title: 'Warning Information',
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'yellow',
+          },
+        ),
+      );
+    }
+
+    const frontendFrameworkMap = new Map<string, FrameworkConfig>([
       [
         'astro',
         {
@@ -97,8 +117,8 @@ export class FrontendGenerator {
           actualName: 'Astro.js',
           packages: ASTRO_DEPENDENCIES.packages,
           promptKey: 'astroDependencies',
-          templateSource: __frontendFrameworkTemplateSourcePath,
-          templateDest: __frontendFrameworkTemplateDesPath,
+          templateSource: frontendFrameworkTemplateSrcPath,
+          templateDest: frontendFrameworkTemplateDesPath,
         },
       ],
       [
@@ -108,8 +128,8 @@ export class FrontendGenerator {
           actualName: 'Next.js',
           packages: NEXT_DEPENDENCIES.packages,
           promptKey: 'nextDependencies',
-          templateSource: __frontendFrameworkTemplateSourcePath,
-          templateDest: __frontendFrameworkTemplateDesPath,
+          templateSource: frontendFrameworkTemplateSrcPath,
+          templateDest: frontendFrameworkTemplateDesPath,
         },
       ],
       [
@@ -119,8 +139,8 @@ export class FrontendGenerator {
           actualName: 'SolidJS',
           packages: SOLID_DEPENDENCIES.packages,
           promptKey: 'solidDependencies',
-          templateSource: __frontendFrameworkTemplateSourcePath,
-          templateDest: __frontendFrameworkTemplateDesPath,
+          templateSource: frontendFrameworkTemplateSrcPath,
+          templateDest: frontendFrameworkTemplateDesPath,
         },
       ],
       [
@@ -130,8 +150,8 @@ export class FrontendGenerator {
           actualName: 'Svelte',
           packages: SVELTE_DEPENDENCIES.packages,
           promptKey: 'svelteDependencies',
-          templateSource: __frontendFrameworkTemplateSourcePath,
-          templateDest: __frontendFrameworkTemplateDesPath,
+          templateSource: frontendFrameworkTemplateSrcPath,
+          templateDest: frontendFrameworkTemplateDesPath,
         },
       ],
       [
@@ -141,8 +161,8 @@ export class FrontendGenerator {
           actualName: 'Vue.js',
           packages: VUE_DEPENDENCIES.packages,
           promptKey: 'vueDependencies',
-          templateSource: __frontendFrameworkTemplateSourcePath,
-          templateDest: __frontendFrameworkTemplateDesPath,
+          templateSource: frontendFrameworkTemplateSrcPath,
+          templateDest: frontendFrameworkTemplateDesPath,
         },
       ],
       [
@@ -152,41 +172,41 @@ export class FrontendGenerator {
           actualName: 'VanillaJS',
           packages: VANILLA_DEPENDENCIES.packages,
           promptKey: 'vanillaDependencies',
-          templateSource: __frontendFrameworkTemplateSourcePath,
-          templateDest: __frontendFrameworkTemplateDesPath,
+          templateSource: frontendFrameworkTemplateSrcPath,
+          templateDest: frontendFrameworkTemplateDesPath,
         },
       ],
     ]);
 
-    const __selectedFrontendFramework =
-      typeof params.optionValues.frontend !== 'undefined'
-        ? __frontendFrameworkMap.get(params.optionValues.frontend)
-        : __frontendFrameworkMap.get(
-            __frontendFrameworkSelection.frontendFramework,
-          );
+    const selectedFrontendFramework = isUndefined(params.optionValues.frontend)
+      ? frontendFrameworkMap.get(
+          chooseFrontendFrameworkQuestion.frontendFramework,
+        )
+      : frontendFrameworkMap.get(params.optionValues.frontend);
 
-    if (!__selectedFrontendFramework) {
-      const errorMessage =
-        typeof params.optionValues.frontend !== 'undefined'
-          ? `Unsupported framework: ${params.optionValues.frontend}`
-          : `Unsupported framework: ${__frontendFrameworkSelection.frontendFramework}`;
+    if (!selectedFrontendFramework) {
+      const errorMessage = isUndefined(params.optionValues.frontend)
+        ? `Unsupported framework: ${chooseFrontendFrameworkQuestion.frontendFramework}`
+        : `Unsupported framework: ${params.optionValues.frontend}`;
 
       throw new Error(errorMessage);
     }
 
     const microGenerator = MicroGenerator.instance;
 
-    await microGenerator.setupProject({
+    const setupProjectExecutor = await microGenerator.setupProject({
       spinner: params.spinner,
-      projectName: params.projectName,
-      selectedFramework: __selectedFrontendFramework.actualName,
-      sourcePath: __selectedFrontendFramework.templateSource,
-      desPath: __selectedFrontendFramework.templateDest,
+      projectName: params.projectName ?? params.projectNameArg,
+      selectedFramework: selectedFrontendFramework.actualName,
+      sourcePath: selectedFrontendFramework.templateSource,
+      desPath: selectedFrontendFramework.templateDest,
       optionValues: params.optionValues,
     });
 
+    const tempDir = path.join(__basePath, 'templates/temp', params.projectName);
+
     if (params.optionValues.docker) {
-      const __dockerQuestion = await inquirer.prompt([
+      const isAddingDockerQuestion = await inquirer.prompt([
         {
           name: 'addDocker',
           type: 'confirm',
@@ -202,23 +222,23 @@ export class FrontendGenerator {
         },
       ]);
 
-      if (__dockerQuestion.addDocker) {
+      if (isAddingDockerQuestion.addDocker) {
         await microGenerator.setupDocker({
           spinner: params.spinner,
-          isAddingDocker: __dockerQuestion.addDocker,
-          isAddingBake: __dockerQuestion.addDockerBake,
-          selectedPackageManager: params.optionValues.pm,
-          desPath: __selectedFrontendFramework.templateDest,
+          isAddingDocker: isAddingDockerQuestion.addDocker,
+          isAddingBake: isAddingDockerQuestion.addDockerBake,
+          selectedPackageManager: params.optionValues.packageManager,
+          desPath: tempDir,
         });
       }
     }
 
-    const __dependenciesSelection = await inquirer.prompt([
+    const selectDependenciesQuestion = await inquirer.prompt([
       {
-        name: __selectedFrontendFramework.promptKey,
+        name: selectedFrontendFramework.promptKey,
         type: 'checkbox',
         message: 'Select dependencies to include in your project:',
-        choices: __selectedFrontendFramework.packages
+        choices: selectedFrontendFramework.packages
           .sort((i, e) =>
             i.name.toLowerCase().localeCompare(e.name.toLowerCase(), 'en-US'),
           )
@@ -227,33 +247,37 @@ export class FrontendGenerator {
       },
     ]);
 
-    const __selectedDependencies =
-      __dependenciesSelection[__selectedFrontendFramework.promptKey];
+    const selectedFrontendDependencies =
+      selectDependenciesQuestion[selectedFrontendFramework.promptKey];
 
     await microGenerator.setupInstallation({
       spinner: params.spinner,
-      selectedDependencies: __selectedDependencies,
-      selectedPackageManager: params.optionValues.pm,
-      projectName: params.projectName,
-      desPath: __selectedFrontendFramework.templateDest,
+      selectedDependencies: selectedFrontendDependencies,
+      selectedPackageManager: params.optionValues.packageManager,
+      projectName: params.projectName ?? params.projectNameArg,
+      desPath: tempDir,
     });
 
     await microGenerator.setupOthers({
       spinner: params.spinner,
       optionValues: params.optionValues,
       projectType: params.projectType,
-      projectName: params.projectName,
-      selectedFramework: __frontendFrameworkSelection.frontendFramework,
-      desPath: __selectedFrontendFramework.templateDest,
+      projectName: params.projectName ?? params.projectNameArg,
+      selectedFramework: selectedFrontendFramework.name,
+      desPath: tempDir,
     });
+
+    if (setupProjectExecutor) {
+      await setupProjectExecutor();
+    }
 
     console.log(
       boxen(
         `You can check the project on ${chalk.bold(
-          __selectedFrontendFramework.templateDest,
+          selectedFrontendFramework.templateDest,
         )}`,
         {
-          title: 'ⓘ Project Information ⓘ',
+          title: 'Project Information',
           titleAlignment: 'center',
           padding: 1,
           margin: 1,
