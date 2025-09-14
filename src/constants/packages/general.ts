@@ -10,7 +10,7 @@ export const TYPESCRIPT_DEPENDENCIES: {
     nest: ['typescript', '@types/node', '@types/express'],
     node: ['typescript', '@types/node'],
     koa: ['typescript', '@types/node', '@types/koa'],
-  },
+  } as const,
   frontend: {
     next: ['typescript', '@types/node', '@types/react', '@types/react-dom'],
     vue: [
@@ -23,5 +23,5 @@ export const TYPESCRIPT_DEPENDENCIES: {
     svelte: ['typescript', '@types/node', 'svelte-check'],
     solid: ['typescript', '@types/node'],
     vanilla: ['typescript', '@types/node'],
-  },
+  } as const,
 };

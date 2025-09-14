@@ -3,9 +3,7 @@ import type {
   __DefaultLicenseProps,
 } from '@/types/general.js';
 
-export const PROJECT_TYPES: string[] = ['backend', 'frontend'] as const;
-
-export const DATABASES: string[] = ['pgsql', 'mysql'] as const;
+export const PROJECT_TYPES = ['backend', 'frontend'] as const;
 
 export const BACKEND_FRAMEWORKS: __DefaultFrameworkProps = {
   frameworks: [
@@ -51,7 +49,7 @@ export const BACKEND_FRAMEWORKS: __DefaultFrameworkProps = {
       language: 'js',
       path: 'templates/backend/koa-project',
     },
-  ],
+  ] as const,
 };
 
 export const FRONTEND_FRAMEWORKS: __DefaultFrameworkProps = {
@@ -98,7 +96,7 @@ export const FRONTEND_FRAMEWORKS: __DefaultFrameworkProps = {
       language: 'js',
       path: 'templates/frontend/vanilla-project',
     },
-  ],
+  ] as const,
 };
 
 export const LICENSES: __DefaultLicenseProps = {
@@ -151,7 +149,7 @@ export const LICENSES: __DefaultLicenseProps = {
       templateName: 'unlicense',
       path: 'templates/licenses/unlicense',
     },
-  ],
+  ] as const,
 };
 
 export const DIRTY_WORDS = [
