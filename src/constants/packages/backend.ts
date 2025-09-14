@@ -74,7 +74,7 @@ const BACKEND_DEFAULT_DEPENDENCIES = {
       name: 'bcrypt',
       originName: 'bcrypt',
     },
-  ],
+  ] as const,
 };
 
 export const EXPRESS_DEPENDENCIES: __BackendPackagesProps = {
@@ -128,7 +128,7 @@ export const EXPRESS_DEPENDENCIES: __BackendPackagesProps = {
       name: 'express-rate-limit',
       originName: 'express-rate-limit',
     },
-  ],
+  ] as const,
 };
 
 export const FASTIFY_DEPENDENCIES: __BackendPackagesProps = {
@@ -182,7 +182,7 @@ export const FASTIFY_DEPENDENCIES: __BackendPackagesProps = {
       name: '@fastify/swagger-ui',
       originName: '@fastify/swagger-ui',
     },
-  ],
+  ] as const,
 };
 
 export const NEST_DEPENDENCIES: __BackendPackagesProps = {
@@ -244,7 +244,7 @@ export const NEST_DEPENDENCIES: __BackendPackagesProps = {
       name: '@nestjs/swagger',
       originName: '@nestjs/swagger',
     },
-  ],
+  ] as const,
 };
 
 export const NODE_DEPENDENCIES: __BackendPackagesProps = {
@@ -306,7 +306,7 @@ export const NODE_DEPENDENCIES: __BackendPackagesProps = {
       name: 'swagger-ui-express',
       originName: 'swagger-ui-express',
     },
-  ],
+  ] as const,
 };
 
 export const KOA_DEPENDENCIES: __BackendPackagesProps = {
@@ -368,7 +368,7 @@ export const KOA_DEPENDENCIES: __BackendPackagesProps = {
       name: 'nodemon',
       originName: 'nodemon',
     },
-  ],
+  ] as const,
 };
 
 export const FEATHER_DEPENDENCIES: __BackendPackagesProps = {
@@ -441,5 +441,5 @@ export const FEATHER_DEPENDENCIES: __BackendPackagesProps = {
       name: 'jest',
       originName: 'jest',
     },
-  ],
+  ] as const,
 };

@@ -50,7 +50,7 @@ const FRONTEND_DEFAULT_DEPENDENCIES = {
       name: 'tailwindcss',
       originName: 'tailwindcss',
     },
-  ],
+  ] as const,
 };
 
 export const NEXT_DEPENDENCIES: __FrontendPackagesProps = {
@@ -120,7 +120,7 @@ export const NEXT_DEPENDENCIES: __FrontendPackagesProps = {
       name: 'node-postgres',
       originName: 'pg',
     },
-  ],
+  ] as const,
 };
 
 export const VUE_DEPENDENCIES: __FrontendPackagesProps = {
