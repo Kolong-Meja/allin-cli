@@ -72,6 +72,7 @@ export async function generateProgram(): Promise<void> {
       'Include Docker configuration files for containerized setup.',
       false,
     )
+    .option('--env', 'Generate .env file for project configuration.', false)
     .option(
       '--git',
       'Automatically initialize a Git repository and make the first commit.',

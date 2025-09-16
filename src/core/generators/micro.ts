@@ -11,6 +11,7 @@ import type { MicroGeneratorBuilder } from '@/interfaces/general.js';
 import type {
   __AddDockerBakeParams,
   __AddDockerParams,
+  __AddEnvParams,
   __AddLicenseParams,
   __AddReadmeParams,
   __InstallDependenciesParams,
@@ -142,6 +143,16 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     if (params.optionValues.readme) {
       await this.__addReadme({
+        spinner: params.spinner,
+        optionValues: params.optionValues,
+        projectName: params.projectName,
+        projectType: params.projectType,
+        desPath: params.desPath,
+      });
+    }
+
+    if (params.optionValues.env) {
+      await this.__addEnv({
         spinner: params.spinner,
         optionValues: params.optionValues,
         projectName: params.projectName,
@@ -357,6 +368,29 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     await fse.copy(readmeSourcePath, readmeTargetPath);
 
     params.spinner.succeed(`Copying ${chalk.bold('readme')} file succeed ✅`);
+  }
+
+  private async __addEnv(params: __AddEnvParams) {
+    const backendEnvPaths = this.__getEnvPaths('.env.backend', params.desPath);
+    const frontendEnvPaths = this.__getEnvPaths(
+      '.env.frontend',
+      params.desPath,
+    );
+
+    params.spinner.start(
+      `Copying ${chalk.bold('.env')} file into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+    );
+
+    const envSourcePath =
+      params.projectType !== 'backend'
+        ? frontendEnvPaths.sourcePath
+        : backendEnvPaths.sourcePath;
+
+    const envTargetPath = path.join(params.desPath, '.env');
+
+    await fse.copy(envSourcePath, envTargetPath);
+
+    params.spinner.succeed(`Copying ${chalk.bold('.env')} file succeed ✅`);
   }
 
   private async __switchPackageManager(params: __SwitchPackageManagerParams) {
@@ -575,6 +609,31 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     return {
       sourcePath: readmeFileSrcPath,
       desPath: readmeFileDesPath,
+    };
+  }
+
+  private __getEnvPaths(filename: string, desPath: string) {
+    const envTemplatesPath = path.join(__basePath, 'templates/addons/config');
+    __pathNotFound(envTemplatesPath);
+
+    const envTemplates = fs.readdirSync(envTemplatesPath, {
+      withFileTypes: true,
+    });
+
+    const envFile = envTemplates.find((f) => f.name === filename);
+
+    if (!envFile) {
+      throw new UnidentifiedTemplateError(
+        `${chalk.bold('Unidentified template')}: ${chalk.bold(filename)} file template is not defined.`,
+      );
+    }
+
+    const envFileSrcPath = path.join(envFile.parentPath, envFile.name);
+    const envFileDesPath = path.join(desPath, envFile.name);
+
+    return {
+      sourcePath: envFileSrcPath,
+      desPath: envFileDesPath,
     };
   }
 

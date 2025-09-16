@@ -174,6 +174,12 @@ describe('generateProgram()', () => {
     );
 
     expect(mockCommand.option).toHaveBeenCalledWith(
+      '--env',
+      'Generate .env file for project configuration.',
+      false,
+    );
+
+    expect(mockCommand.option).toHaveBeenCalledWith(
       '--git',
       'Automatically initialize a Git repository and make the first commit.',
       false,
