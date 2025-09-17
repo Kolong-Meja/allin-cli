@@ -172,3 +172,5 @@ export type __AddDockerParams = __BaseParams & {
 };
 
 export type __AddDockerBakeParams = __AddDockerParams;
+
+export type __FrameworkCategory = 'frontend' | 'backend';

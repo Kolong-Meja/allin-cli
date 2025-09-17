@@ -1,7 +1,24 @@
+import type { FrameworkConfig, FrameworkMeta } from '@/interfaces/general.js';
 import type {
   __DefaultFrameworkProps,
   __DefaultLicenseProps,
 } from '@/types/general.js';
+import {
+  EXPRESS_DEPENDENCIES,
+  FASTIFY_DEPENDENCIES,
+  FEATHER_DEPENDENCIES,
+  KOA_DEPENDENCIES,
+  NEST_DEPENDENCIES,
+  NODE_DEPENDENCIES,
+} from './packages/backend.js';
+import {
+  ASTRO_DEPENDENCIES,
+  NEXT_DEPENDENCIES,
+  SOLID_DEPENDENCIES,
+  SVELTE_DEPENDENCIES,
+  VANILLA_DEPENDENCIES,
+  VUE_DEPENDENCIES,
+} from './packages/frontend.js';
 
 export const PROJECT_TYPES = ['backend', 'frontend'] as const;
 
@@ -187,3 +204,140 @@ export const DIRTY_WORDS = [
   'bangsat',
   'kampret',
 ];
+
+export const TEMPLATES_META_MAP = new Map<string, FrameworkMeta>([
+  [
+    'astro',
+    {
+      name: 'astro',
+      actualName: 'Astro.js',
+      packages: ASTRO_DEPENDENCIES.packages,
+      promptKey: 'astroDependencies',
+      category: 'frontend',
+    },
+  ],
+  [
+    'next',
+    {
+      name: 'next',
+      actualName: 'Next.js',
+      packages: NEXT_DEPENDENCIES.packages,
+      promptKey: 'nextDependencies',
+      category: 'frontend',
+    },
+  ],
+  [
+    'solid',
+    {
+      name: 'solid',
+      actualName: 'SolidJS',
+      packages: SOLID_DEPENDENCIES.packages,
+      promptKey: 'solidDependencies',
+      category: 'frontend',
+    },
+  ],
+  [
+    'svelte',
+    {
+      name: 'svelte',
+      actualName: 'Svelte',
+      packages: SVELTE_DEPENDENCIES.packages,
+      promptKey: 'svelteDependencies',
+      category: 'frontend',
+    },
+  ],
+  [
+    'vue',
+    {
+      name: 'vue',
+      actualName: 'Vue.js',
+      packages: VUE_DEPENDENCIES.packages,
+      promptKey: 'vueDependencies',
+      category: 'frontend',
+    },
+  ],
+  [
+    'vanilla',
+    {
+      name: 'vanilla',
+      actualName: 'VanillaJS',
+      packages: VANILLA_DEPENDENCIES.packages,
+      promptKey: 'vanillaDependencies',
+      category: 'frontend',
+    },
+  ],
+  [
+    'express',
+    {
+      name: 'express',
+      actualName: 'Express.js',
+      packages: EXPRESS_DEPENDENCIES.packages,
+      promptKey: 'expressDependencies',
+      category: 'backend',
+    },
+  ],
+  [
+    'fastify',
+    {
+      name: 'fastify',
+      actualName: 'Fastify',
+      packages: FASTIFY_DEPENDENCIES.packages,
+      promptKey: 'fastifyDependencies',
+      category: 'backend',
+    },
+  ],
+  [
+    'feather',
+    {
+      name: 'feather',
+      actualName: 'FeatherJS',
+      packages: FEATHER_DEPENDENCIES.packages,
+      promptKey: 'featherDependencies',
+      category: 'backend',
+    },
+  ],
+  [
+    'nest',
+    {
+      name: 'nest',
+      actualName: 'NestJS',
+      packages: NEST_DEPENDENCIES.packages,
+      promptKey: 'nestDependencies',
+      category: 'backend',
+    },
+  ],
+  [
+    'node',
+    {
+      name: 'node',
+      actualName: 'Node.js',
+      packages: NODE_DEPENDENCIES.packages,
+      promptKey: 'nodeDependencies',
+      category: 'backend',
+    },
+  ],
+  [
+    'koa',
+    {
+      name: 'koa',
+      actualName: 'Koa',
+      packages: KOA_DEPENDENCIES.packages,
+      promptKey: 'koaDependencies',
+      category: 'backend',
+    },
+  ],
+]);
+
+export function templatesMap(srcPath: string, desPath: string) {
+  const templateMap = new Map<string, FrameworkConfig>();
+
+  for (const [key, meta] of TEMPLATES_META_MAP.entries()) {
+    templateMap.set(key, {
+      ...meta,
+      templateSource: srcPath,
+      templateDest: desPath,
+    });
+  }
+
+  return templateMap;
+}

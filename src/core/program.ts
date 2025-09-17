@@ -48,12 +48,8 @@ export async function generateProgram(): Promise<void> {
     )
     .option('--ver, --version <version>', 'Set the version of the project.')
     .option(
-      '--backend <backend>',
-      'Select the backend framework to use for the project.',
-    )
-    .option(
-      '--frontend <frontend>',
-      'Select the frontend framework to use for the project.',
+      '--template <template>',
+      'Select the template to use for the project.',
     )
     .option(
       '--pm, --package-manager <pm>',

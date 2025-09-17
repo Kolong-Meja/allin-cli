@@ -1,5 +1,5 @@
 import { __basePath } from '@/config.js';
-import { FRONTEND_FRAMEWORKS } from '@/constants/default.js';
+import { FRONTEND_FRAMEWORKS, templatesMap } from '@/constants/default.js';
 import {
   ASTRO_DEPENDENCIES,
   NEXT_DEPENDENCIES,
@@ -49,17 +49,17 @@ export class FrontendGenerator {
           .map((f) => f.name),
         default: 'astro',
         loop: false,
-        when: () => isUndefined(params.optionValues.frontend),
+        when: () => isUndefined(params.optionValues.template),
       },
     ]);
 
-    const frontendFrameworkResource = isUndefined(params.optionValues.frontend)
+    const frontendFrameworkResource = isUndefined(params.optionValues.template)
       ? FRONTEND_FRAMEWORKS.frameworks.find(
           (f) =>
             f.actualName === chooseFrontendFrameworkQuestion.frontendFramework,
         )
       : FRONTEND_FRAMEWORKS.frameworks.find(
-          (f) => f.name === params.optionValues.frontend,
+          (f) => f.name === params.optionValues.template,
         );
 
     if (!frontendFrameworkResource) {
@@ -109,85 +109,20 @@ export class FrontendGenerator {
       );
     }
 
-    const frontendFrameworkMap = new Map<string, FrameworkConfig>([
-      [
-        'astro',
-        {
-          name: 'astro',
-          actualName: 'Astro.js',
-          packages: ASTRO_DEPENDENCIES.packages,
-          promptKey: 'astroDependencies',
-          templateSource: frontendFrameworkTemplateSrcPath,
-          templateDest: frontendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'next',
-        {
-          name: 'next',
-          actualName: 'Next.js',
-          packages: NEXT_DEPENDENCIES.packages,
-          promptKey: 'nextDependencies',
-          templateSource: frontendFrameworkTemplateSrcPath,
-          templateDest: frontendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'solid',
-        {
-          name: 'solid',
-          actualName: 'SolidJS',
-          packages: SOLID_DEPENDENCIES.packages,
-          promptKey: 'solidDependencies',
-          templateSource: frontendFrameworkTemplateSrcPath,
-          templateDest: frontendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'svelte',
-        {
-          name: 'svelte',
-          actualName: 'Svelte',
-          packages: SVELTE_DEPENDENCIES.packages,
-          promptKey: 'svelteDependencies',
-          templateSource: frontendFrameworkTemplateSrcPath,
-          templateDest: frontendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'vue',
-        {
-          name: 'vue',
-          actualName: 'Vue.js',
-          packages: VUE_DEPENDENCIES.packages,
-          promptKey: 'vueDependencies',
-          templateSource: frontendFrameworkTemplateSrcPath,
-          templateDest: frontendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'vanilla',
-        {
-          name: 'vanilla',
-          actualName: 'VanillaJS',
-          packages: VANILLA_DEPENDENCIES.packages,
-          promptKey: 'vanillaDependencies',
-          templateSource: frontendFrameworkTemplateSrcPath,
-          templateDest: frontendFrameworkTemplateDesPath,
-        },
-      ],
-    ]);
-
-    const selectedFrontendFramework = isUndefined(params.optionValues.frontend)
-      ? frontendFrameworkMap.get(
-          chooseFrontendFrameworkQuestion.frontendFramework,
-        )
-      : frontendFrameworkMap.get(params.optionValues.frontend);
+    const selectedFrontendFramework = isUndefined(params.optionValues.template)
+      ? templatesMap(
+          frontendFrameworkTemplateSrcPath,
+          frontendFrameworkTemplateDesPath,
+        ).get(chooseFrontendFrameworkQuestion.frontendFramework)
+      : templatesMap(
+          frontendFrameworkTemplateSrcPath,
+          frontendFrameworkTemplateDesPath,
+        ).get(params.optionValues.template);
 
     if (!selectedFrontendFramework) {
-      const errorMessage = isUndefined(params.optionValues.frontend)
+      const errorMessage = isUndefined(params.optionValues.template)
         ? `Unsupported framework: ${chooseFrontendFrameworkQuestion.frontendFramework}`
-        : `Unsupported framework: ${params.optionValues.frontend}`;
+        : `Unsupported framework: ${params.optionValues.template}`;
 
       throw new Error(errorMessage);
     }

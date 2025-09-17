@@ -1,5 +1,5 @@
 import { __basePath } from '@/config.js';
-import { BACKEND_FRAMEWORKS } from '@/constants/default.js';
+import { BACKEND_FRAMEWORKS, templatesMap } from '@/constants/default.js';
 import {
   EXPRESS_DEPENDENCIES,
   FASTIFY_DEPENDENCIES,
@@ -49,16 +49,16 @@ export class BackendGenerator {
           .map((f) => f.name),
         default: 'express',
         loop: false,
-        when: () => isUndefined(params.optionValues.backend),
+        when: () => isUndefined(params.optionValues.template),
       },
     ]);
 
-    const backendFrameworkResource = isUndefined(params.optionValues.backend)
+    const backendFrameworkResource = isUndefined(params.optionValues.template)
       ? BACKEND_FRAMEWORKS.frameworks.find(
           (f) => f.name === chooseBackendFrameworkQuestion.backendFramework,
         )
       : BACKEND_FRAMEWORKS.frameworks.find(
-          (f) => f.name === params.optionValues.backend,
+          (f) => f.name === params.optionValues.template,
         );
 
     if (!backendFrameworkResource) {
@@ -108,83 +108,20 @@ export class BackendGenerator {
       );
     }
 
-    const backendFrameworkMap = new Map<string, FrameworkConfig>([
-      [
-        'express',
-        {
-          name: 'express',
-          actualName: 'Express.js',
-          packages: EXPRESS_DEPENDENCIES.packages,
-          promptKey: 'expressDependencies',
-          templateSource: backendFrameworkTemplateSrcPath,
-          templateDest: backendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'fastify',
-        {
-          name: 'fastify',
-          actualName: 'Fastify',
-          packages: FASTIFY_DEPENDENCIES.packages,
-          promptKey: 'fastifyDependencies',
-          templateSource: backendFrameworkTemplateSrcPath,
-          templateDest: backendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'feather',
-        {
-          name: 'feather',
-          actualName: 'FeatherJS',
-          packages: FEATHER_DEPENDENCIES.packages,
-          promptKey: 'featherDependencies',
-          templateSource: backendFrameworkTemplateSrcPath,
-          templateDest: backendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'nest',
-        {
-          name: 'nest',
-          actualName: 'NestJS',
-          packages: NEST_DEPENDENCIES.packages,
-          promptKey: 'nestDependencies',
-          templateSource: backendFrameworkTemplateSrcPath,
-          templateDest: backendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'node',
-        {
-          name: 'node',
-          actualName: 'Node.js',
-          packages: NODE_DEPENDENCIES.packages,
-          promptKey: 'nodeDependencies',
-          templateSource: backendFrameworkTemplateSrcPath,
-          templateDest: backendFrameworkTemplateDesPath,
-        },
-      ],
-      [
-        'koa',
-        {
-          name: 'koa',
-          actualName: 'Koa',
-          packages: KOA_DEPENDENCIES.packages,
-          promptKey: 'koaDependencies',
-          templateSource: backendFrameworkTemplateSrcPath,
-          templateDest: backendFrameworkTemplateDesPath,
-        },
-      ],
-    ]);
-
-    const selectedBackendFramework = isUndefined(params.optionValues.backend)
-      ? backendFrameworkMap.get(chooseBackendFrameworkQuestion.backendFramework)
-      : backendFrameworkMap.get(params.optionValues.backend);
+    const selectedBackendFramework = isUndefined(params.optionValues.template)
+      ? templatesMap(
+          backendFrameworkTemplateSrcPath,
+          backendFrameworkTemplateDesPath,
+        ).get(chooseBackendFrameworkQuestion.backendFramework)
+      : templatesMap(
+          backendFrameworkTemplateSrcPath,
+          backendFrameworkTemplateDesPath,
+        ).get(params.optionValues.template);
 
     if (!selectedBackendFramework) {
-      const errorMessage = isUndefined(params.optionValues.backend)
+      const errorMessage = isUndefined(params.optionValues.template)
         ? `Unsupported framework: ${chooseBackendFrameworkQuestion.backendFramework}`
-        : `Unsupported framework: ${params.optionValues.backend}`;
+        : `Unsupported framework: ${params.optionValues.template}`;
 
       throw new Error(errorMessage);
     }

@@ -1,11 +1,19 @@
-import { UnidentifiedProjectTypeError } from '@/exceptions/error.js';
+import {
+  UnidentifiedProjectTypeError,
+  UnidentifiedTemplateError,
+} from '@/exceptions/error.js';
 import {
   __detectProjectTypeFromInput,
   __renewProjectName,
 } from '@/utils/string.js';
 
 import { __basePath } from '@/config.js';
-import { DIRTY_WORDS, PROJECT_TYPES } from '@/constants/default.js';
+import {
+  DIRTY_WORDS,
+  PROJECT_TYPES,
+  TEMPLATES_META_MAP,
+  templatesMap,
+} from '@/constants/default.js';
 import {
   __containHarassmentWords,
   __pathNotFound,
@@ -98,21 +106,30 @@ export class CreateCommand {
           default: 'backend',
           when: () =>
             isNull(isProjectTypeDetected) &&
-            isUndefined(options.backend) &&
-            isUndefined(options.frontend) &&
+            isUndefined(options.template) &&
             isUndefined(options.type) &&
             isUndefined(projectType),
         },
       ]);
 
       const resolveProjectType = (): string => {
-        return (
-          isProjectTypeDetected ??
-          (options.frontend ? 'frontend' : undefined) ??
-          (options.backend ? 'backend' : undefined) ??
-          projectType ??
-          projectTypeQuestion.projectType
-        );
+        if (isProjectTypeDetected) return isProjectTypeDetected;
+
+        if (options.template) {
+          const selectedTemplate = TEMPLATES_META_MAP.get(options.template);
+
+          if (!selectedTemplate) {
+            throw new UnidentifiedTemplateError(
+              `${chalk.bold('Unidentified template model')}: ${chalk.bold(
+                options.template,
+              )} template model is not found.`,
+            );
+          }
+
+          return selectedTemplate.category;
+        }
+
+        return projectType ?? projectTypeQuestion.projectType;
       };
 
       const userProjectType = resolveProjectType();

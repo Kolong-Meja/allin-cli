@@ -1,4 +1,5 @@
 import type {
+  __FrameworkCategory,
   __PackagesProps,
   __SetupDockerParams,
   __SetupInstallationParams,
@@ -6,11 +7,15 @@ import type {
   __SetupProjectParams,
 } from '@/types/general.js';
 
-export interface FrameworkConfig {
+export interface FrameworkMeta {
   name: string;
   actualName: string;
   packages: __PackagesProps[];
   promptKey: string;
+  category: __FrameworkCategory;
+}
+
+export interface FrameworkConfig extends FrameworkMeta {
   templateSource: string;
   templateDest: string;
 }

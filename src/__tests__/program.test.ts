@@ -139,13 +139,8 @@ describe('generateProgram()', () => {
     );
 
     expect(mockCommand.option).toHaveBeenCalledWith(
-      '--backend <backend>',
-      'Select the backend framework to use for the project.',
-    );
-
-    expect(mockCommand.option).toHaveBeenCalledWith(
-      '--frontend <frontend>',
-      'Select the frontend framework to use for the project.',
+      '--template <template>',
+      'Select the template to use for the project.',
     );
 
     const pmCall = mockCommand.option.mock.calls.find(
