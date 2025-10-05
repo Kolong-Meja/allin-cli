@@ -1,7 +1,7 @@
 /**
  * __tests__/program.test.ts
  */
-import type { Mixed } from '@/types/general.js';
+import type { Mixed } from '@/types/global.js';
 import { jest } from '@jest/globals';
 
 const mockCommand = {

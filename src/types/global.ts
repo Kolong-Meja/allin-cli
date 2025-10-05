@@ -64,7 +64,7 @@ type __BaseParams = {
   spinner: Ora;
 };
 
-export type __BackendProjectTypeParams = __BaseParams & {
+export type __GenerateProjectParams = __BaseParams & {
   projectNameArg: Mixed;
   optionValues: OptionValues;
   templatesFiles: fs.Dirent<string>[];
@@ -72,10 +72,6 @@ export type __BackendProjectTypeParams = __BaseParams & {
   projectType: string;
   projectDir: string;
 };
-
-export type __FrontendProjectTypeParams = __BackendProjectTypeParams;
-
-export type __FullStackProjectTypeParams = __BackendProjectTypeParams;
 
 export type __SetupProjectParams = __BaseParams & {
   projectName: string;
@@ -174,3 +170,10 @@ export type __AddDockerParams = __BaseParams & {
 export type __AddDockerBakeParams = __AddDockerParams;
 
 export type __FrameworkCategory = 'frontend' | 'backend';
+
+export type __CreateProjectParams = {
+  projectName: Mixed;
+  projectDir: Mixed;
+  projectType: Mixed;
+  options: OptionValues;
+};

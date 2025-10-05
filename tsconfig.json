@@ -34,7 +34,6 @@
     "noImplicitThis": true,
     "strictPropertyInitialization": true,
     "noEmit": false,
-    "baseUrl": ".",
     "types": ["jest", "node"],
     "paths": {
       "@/*": ["./src/*"]

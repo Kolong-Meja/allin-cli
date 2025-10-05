@@ -1,57 +1,5 @@
-import type { __FrontendPackagesProps } from '@/types/general.js';
-
-const FRONTEND_DEFAULT_DEPENDENCIES = {
-  packages: [
-    {
-      name: 'eslint',
-      originName: 'eslint',
-    },
-    {
-      name: 'prettier',
-      originName: 'prettier',
-    },
-    {
-      name: 'dotenv',
-      originName: 'dotenv',
-    },
-    {
-      name: 'axios',
-      originName: 'axios',
-    },
-    {
-      name: 'ky',
-      originName: 'ky',
-    },
-    {
-      name: 'zod',
-      originName: 'zod',
-    },
-    {
-      name: 'jest',
-      originName: 'jest',
-    },
-    {
-      name: 'playwright',
-      originName: 'playwright',
-    },
-    {
-      name: 'chart.js',
-      originName: 'chart.js',
-    },
-    {
-      name: 'gsap',
-      originName: 'gsap',
-    },
-    {
-      name: 'animejs',
-      originName: 'animejs',
-    },
-    {
-      name: 'tailwindcss',
-      originName: 'tailwindcss',
-    },
-  ] as const,
-};
+import type { __FrontendPackagesProps } from '@/types/global.js';
+import { FRONTEND_DEFAULT_DEPENDENCIES } from '@/constants/default.js';
 
 export const NEXT_DEPENDENCIES: __FrontendPackagesProps = {
   packages: [
@@ -120,7 +68,7 @@ export const NEXT_DEPENDENCIES: __FrontendPackagesProps = {
       name: 'node-postgres',
       originName: 'pg',
     },
-  ] as const,
+  ],
 };
 
 export const VUE_DEPENDENCIES: __FrontendPackagesProps = {

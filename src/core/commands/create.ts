@@ -12,25 +12,24 @@ import {
   DIRTY_WORDS,
   PROJECT_TYPES,
   TEMPLATES_META_MAP,
-  templatesMap,
-} from '@/constants/default.js';
+} from '@/constants/global.js';
 import {
   __containHarassmentWords,
   __pathNotFound,
 } from '@/exceptions/trigger.js';
-import type { Mixed } from '@/types/general.js';
+import type { __CreateProjectParams, Mixed } from '@/types/global.js';
 import { isNull, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
-import type { OptionValues } from 'commander';
 import fs from 'fs';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import path from 'path';
 import { BackendGenerator } from '../generators/backend.js';
 import { FrontendGenerator } from '../generators/frontend.js';
+import type { CreateCommandBuilder } from '@/interfaces/global.js';
 
-export class CreateCommand {
+export class CreateCommand implements CreateCommandBuilder {
   static #instance: CreateCommand;
 
   private constructor() {}
@@ -43,12 +42,7 @@ export class CreateCommand {
     return CreateCommand.#instance;
   }
 
-  public async create(
-    projectName: Mixed,
-    projectDir: Mixed,
-    projectType: Mixed,
-    options: OptionValues,
-  ) {
+  public async create(params: __CreateProjectParams) {
     const spinner = ora({
       spinner: 'dots8',
       color: 'green',
@@ -58,9 +52,12 @@ export class CreateCommand {
     const start = performance.now();
 
     try {
-      if (!isUndefined(projectType) && !PROJECT_TYPES.includes(projectType)) {
+      if (
+        !isUndefined(params.projectType) &&
+        !PROJECT_TYPES.includes(params.projectType)
+      ) {
         throw new UnidentifiedProjectTypeError(
-          `${projectType} is not found or exist. Choose between ${PROJECT_TYPES.join(', ')}`,
+          `${params.projectType} is not found or exist. Choose between ${PROJECT_TYPES.join(', ')}`,
         );
       }
 
@@ -69,11 +66,16 @@ export class CreateCommand {
         type: 'input',
         message: "What's the name of your project?",
         default: 'allin-project',
-        when: () => isUndefined(options.name) && isUndefined(projectName),
+        when: () =>
+          isUndefined(params.options.name) && isUndefined(params.projectName),
       });
 
       const resolveProjectName = (): string => {
-        return options.name ?? projectName ?? projectNameQuestion.projectName;
+        return (
+          params.options.name ??
+          params.projectName ??
+          projectNameQuestion.projectName
+        );
       };
 
       const userProjectName = __renewProjectName(resolveProjectName());
@@ -82,7 +84,7 @@ export class CreateCommand {
       const isProjectTypeDetected =
         __detectProjectTypeFromInput(userProjectName);
 
-      if (!isNull(isProjectTypeDetected) && !isUndefined(projectType)) {
+      if (!isNull(isProjectTypeDetected) && !isUndefined(params.projectType)) {
         console.warn(
           boxen(
             'The [type] argument will not be used, as the system detects the project type from the project name.',
@@ -106,22 +108,24 @@ export class CreateCommand {
           default: 'backend',
           when: () =>
             isNull(isProjectTypeDetected) &&
-            isUndefined(options.template) &&
-            isUndefined(options.type) &&
-            isUndefined(projectType),
+            isUndefined(params.options.template) &&
+            isUndefined(params.options.type) &&
+            isUndefined(params.projectType),
         },
       ]);
 
       const resolveProjectType = (): string => {
         if (isProjectTypeDetected) return isProjectTypeDetected;
 
-        if (options.template) {
-          const selectedTemplate = TEMPLATES_META_MAP.get(options.template);
+        if (params.options.template) {
+          const selectedTemplate = TEMPLATES_META_MAP.get(
+            params.options.template,
+          );
 
           if (!selectedTemplate) {
             throw new UnidentifiedTemplateError(
               `${chalk.bold('Unidentified template model')}: ${chalk.bold(
-                options.template,
+                params.options.template,
               )} template model is not found.`,
             );
           }
@@ -129,7 +133,7 @@ export class CreateCommand {
           return selectedTemplate.category;
         }
 
-        return projectType ?? projectTypeQuestion.projectType;
+        return params.projectType ?? projectTypeQuestion.projectType;
       };
 
       const userProjectType = resolveProjectType();
@@ -140,14 +144,15 @@ export class CreateCommand {
           type: 'input',
           message: 'Where do you want to save your project?',
           default: process.cwd(),
-          when: () => isUndefined(options.dir) && isUndefined(projectDir),
+          when: () =>
+            isUndefined(params.options.dir) && isUndefined(params.projectDir),
         },
       ]);
 
       const resolveProjectDir = (): string => {
         return (
-          (options.dir ? options.dir : undefined) ??
-          projectDir ??
+          (params.options.dir ? params.options.dir : undefined) ??
+          params.projectDir ??
           projectDirQuestion.projectDir
         );
       };
@@ -175,7 +180,7 @@ export class CreateCommand {
           await backendGenerator.generate({
             projectNameArg: userProjectName,
             spinner: spinner,
-            optionValues: options,
+            optionValues: params.options,
             templatesFiles: backendProjectTemplateFiles,
             projectName: userProjectName,
             projectType: userProjectType,
@@ -199,9 +204,9 @@ export class CreateCommand {
           const frontendGenerator = FrontendGenerator.instance;
 
           await frontendGenerator.generate({
-            projectNameArg: projectName,
+            projectNameArg: params.projectName,
             spinner: spinner,
-            optionValues: options,
+            optionValues: params.options,
             templatesFiles: frontendProjectTemplateFiles,
             projectName: userProjectName,
             projectType: userProjectType,
@@ -215,7 +220,7 @@ export class CreateCommand {
         `Your ${chalk.bold(userProjectName)} is already created. Executed for ${chalk.bold((end - start).toFixed(3))} ms`,
       );
     } catch (error: Mixed) {
-      spinner.fail('⛔️ Failed to create project...\n');
+      spinner.fail('Failed to create project.\n');
 
       let errorMessage =
         error instanceof Error

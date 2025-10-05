@@ -1,13 +1,13 @@
 import { __basePath } from '@/config.js';
+import { TYPESCRIPT_DEFAULT_DEPENDENCIES } from '@/constants/default.js';
 import {
   BACKEND_FRAMEWORKS,
   FRONTEND_FRAMEWORKS,
   LICENSES,
-} from '@/constants/default.js';
-import { TYPESCRIPT_DEPENDENCIES } from '@/constants/packages/general.js';
+} from '@/constants/global.js';
 import { UnidentifiedTemplateError } from '@/exceptions/error.js';
 import { __pathNotFound } from '@/exceptions/trigger.js';
-import type { MicroGeneratorBuilder } from '@/interfaces/general.js';
+import type { MicroGeneratorBuilder } from '@/interfaces/global.js';
 import type {
   __AddDockerBakeParams,
   __AddDockerParams,
@@ -24,7 +24,7 @@ import type {
   __UpdateDependenciesParams,
   __UpdatePackageMetadataParams,
   __UseTypescriptParams,
-} from '@/types/general.js';
+} from '@/types/global.js';
 import { isBackend, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
@@ -189,13 +189,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
 
     params.spinner.start(
-      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+      `Copying ${chalk.bold('docker compose file')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
     );
 
     await fse.copy(dockerComposeSrc.sourcePath, dockerComposeSrc.desPath);
 
     params.spinner.succeed(
-      `Copying ${chalk.bold('docker compose file')} succeed ✅`,
+      `Copying ${chalk.bold('docker compose file')} succeed.`,
     );
 
     const dockerFileBasedOnPm =
@@ -211,12 +211,12 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
 
     params.spinner.start(
-      `Copying ${chalk.bold('dockerfile')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+      `Copying ${chalk.bold('dockerfile')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
     );
 
     await fse.copy(dockerFileSrc.sourcePath, dockerFileSrc.desPath);
 
-    params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
+    params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed.`);
   }
 
   private async __addDockerBake(params: __AddDockerBakeParams) {
@@ -226,13 +226,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
 
     params.spinner.start(
-      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+      `Copying ${chalk.bold('docker compose file')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
     );
 
     await fse.copy(dockerComposePaths.sourcePath, dockerComposePaths.desPath);
 
     params.spinner.succeed(
-      `Copying ${chalk.bold('docker compose file')} succeed ✅`,
+      `Copying ${chalk.bold('docker compose file')} succeed.`,
     );
 
     const dockerFileBasedOnPm =
@@ -248,12 +248,12 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
 
     params.spinner.start(
-      `Copying ${chalk.bold('docker compose file')} 🐳 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+      `Copying ${chalk.bold('docker compose file')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
     );
 
     await fse.copy(dockerFilePaths.sourcePath, dockerFilePaths.desPath);
 
-    params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed ✅`);
+    params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed.`);
 
     const dockerBakePaths = this.__getDockerPaths(
       'docker-bake.hcl',
@@ -261,13 +261,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
 
     params.spinner.start(
-      `Copying ${chalk.bold('docker bake file')} 🍞 into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+      `Copying ${chalk.bold('docker bake file')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
     );
 
     await fse.copy(dockerBakePaths.sourcePath, dockerBakePaths.desPath);
 
     params.spinner.succeed(
-      `Copying ${chalk.bold('docker bake file')} succeed ✅`,
+      `Copying ${chalk.bold('docker bake file')} succeed.`,
     );
   }
 
@@ -291,15 +291,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       );
     }
 
-    spinner.start(
-      `Initializing Git repository 📖, please wait for a moment...`,
-    );
+    spinner.start(`Initializing Git repository, please wait for a moment.`);
 
     await execa('git', ['init'], {
       cwd: desPath,
     });
 
-    spinner.succeed(`Git repository successfully initialized ✅`);
+    spinner.succeed(`Git repository successfully initialized.`);
   }
 
   private async __addLicense(params: __AddLicenseParams) {
@@ -330,7 +328,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     params.spinner.start(
       `Start adding ${chalk.bold(
         licenseFile.actualName,
-      )} file into ${chalk.bold(params.projectName)} 🧾...`,
+      )} file into ${chalk.bold(params.projectName)}.`,
     );
 
     const licenseSrcPath = path.join(__basePath, licenseFile.path);
@@ -340,7 +338,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     params.spinner.succeed(
       `Adding ${chalk.bold(
         licenseFile.actualName,
-      )} file on ${chalk.bold(params.projectName)} succeed ✅`,
+      )} file on ${chalk.bold(params.projectName)} succeed.`,
     );
   }
 
@@ -355,7 +353,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
 
     params.spinner.start(
-      `Copying ${chalk.bold('readme')} file into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+      `Copying ${chalk.bold('readme')} file into ${chalk.bold(params.desPath)}, please wait for a moment.`,
     );
 
     const readmeSourcePath =
@@ -367,7 +365,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     await fse.copy(readmeSourcePath, readmeTargetPath);
 
-    params.spinner.succeed(`Copying ${chalk.bold('readme')} file succeed ✅`);
+    params.spinner.succeed(`Copying ${chalk.bold('readme')} file succeed.`);
   }
 
   private async __addEnv(params: __AddEnvParams) {
@@ -378,7 +376,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
 
     params.spinner.start(
-      `Copying ${chalk.bold('.env')} file into ${chalk.bold(params.desPath)}, please wait for a moment...`,
+      `Copying ${chalk.bold('.env')} file into ${chalk.bold(params.desPath)}, please wait for a moment.`,
     );
 
     const envSourcePath =
@@ -390,7 +388,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     await fse.copy(envSourcePath, envTargetPath);
 
-    params.spinner.succeed(`Copying ${chalk.bold('.env')} file succeed ✅`);
+    params.spinner.succeed(`Copying ${chalk.bold('.env')} file succeed.`);
   }
 
   private async __switchPackageManager(params: __SwitchPackageManagerParams) {
@@ -506,16 +504,14 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     }
 
     params.spinner.start(
-      `Initializing ${chalk.bold('Typescript')} into ${chalk.bold(params.projectName)}, please wait for a moment...`,
+      `Initializing ${chalk.bold('Typescript')} into ${chalk.bold(params.projectName)}, please wait for a moment.`,
     );
 
     await execa(executeConditioningPmCommand, ['tsc', '--init'], {
       cwd: params.desPath,
     });
 
-    params.spinner.succeed(
-      `Initializing ${chalk.bold('Typescript')} succeed ✅`,
-    );
+    params.spinner.succeed(`Initializing ${chalk.bold('Typescript')} succeed.`);
 
     params.spinner.start(`Start renaming .js files to .ts`);
 
@@ -540,19 +536,19 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     for (const [__sourcePath, __desPath] of renamePairs) {
       if (fs.existsSync(__sourcePath)) {
         params.spinner.start(
-          `Renaming ${chalk.bold(__sourcePath)} to ${chalk.bold(__desPath)}...`,
+          `Renaming ${chalk.bold(__sourcePath)} to ${chalk.bold(__desPath)}.`,
         );
 
         fs.renameSync(__sourcePath, __desPath);
 
         params.spinner.succeed(
-          `Renamed ${chalk.bold(__sourcePath)} → ${chalk.bold(__desPath)} ✅`,
+          `Renamed ${chalk.bold(__sourcePath)} → ${chalk.bold(__desPath)}.`,
         );
       }
     }
 
     params.spinner.succeed(
-      `All file renames complete for ${chalk.bold(params.projectName)} ✅`,
+      `All file renames complete for ${chalk.bold(params.projectName)}.`,
     );
   }
 
@@ -645,10 +641,10 @@ export class MicroGenerator implements MicroGeneratorBuilder {
           ? 'pnpm'
           : 'bun';
 
-    for (const p of TYPESCRIPT_DEPENDENCIES[params.projectType][
+    for (const p of TYPESCRIPT_DEFAULT_DEPENDENCIES[params.projectType][
       params.selectedFramework
     ]) {
-      params.spinner.start(`Start installing ${chalk.bold(p)} package...`);
+      params.spinner.start(`Start installing ${chalk.bold(p)} package.`);
 
       if (params.selectedPackageManager === 'npm') {
         await execa(executeInstallBasedOnPm, ['install', '-D', p], {
@@ -660,7 +656,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
         });
       }
 
-      params.spinner.succeed(`Installing ${chalk.bold(p)} package succeed ✅`);
+      params.spinner.succeed(`Installing ${chalk.bold(p)} package succeed.`);
     }
   }
 
@@ -673,19 +669,17 @@ export class MicroGenerator implements MicroGeneratorBuilder {
           : 'bun';
 
     params.spinner.start(
-      `Installing ${chalk.bold(params.selectedDependencies.join(', '))}, please wait for a moment...`,
+      `Installing ${chalk.bold(params.selectedDependencies.join(', '))}, please wait for a moment.`,
     );
 
     for (const p of params.selectedDependencies) {
-      params.spinner.start(`Start installing ${chalk.bold(p)} dependency...`);
+      params.spinner.start(`Start installing ${chalk.bold(p)} dependency.`);
 
       await execa(executeInstallBasedOnPm, ['install', '--save', p], {
         cwd: params.desPath,
       });
 
-      params.spinner.succeed(
-        `Installing ${chalk.bold(p)} dependency succeed ✅`,
-      );
+      params.spinner.succeed(`Installing ${chalk.bold(p)} dependency succeed.`);
     }
 
     const isPrettierSelected = params.selectedDependencies.includes('prettier');
@@ -718,12 +712,12 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       );
       const prettierFileDesPath = path.join(params.desPath, prettierFile.name);
 
-      params.spinner.start(`Initializing ${chalk.bold('.prettierrc')} file...`);
+      params.spinner.start(`Initializing ${chalk.bold('.prettierrc')} file.`);
 
       await fse.copy(prettierFileSrcPath, prettierFileDesPath);
 
       params.spinner.succeed(
-        `Adding ${chalk.bold('.prettierrc')} configuration completed ✅`,
+        `Adding ${chalk.bold('.prettierrc')} configuration completed.`,
       );
     }
 
@@ -764,7 +758,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       });
     }
 
-    params.spinner.succeed(`Installing all dependencies succeed ✅`);
+    params.spinner.succeed(`Installing all dependencies succeed.`);
   }
 
   private async __updateDependencies(params: __UpdateDependenciesParams) {
@@ -790,7 +784,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     params.spinner.start(
       `Updating ${chalk.bold(
         params.projectName,
-      )} dependencies, please wait for a moment 🌎...`,
+      )} dependencies, please wait for a moment.`,
     );
 
     await execa(`${params.selectedPackageManager}`, ['update'], {
@@ -798,7 +792,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     });
 
     params.spinner.succeed(
-      `Updating ${chalk.bold(params.projectName)} dependencies succeed ✅`,
+      `Updating ${chalk.bold(params.projectName)} dependencies succeed.`,
     );
   }
 
@@ -806,7 +800,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     params.spinner.start(
       `Updating ${chalk.bold(
         params.projectName,
-      )} package metadata, please wait for a moment 🌎...`,
+      )} package metadata, please wait for a moment.`,
     );
 
     const packageJsonFilePath = path.join(params.desPath, 'package.json');
@@ -824,7 +818,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     await fse.writeJSON(packageJsonFilePath, packageJsonFile, { spaces: 2 });
 
     params.spinner.succeed(
-      `Updating ${chalk.bold(params.projectName)} package metadata succeed ✅`,
+      `Updating ${chalk.bold(params.projectName)} package metadata succeed.`,
     );
   }
 }

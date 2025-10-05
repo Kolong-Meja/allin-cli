@@ -1,20 +1,10 @@
 import { __basePath } from '@/config.js';
-import { BACKEND_FRAMEWORKS, templatesMap } from '@/constants/default.js';
-import {
-  EXPRESS_DEPENDENCIES,
-  FASTIFY_DEPENDENCIES,
-  FEATHER_DEPENDENCIES,
-  KOA_DEPENDENCIES,
-  NEST_DEPENDENCIES,
-  NODE_DEPENDENCIES,
-} from '@/constants/packages/backend.js';
+import { BACKEND_FRAMEWORKS, templatesMap } from '@/constants/global.js';
 import {
   PathNotFoundError,
   UnidentifiedFrameworkError,
 } from '@/exceptions/error.js';
 import { __unableOverwriteProject } from '@/exceptions/trigger.js';
-import type { FrameworkConfig } from '@/interfaces/general.js';
-import type { __BackendProjectTypeParams } from '@/types/general.js';
 import { isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
@@ -22,8 +12,10 @@ import fs from 'fs';
 import inquirer from 'inquirer';
 import path from 'path';
 import { MicroGenerator } from './micro.js';
+import type { GeneratorBuilder } from '@/interfaces/global.js';
+import type { __GenerateProjectParams } from '@/types/global.js';
 
-export class BackendGenerator {
+export class BackendGenerator implements GeneratorBuilder {
   static #instance: BackendGenerator;
 
   private constructor() {}
@@ -36,7 +28,7 @@ export class BackendGenerator {
     return BackendGenerator.#instance;
   }
 
-  public async generate(params: __BackendProjectTypeParams) {
+  public async generate(params: __GenerateProjectParams) {
     const chooseBackendFrameworkQuestion = await inquirer.prompt([
       {
         name: 'backendFramework',
