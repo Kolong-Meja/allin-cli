@@ -4,7 +4,11 @@ import {
 } from '@/exceptions/error.js';
 import {
   __detectProjectTypeFromInput,
+  __isContainHarassmentWords,
+  __isLookLikePath,
+  __isValidProjectName,
   __renewProjectName,
+  __sanitizeProjectName,
 } from '@/utils/string.js';
 
 import { __basePath } from '@/config.js';
@@ -13,21 +17,19 @@ import {
   PROJECT_TYPES,
   TEMPLATES_META_MAP,
 } from '@/constants/global.js';
-import {
-  __containHarassmentWords,
-  __pathNotFound,
-} from '@/exceptions/trigger.js';
+import { __pathNotFound } from '@/exceptions/trigger.js';
+import type { CreateCommandBuilder } from '@/interfaces/global.js';
 import type { __CreateProjectParams, Mixed } from '@/types/global.js';
 import { isNull, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import fs from 'fs';
+import fse from 'fs-extra';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import path from 'path';
 import { BackendGenerator } from '../generators/backend.js';
 import { FrontendGenerator } from '../generators/frontend.js';
-import type { CreateCommandBuilder } from '@/interfaces/global.js';
 
 export class CreateCommand implements CreateCommandBuilder {
   static #instance: CreateCommand;
@@ -68,6 +70,23 @@ export class CreateCommand implements CreateCommandBuilder {
         default: 'allin-project',
         when: () =>
           isUndefined(params.options.name) && isUndefined(params.projectName),
+        validate: (input: string) => {
+          if (__isLookLikePath(input)) {
+            return 'Project name must not be a path or contain path separators.';
+          }
+
+          const sanitizedStr = __sanitizeProjectName(input);
+
+          if (!__isValidProjectName(sanitizedStr)) {
+            return 'Project name invalid. Use letters, digits, hyphen or underscore, start with a letter.';
+          }
+
+          if (__isContainHarassmentWords(sanitizedStr, DIRTY_WORDS)) {
+            return 'Please choose a different project name (contains disallowed words).';
+          }
+
+          return true;
+        },
       });
 
       const resolveProjectName = (): string => {
@@ -79,7 +98,6 @@ export class CreateCommand implements CreateCommandBuilder {
       };
 
       const userProjectName = __renewProjectName(resolveProjectName());
-      __containHarassmentWords(userProjectName, DIRTY_WORDS);
 
       const isProjectTypeDetected =
         __detectProjectTypeFromInput(userProjectName);
@@ -146,6 +164,13 @@ export class CreateCommand implements CreateCommandBuilder {
           default: process.cwd(),
           when: () =>
             isUndefined(params.options.dir) && isUndefined(params.projectDir),
+          validate: (input: string) => {
+            if (!__isLookLikePath(input)) {
+              return 'Project name must be a path or contain path separators.';
+            }
+
+            return true;
+          },
         },
       ]);
 
@@ -237,6 +262,9 @@ export class CreateCommand implements CreateCommandBuilder {
         errorMessage = error.message;
       }
 
+      const tempPath = path.join(__basePath, 'templates', 'temp');
+      this.__removeUnusedProject(tempPath);
+
       console.error(
         boxen(errorMessage, {
           title: error.name,
@@ -248,6 +276,29 @@ export class CreateCommand implements CreateCommandBuilder {
       );
     } finally {
       spinner.clear();
+    }
+  }
+
+  private async __removeUnusedProject(tempPath: string) {
+    const tempSubFolders = await fse.readdir(tempPath, { withFileTypes: true });
+
+    for (const folder of tempSubFolders) {
+      if (!folder.isDirectory()) continue;
+      const itemPath = path.join(tempPath, folder.name);
+
+      try {
+        await fse.remove(itemPath);
+      } catch (error: Mixed) {
+        console.error(
+          boxen(error.message, {
+            title: error.name,
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'red',
+          }),
+        );
+      }
     }
   }
 }

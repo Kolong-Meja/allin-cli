@@ -36,3 +36,20 @@ export interface GeneratorBuilder {
 export interface CreateCommandBuilder {
   create(params: __CreateProjectParams): Promise<void>;
 }
+
+export interface PackageInfo {
+  name: string;
+  version: string;
+}
+
+export interface UpdateCheckResult {
+  updateAvailable: boolean;
+  current: string;
+  latest?: string;
+  checkedAt: number;
+}
+
+export interface CacheType {
+  lastChecked?: number;
+  updates?: Record<string, { current: string; latest: string }>;
+}

@@ -7,7 +7,9 @@ import {
 } from '@/constants/global.js';
 import { UnidentifiedTemplateError } from '@/exceptions/error.js';
 import { __pathNotFound } from '@/exceptions/trigger.js';
-import type { MicroGeneratorBuilder } from '@/interfaces/global.js';
+import type {
+  MicroGeneratorBuilder
+} from '@/interfaces/global.js';
 import type {
   __AddDockerBakeParams,
   __AddDockerParams,
@@ -23,7 +25,7 @@ import type {
   __SwitchPackageManagerParams,
   __UpdateDependenciesParams,
   __UpdatePackageMetadataParams,
-  __UseTypescriptParams,
+  __UseTypescriptParams
 } from '@/types/global.js';
 import { isBackend, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
