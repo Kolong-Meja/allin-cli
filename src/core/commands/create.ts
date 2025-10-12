@@ -11,7 +11,7 @@ import {
   __sanitizeProjectName,
 } from '@/utils/string.js';
 
-import { __basePath } from '@/config.js';
+import { __basePath, CACHE_BASE_PATH } from '@/config.js';
 import {
   DIRTY_WORDS,
   PROJECT_TYPES,
@@ -30,15 +30,20 @@ import ora from 'ora';
 import path from 'path';
 import { BackendGenerator } from '../generators/backend.js';
 import { FrontendGenerator } from '../generators/frontend.js';
+import { MicroGenerator } from '../generators/micro.js';
 
 export class CreateCommand implements CreateCommandBuilder {
   static #instance: CreateCommand;
 
-  private constructor() {}
+  public readonly microGenerator: MicroGenerator;
+
+  private constructor(microGenerator: MicroGenerator) {
+    this.microGenerator = microGenerator;
+  }
 
   public static get instance(): CreateCommand {
     if (!CreateCommand.#instance) {
-      CreateCommand.#instance = new CreateCommand();
+      CreateCommand.#instance = new CreateCommand(MicroGenerator.instance);
     }
 
     return CreateCommand.#instance;
@@ -185,6 +190,19 @@ export class CreateCommand implements CreateCommandBuilder {
       const userProjectDir = resolveProjectDir();
       __pathNotFound(userProjectDir);
 
+      const cachedForType = await this.microGenerator.__listCachedProjects(
+        CACHE_BASE_PATH,
+        userProjectType,
+      );
+
+      const reuseChoicePrompt = await inquirer.prompt({
+        name: 'reuseProject',
+        type: 'confirm',
+        message: `You've already generated ${userProjectType} projects before. Do you want to reuse one of them?`,
+        default: false,
+        when: () => cachedForType.length > 0,
+      });
+
       switch (userProjectType) {
         case 'backend':
           const backendProjectTemplateDirPath = path.join(
@@ -210,6 +228,8 @@ export class CreateCommand implements CreateCommandBuilder {
             projectName: userProjectName,
             projectType: userProjectType,
             projectDir: userProjectDir,
+            isUsingCacheProject: reuseChoicePrompt.reuseProject,
+            cachedEntries: cachedForType,
           });
           break;
         case 'frontend':
@@ -236,6 +256,8 @@ export class CreateCommand implements CreateCommandBuilder {
             projectName: userProjectName,
             projectType: userProjectType,
             projectDir: userProjectDir,
+            isUsingCacheProject: reuseChoicePrompt.reuseProject,
+            cachedEntries: cachedForType,
           });
           break;
       }
@@ -284,6 +306,7 @@ export class CreateCommand implements CreateCommandBuilder {
 
     for (const folder of tempSubFolders) {
       if (!folder.isDirectory()) continue;
+
       const itemPath = path.join(tempPath, folder.name);
 
       try {
@@ -301,4 +324,6 @@ export class CreateCommand implements CreateCommandBuilder {
       }
     }
   }
+
+  private async __generateProjectNonCache() {}
 }

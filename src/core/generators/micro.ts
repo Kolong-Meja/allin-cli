@@ -1,4 +1,4 @@
-import { __basePath } from '@/config.js';
+import { __basePath, CACHE_BASE_PATH, CACHE_TTL_MS } from '@/config.js';
 import { TYPESCRIPT_DEFAULT_DEPENDENCIES } from '@/constants/default.js';
 import {
   BACKEND_FRAMEWORKS,
@@ -8,7 +8,8 @@ import {
 import { UnidentifiedTemplateError } from '@/exceptions/error.js';
 import { __pathNotFound } from '@/exceptions/trigger.js';
 import type {
-  MicroGeneratorBuilder
+  CachedEntry,
+  MicroGeneratorBuilder,
 } from '@/interfaces/global.js';
 import type {
   __AddDockerBakeParams,
@@ -25,7 +26,8 @@ import type {
   __SwitchPackageManagerParams,
   __UpdateDependenciesParams,
   __UpdatePackageMetadataParams,
-  __UseTypescriptParams
+  __UseTypescriptParams,
+  Mixed,
 } from '@/types/global.js';
 import { isBackend, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
@@ -51,6 +53,8 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   public async setupProject(params: __SetupProjectParams) {
+    await this.__ensureCacheReady(CACHE_BASE_PATH, CACHE_TTL_MS);
+
     const isPathExist = fs.existsSync(params.desPath);
 
     if (params.optionValues.force && isPathExist) {
@@ -76,6 +80,26 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     return async () => {
       await fse.copy(tempDir, params.desPath);
       await fse.remove(tempDir);
+
+      try {
+        await this.__storeProjectInCache(
+          CACHE_BASE_PATH,
+          CACHE_TTL_MS,
+          params.projectType,
+          params.desPath,
+          params.projectName,
+        );
+      } catch (error: Mixed) {
+        console.error(
+          boxen(error.message, {
+            title: error.name,
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'red',
+          }),
+        );
+      }
     };
   }
 
@@ -437,8 +461,6 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const frameworkFile = frameworks.find(
       (f) => f.name === params.selectedframework,
     );
-
-    console.log();
 
     if (!frameworkFile) {
       throw new UnidentifiedTemplateError(
@@ -822,5 +844,138 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     params.spinner.succeed(
       `Updating ${chalk.bold(params.projectName)} package metadata succeed.`,
     );
+  }
+
+  private async __ensureCacheReady(
+    cacheBasePath: string,
+    cacheTtlMs: number,
+  ): Promise<void> {
+    await fse.ensureDir(cacheBasePath);
+    await this.__removeExpiredCache(cacheBasePath, cacheTtlMs);
+  }
+
+  private async __removeExpiredCache(
+    cacheBasePath: string,
+    cacheTtlMs: number,
+  ): Promise<void> {
+    if (!fse.existsSync(cacheBasePath)) return;
+
+    const types = await fse.readdir(cacheBasePath);
+    const now = Date.now();
+
+    for (const type of types) {
+      const typeDir = path.join(cacheBasePath, type);
+      const statType = await fse.stat(typeDir).catch(() => null);
+
+      if (!statType || !statType.isDirectory()) continue;
+
+      const entries = await fse.readdir(typeDir);
+
+      for (const name of entries) {
+        const entryPath = path.join(typeDir, name);
+
+        try {
+          const statEntry = await fse.stat(entryPath);
+          const age = now - statEntry.birthtimeMs;
+
+          if (age > cacheTtlMs) {
+            await fse.remove(entryPath);
+          }
+        } catch (error: Mixed) {
+          continue;
+        }
+      }
+    }
+  }
+
+  private async __storeProjectInCache(
+    cacheBasePath: string,
+    cacheTtlMs: number,
+    projectType: string,
+    srcPath: string,
+    nameBase: string,
+  ): Promise<string> {
+    await this.__ensureCacheReady(cacheBasePath, cacheTtlMs);
+
+    const typeDir = path.join(cacheBasePath, projectType);
+
+    await fse.ensureDir(typeDir);
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const safeBase = nameBase.replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
+    const cacheFolderName = `${safeBase}-${timestamp}`;
+    const desPath = path.join(typeDir, cacheFolderName);
+
+    await fse.copy(srcPath, desPath);
+    return desPath;
+  }
+
+  public async __listCachedProjects(
+    cacheBasePath: string,
+    projectType: string,
+  ): Promise<CachedEntry[]> {
+    if (!cacheBasePath || !projectType) return [];
+
+    const typeDir = path.join(cacheBasePath, projectType);
+
+    if (!fse.existsSync(typeDir)) return [];
+
+    const names = await fse.readdir(typeDir);
+    const result = await Promise.all(
+      names.map(async (name) => {
+        if (!name) return null;
+
+        const projectPath = path.join(typeDir, name);
+
+        try {
+          const stat = await fse.stat(projectPath);
+
+          return {
+            name: name,
+            path: projectPath,
+            createdMs: stat.birthtimeMs,
+          } as CachedEntry;
+        } catch (error: Mixed) {
+          console.error(
+            boxen(error.message, {
+              title: error.name,
+              titleAlignment: 'center',
+              padding: 1,
+              margin: 1,
+              borderColor: 'red',
+            }),
+          );
+        }
+      }),
+    );
+
+    return result.filter((x): x is CachedEntry => x !== null);
+  }
+
+  public async __loadProjectFromCache(
+    cacheBasePath: string,
+    cacheName: string,
+    projectType: string,
+    desPath: string,
+  ): Promise<void> {
+    const entryPath = path.join(cacheBasePath, projectType, cacheName);
+
+    if (!fse.existsSync(entryPath)) {
+      const errorMessage = `Cache not found: ${entryPath}`;
+
+      console.error(
+        boxen(errorMessage, {
+          title: 'Cache Not Found',
+          titleAlignment: 'center',
+          padding: 1,
+          margin: 1,
+          borderColor: 'red',
+        }),
+      );
+
+      process.exit(0);
+    }
+
+    await fse.copy(entryPath, desPath);
   }
 }

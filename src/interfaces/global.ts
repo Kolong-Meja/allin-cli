@@ -49,7 +49,8 @@ export interface UpdateCheckResult {
   checkedAt: number;
 }
 
-export interface CacheType {
-  lastChecked?: number;
-  updates?: Record<string, { current: string; latest: string }>;
+export interface CachedEntry {
+  name: string;
+  path: string;
+  createdMs: number;
 }

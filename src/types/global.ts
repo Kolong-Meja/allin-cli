@@ -1,3 +1,4 @@
+import type { CachedEntry } from '@/interfaces/global.js';
 import type { OptionValues } from 'commander';
 import fs from 'fs';
 import type { Ora } from 'ora';
@@ -71,10 +72,13 @@ export type __GenerateProjectParams = __BaseParams & {
   projectName: string;
   projectType: string;
   projectDir: string;
+  isUsingCacheProject: boolean;
+  cachedEntries: CachedEntry[];
 };
 
 export type __SetupProjectParams = __BaseParams & {
   projectName: string;
+  projectType: string;
   selectedFramework: string;
   sourcePath: string;
   desPath: string;
