@@ -1,3 +1,4 @@
+import type { CachedEntry } from '@/interfaces/global.js';
 import type { OptionValues } from 'commander';
 import fs from 'fs';
 import type { Ora } from 'ora';
@@ -64,21 +65,20 @@ type __BaseParams = {
   spinner: Ora;
 };
 
-export type __BackendProjectTypeParams = __BaseParams & {
+export type __GenerateProjectParams = __BaseParams & {
   projectNameArg: Mixed;
   optionValues: OptionValues;
   templatesFiles: fs.Dirent<string>[];
   projectName: string;
   projectType: string;
   projectDir: string;
+  isUsingCacheProject: boolean;
+  cachedEntries: CachedEntry[];
 };
-
-export type __FrontendProjectTypeParams = __BackendProjectTypeParams;
-
-export type __FullStackProjectTypeParams = __BackendProjectTypeParams;
 
 export type __SetupProjectParams = __BaseParams & {
   projectName: string;
+  projectType: string;
   selectedFramework: string;
   sourcePath: string;
   desPath: string;
@@ -153,6 +153,13 @@ export type __AddReadmeParams = __BaseParams & {
   desPath: string;
 };
 
+export type __AddEnvParams = __BaseParams & {
+  optionValues: OptionValues;
+  projectName: string;
+  projectType: string;
+  desPath: string;
+};
+
 export type __SwitchPackageManagerParams = __BaseParams & {
   selectedPackageManager: string;
   projectName: string;
@@ -165,3 +172,12 @@ export type __AddDockerParams = __BaseParams & {
 };
 
 export type __AddDockerBakeParams = __AddDockerParams;
+
+export type __FrameworkCategory = 'frontend' | 'backend';
+
+export type __CreateProjectParams = {
+  projectName: Mixed;
+  projectDir: Mixed;
+  projectType: Mixed;
+  options: OptionValues;
+};

@@ -48,12 +48,8 @@ export async function generateProgram(): Promise<void> {
     )
     .option('--ver, --version <version>', 'Set the version of the project.')
     .option(
-      '--backend <backend>',
-      'Select the backend framework to use for the project.',
-    )
-    .option(
-      '--frontend <frontend>',
-      'Select the frontend framework to use for the project.',
+      '--template <template>',
+      'Select the template to use for the project.',
     )
     .option(
       '--pm, --package-manager <pm>',
@@ -72,6 +68,7 @@ export async function generateProgram(): Promise<void> {
       'Include Docker configuration files for containerized setup.',
       false,
     )
+    .option('--env', 'Generate .env file for project configuration.', false)
     .option(
       '--git',
       'Automatically initialize a Git repository and make the first commit.',
@@ -83,9 +80,14 @@ export async function generateProgram(): Promise<void> {
     )
     .summary('Action to create new project.')
     .description('Create new project.')
-    .action(async (name, directory, type, options) => {
+    .action(async (name, directory, type, options) => {      
       const command = CreateCommand.instance;
-      command.create(name, directory, type, options);
+      command.create({
+        projectName: name,
+        projectDir: directory,
+        projectType: type,
+        options: options,
+      });
     });
 
   program.helpOption(

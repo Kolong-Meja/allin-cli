@@ -40,3 +40,62 @@ export const __renewStringsIntoTitleCase = <T extends string[]>(s: T) => {
       .join(' ');
   });
 };
+
+export function __sanitizeProjectName(
+  raw: string,
+  maxLen: number = 70,
+): string {
+  if (!raw) return '';
+
+  let str = raw.normalize('NFKC').trim();
+  str = str.replace(/[\x00-\x1F\x7F]/g, '');
+  str = str.replace(/\s+/g, '-');
+  str = str.toLowerCase().slice(0, maxLen);
+  str = str.replace(/[^a-z0-9_-]+/g, '');
+  str = str.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
+
+  return str;
+}
+
+export function __isValidProjectName(
+  name: string,
+  minLen: number = 1,
+  maxLen: number = 70,
+): boolean {
+  if (!name) return false;
+  if (name.length < minLen || name.length > maxLen) return false;
+
+  return /^[a-z][a-z0-9_-]{0,69}$/.test(name);
+}
+
+export function __isLookLikePath(raw: string): boolean {
+  if (!raw) return false;
+
+  const s = raw.trim();
+
+  if (!s) return false;
+
+  if (s.startsWith('/') || s.startsWith('\\') || s.startsWith('~')) return true;
+
+  if (/^[a-zA-Z]:[\\/]/.test(s)) return true;
+
+  if (
+    s.includes('/') ||
+    s.includes('\\') ||
+    s.includes('..') ||
+    s.includes('./') ||
+    s.includes('../')
+  )
+    return true;
+
+  return false;
+}
+
+export function __isContainHarassmentWords(
+  value: string,
+  words: string[],
+): boolean {
+  const _isContainDirtyWord = words.some((e) => value.includes(e));
+
+  return _isContainDirtyWord;
+}

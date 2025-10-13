@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import type { OptionValues } from 'commander';
 import fs from 'fs';
 import {
-  HarassmentWordsDetectedError,
   PathNotFoundError,
   ProjectNotExistError,
   UnableOverwriteError,
@@ -76,16 +75,4 @@ export function __unidentifiedFramework(
     );
   }
   return;
-}
-
-export function __containHarassmentWords(value: string, words: string[]): void {
-  const _isContainDirtyWord = words.some((e) => value.includes(e));
-
-  if (_isContainDirtyWord) {
-    throw new HarassmentWordsDetectedError(
-      `${chalk.bold('Harassment words detected')}: ${chalk.bold(
-        value,
-      )} is a harassment word.`,
-    );
-  }
 }

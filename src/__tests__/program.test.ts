@@ -1,7 +1,7 @@
 /**
  * __tests__/program.test.ts
  */
-import type { Mixed } from '@/types/general.js';
+import type { Mixed } from '@/types/global.js';
 import { jest } from '@jest/globals';
 
 const mockCommand = {
@@ -139,13 +139,8 @@ describe('generateProgram()', () => {
     );
 
     expect(mockCommand.option).toHaveBeenCalledWith(
-      '--backend <backend>',
-      'Select the backend framework to use for the project.',
-    );
-
-    expect(mockCommand.option).toHaveBeenCalledWith(
-      '--frontend <frontend>',
-      'Select the frontend framework to use for the project.',
+      '--template <template>',
+      'Select the template to use for the project.',
     );
 
     const pmCall = mockCommand.option.mock.calls.find(
@@ -170,6 +165,12 @@ describe('generateProgram()', () => {
     expect(mockCommand.option).toHaveBeenCalledWith(
       '--dk, --docker',
       'Include Docker configuration files for containerized setup.',
+      false,
+    );
+
+    expect(mockCommand.option).toHaveBeenCalledWith(
+      '--env',
+      'Generate .env file for project configuration.',
       false,
     );
 

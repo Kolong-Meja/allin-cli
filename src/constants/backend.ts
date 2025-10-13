@@ -1,81 +1,5 @@
-import type { __BackendPackagesProps } from '@/types/general.js';
-
-const BACKEND_DEFAULT_DEPENDENCIES = {
-  packages: [
-    {
-      name: 'node-postgres',
-      originName: 'pg',
-    },
-    {
-      name: 'drizzle-orm',
-      originName: 'drizzle-orm',
-    },
-    {
-      name: 'drizzle-kit',
-      originName: 'drizzle-kit',
-    },
-    {
-      name: 'eslint',
-      originName: 'eslint',
-    },
-    {
-      name: 'prettier',
-      originName: 'prettier',
-    },
-    {
-      name: 'axios',
-      originName: 'axios',
-    },
-    {
-      name: 'dotenv',
-      originName: 'dotenv',
-    },
-    {
-      name: 'zod',
-      originName: 'zod',
-    },
-    {
-      name: 'graphql',
-      originName: 'graphql',
-    },
-    {
-      name: 'socket.io',
-      originName: 'socket.io',
-    },
-    {
-      name: 'redis',
-      originName: 'redis',
-    },
-    {
-      name: 'jsonwebtoken',
-      originName: 'jsonwebtoken',
-    },
-    {
-      name: 'swagger-jsdoc',
-      originName: 'swagger-jsdoc',
-    },
-    {
-      name: 'ky',
-      originName: 'ky',
-    },
-    {
-      name: '@paralleldrive/cuid2',
-      originName: '@paralleldrive/cuid2',
-    },
-    {
-      name: 'uuid',
-      originName: 'uuid',
-    },
-    {
-      name: 'jest',
-      originName: 'jest',
-    },
-    {
-      name: 'bcrypt',
-      originName: 'bcrypt',
-    },
-  ] as const,
-};
+import type { __BackendPackagesProps } from '@/types/global.js';
+import { BACKEND_DEFAULT_DEPENDENCIES } from '@/constants/default.js';
 
 export const EXPRESS_DEPENDENCIES: __BackendPackagesProps = {
   packages: [
@@ -128,7 +52,7 @@ export const EXPRESS_DEPENDENCIES: __BackendPackagesProps = {
       name: 'express-rate-limit',
       originName: 'express-rate-limit',
     },
-  ] as const,
+  ],
 };
 
 export const FASTIFY_DEPENDENCIES: __BackendPackagesProps = {
@@ -141,10 +65,6 @@ export const FASTIFY_DEPENDENCIES: __BackendPackagesProps = {
     {
       name: 'winston',
       originName: 'winston',
-    },
-    {
-      name: 'socket.io',
-      originName: 'socket.io',
     },
     {
       name: 'nodemon',
@@ -182,7 +102,7 @@ export const FASTIFY_DEPENDENCIES: __BackendPackagesProps = {
       name: '@fastify/swagger-ui',
       originName: '@fastify/swagger-ui',
     },
-  ] as const,
+  ],
 };
 
 export const NEST_DEPENDENCIES: __BackendPackagesProps = {
@@ -193,16 +113,8 @@ export const NEST_DEPENDENCIES: __BackendPackagesProps = {
       originName: 'winston',
     },
     {
-      name: 'bcrypt',
-      originName: 'bcrypt',
-    },
-    {
       name: 'cookie-parser',
       originName: 'cookie-parser',
-    },
-    {
-      name: 'socket.io',
-      originName: 'socket.io',
     },
     {
       name: 'helmet',
@@ -244,7 +156,7 @@ export const NEST_DEPENDENCIES: __BackendPackagesProps = {
       name: '@nestjs/swagger',
       originName: '@nestjs/swagger',
     },
-  ] as const,
+  ],
 };
 
 export const NODE_DEPENDENCIES: __BackendPackagesProps = {
@@ -255,28 +167,12 @@ export const NODE_DEPENDENCIES: __BackendPackagesProps = {
       originName: 'winston',
     },
     {
-      name: 'bcrypt',
-      originName: 'bcrypt',
-    },
-    {
-      name: 'socket.io',
-      originName: 'socket.io',
-    },
-    {
       name: '@apollo/server',
       originName: '@apollo/server',
     },
     {
-      name: 'graphql',
-      originName: 'graphql',
-    },
-    {
       name: 'ioredis',
       originName: 'ioredis',
-    },
-    {
-      name: 'redis',
-      originName: 'redis',
     },
     {
       name: 'connect-redis',
@@ -306,7 +202,7 @@ export const NODE_DEPENDENCIES: __BackendPackagesProps = {
       name: 'swagger-ui-express',
       originName: 'swagger-ui-express',
     },
-  ] as const,
+  ],
 };
 
 export const KOA_DEPENDENCIES: __BackendPackagesProps = {
@@ -361,14 +257,10 @@ export const KOA_DEPENDENCIES: __BackendPackagesProps = {
       originName: '@apollo/server',
     },
     {
-      name: 'graphql',
-      originName: 'graphql',
-    },
-    {
       name: 'nodemon',
       originName: 'nodemon',
     },
-  ] as const,
+  ],
 };
 
 export const FEATHER_DEPENDENCIES: __BackendPackagesProps = {
@@ -441,5 +333,5 @@ export const FEATHER_DEPENDENCIES: __BackendPackagesProps = {
       name: 'jest',
       originName: 'jest',
     },
-  ] as const,
+  ],
 };

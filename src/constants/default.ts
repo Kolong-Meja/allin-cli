@@ -1,189 +1,157 @@
-import type {
-  __DefaultFrameworkProps,
-  __DefaultLicenseProps,
-} from '@/types/general.js';
+import type { Mixed } from '@/types/global.js';
 
-export const PROJECT_TYPES = ['backend', 'frontend'] as const;
-
-export const BACKEND_FRAMEWORKS: __DefaultFrameworkProps = {
-  frameworks: [
+export const FRONTEND_DEFAULT_DEPENDENCIES = {
+  packages: [
     {
-      name: 'express',
-      actualName: 'Express.js',
-      templateName: 'express-project',
-      language: 'js',
-      path: 'templates/backend/express-project',
+      name: 'eslint',
+      originName: 'eslint',
     },
     {
-      name: 'fastify',
-      actualName: 'Fastify',
-      templateName: 'fastify-project',
-      language: 'js',
-      path: 'templates/backend/fastify-project',
+      name: 'prettier',
+      originName: 'prettier',
     },
     {
-      name: 'feather',
-      actualName: 'FeatherJS',
-      templateName: 'feather-project',
-      language: 'ts',
-      path: 'templates/backend/feather-project',
+      name: 'dotenv',
+      originName: 'dotenv',
     },
     {
-      name: 'nest',
-      actualName: 'NestJS',
-      templateName: 'nest-project',
-      language: 'ts',
-      path: 'templates/backend/nest-project',
+      name: 'axios',
+      originName: 'axios',
     },
     {
-      name: 'node',
-      actualName: 'Node.js',
-      templateName: 'node-project',
-      language: 'js',
-      path: 'templates/backend/node-project',
+      name: 'ky',
+      originName: 'ky',
     },
     {
-      name: 'koa',
-      actualName: 'Koa',
-      templateName: 'koa-project',
-      language: 'js',
-      path: 'templates/backend/koa-project',
+      name: 'zod',
+      originName: 'zod',
     },
-  ] as const,
+    {
+      name: 'jest',
+      originName: 'jest',
+    },
+    {
+      name: 'playwright',
+      originName: 'playwright',
+    },
+    {
+      name: 'chart.js',
+      originName: 'chart.js',
+    },
+    {
+      name: 'gsap',
+      originName: 'gsap',
+    },
+    {
+      name: 'animejs',
+      originName: 'animejs',
+    },
+    {
+      name: 'tailwindcss',
+      originName: 'tailwindcss',
+    },
+  ],
 };
 
-export const FRONTEND_FRAMEWORKS: __DefaultFrameworkProps = {
-  frameworks: [
+export const BACKEND_DEFAULT_DEPENDENCIES = {
+  packages: [
     {
-      name: 'next',
-      actualName: 'Next.js',
-      templateName: 'next-project',
-      language: 'ts',
-      path: 'templates/frontend/next-project',
+      name: 'node-postgres',
+      originName: 'pg',
     },
     {
-      name: 'vue',
-      actualName: 'Vue.js',
-      templateName: 'vue-project',
-      language: 'ts',
-      path: 'templates/frontend/vue-project',
+      name: 'drizzle-orm',
+      originName: 'drizzle-orm',
     },
     {
-      name: 'svelte',
-      actualName: 'Svelte',
-      templateName: 'svelte-project',
-      language: 'ts',
-      path: 'templates/frontend/svelte-project',
+      name: 'drizzle-kit',
+      originName: 'drizzle-kit',
     },
     {
-      name: 'astro',
-      actualName: 'Astro.js',
-      templateName: 'astro-project',
-      language: 'ts',
-      path: 'templates/frontend/astro-project',
+      name: 'eslint',
+      originName: 'eslint',
     },
     {
-      name: 'solid',
-      actualName: 'SolidJS',
-      templateName: 'solid-project',
-      language: 'ts',
-      path: 'templates/frontend/solid-project',
+      name: 'prettier',
+      originName: 'prettier',
     },
     {
-      name: 'vanilla',
-      actualName: 'VanillaJS',
-      templateName: 'vanilla-project',
-      language: 'js',
-      path: 'templates/frontend/vanilla-project',
+      name: 'axios',
+      originName: 'axios',
     },
-  ] as const,
+    {
+      name: 'dotenv',
+      originName: 'dotenv',
+    },
+    {
+      name: 'zod',
+      originName: 'zod',
+    },
+    {
+      name: 'graphql',
+      originName: 'graphql',
+    },
+    {
+      name: 'socket.io',
+      originName: 'socket.io',
+    },
+    {
+      name: 'redis',
+      originName: 'redis',
+    },
+    {
+      name: 'jsonwebtoken',
+      originName: 'jsonwebtoken',
+    },
+    {
+      name: 'swagger-jsdoc',
+      originName: 'swagger-jsdoc',
+    },
+    {
+      name: 'ky',
+      originName: 'ky',
+    },
+    {
+      name: '@paralleldrive/cuid2',
+      originName: '@paralleldrive/cuid2',
+    },
+    {
+      name: 'uuid',
+      originName: 'uuid',
+    },
+    {
+      name: 'jest',
+      originName: 'jest',
+    },
+    {
+      name: 'bcrypt',
+      originName: 'bcrypt',
+    },
+  ],
 };
 
-export const LICENSES: __DefaultLicenseProps = {
-  licenses: [
-    {
-      name: 'apache-2',
-      actualName: 'Apache 2.0 License',
-      templateName: 'apache-2.0',
-      path: 'templates/licenses/apache-2.0',
-    },
-    {
-      name: 'bsd-2',
-      actualName: 'BSD 2-Clause License',
-      templateName: 'bsd-2-clause',
-      path: 'templates/licenses/bsd-2-clause',
-    },
-    {
-      name: 'bsd-3',
-      actualName: 'BSD 3-Clause License',
-      templateName: 'bsd-3-clause',
-      path: 'templates/licenses/bsd-3-clause',
-    },
-    {
-      name: 'gpl-3',
-      actualName: 'GNU General Public License v3.0',
-      templateName: 'gpl-3.0',
-      path: 'templates/licenses/gpl-3.0',
-    },
-    {
-      name: 'isc',
-      actualName: 'ISC License',
-      templateName: 'isc',
-      path: 'templates/licenses/isc',
-    },
-    {
-      name: 'lgpl-3',
-      actualName: 'GNU Lesser General Public License v3.0',
-      templateName: 'lgpl-3.0',
-      path: 'templates/licenses/lgpl-3.0',
-    },
-    {
-      name: 'mit',
-      actualName: 'MIT License',
-      templateName: 'mit',
-      path: 'templates/licenses/mit',
-    },
-    {
-      name: 'unlicense',
-      actualName: 'Unlicense',
-      templateName: 'unlicense',
-      path: 'templates/licenses/unlicense',
-    },
-  ] as const,
+export const TYPESCRIPT_DEFAULT_DEPENDENCIES: {
+  [key: string]: Mixed;
+} = {
+  backend: {
+    express: ['typescript', '@types/node', '@types/express'],
+    fastify: ['typescript', '@types/node'],
+    feather: ['typescript', '@types/node', 'ts-node'],
+    nest: ['typescript', '@types/node', '@types/express'],
+    node: ['typescript', '@types/node'],
+    koa: ['typescript', '@types/node', '@types/koa'],
+  },
+  frontend: {
+    next: ['typescript', '@types/node', '@types/react', '@types/react-dom'],
+    vue: [
+      'typescript',
+      '@types/node',
+      '@vue/tsconfig',
+      'vue-tsc',
+      'npm-run-all2',
+    ],
+    svelte: ['typescript', '@types/node', 'svelte-check'],
+    solid: ['typescript', '@types/node'],
+    vanilla: ['typescript', '@types/node'],
+  },
 };
-
-export const DIRTY_WORDS = [
-  'fuck',
-  'shit',
-  'bitch',
-  'asshole',
-  'dick',
-  'pussy',
-  'crap',
-  'motherfucker',
-  'slut',
-  'whore',
-  'goddamn',
-  'bollocks',
-  'wanker',
-  'twat',
-  'bugger',
-  'bloody',
-  'sod off',
-  'arsehole',
-  'git',
-  'minger',
-  'knob',
-  'knobhead',
-  'tai',
-  'pante',
-  'memek',
-  'kontol',
-  'bego',
-  'tolol',
-  'bajingan',
-  'goblok',
-  'asu',
-  'bangsat',
-  'kampret',
-];

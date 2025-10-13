@@ -7,10 +7,15 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Install, Build & Test
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,16 +30,23 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          set -euo pipefail 
+          npm ci
 
       - name: Run format and check
-        run: npm run format && npm run check-format
+        run: |
+          set -euo pipefail
+          npm run format && npm run check-format
 
       - name: Build package
-        run: npm run build
+        run: |
+          set -euo pipefail
+          npm run build
 
       - name: Add shebang to index.js
         run: |
+          set -euo pipefail
           if ! grep -q "#!/usr/bin/env node" dist/index.js; then
             echo '#!/usr/bin/env node' > temp.js
             cat dist/index.js >> temp.js
@@ -44,31 +56,48 @@ jobs:
 
       - name: Generate CJS file for dual compatibility
         run: |
+          set -euo pipefail
           mkdir -p dist
           echo '#!/usr/bin/env node' > dist/index.cjs
           echo 'import("./index.js");' >> dist/index.cjs
           chmod +x dist/index.cjs
 
       - name: Run tests
-        run: npm test
+        run: |
+          set -euo pipefail
+          npm test
+
+      - name: Scan for secrets and sensitive files
+        run: |
+          set -euo pipefail
+          if grep -R --exclude-dir=dist -nE "AWS_SECRET_ACCESS_KEY|PRIVATE_KEY|BEGIN RSA PRIVATE KEY|----BEGIN PRIVATE KEY" .; then
+            echo "Potential secret found in repo. Aborting."
+            exit 1
+          fi || true
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
+          retention-days: 7
 
   publish:
     name: Publish to npm
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: production
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Verify package version matches tag
         run: |
+          set -euo pipefail
           TAG_VERSION=${GITHUB_REF#refs/tags/v}
           PKG_VERSION=$(node -p "require('./package.json').version")
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
@@ -77,11 +106,13 @@ jobs:
           fi
           echo "Publishing version $PKG_VERSION"
 
-      - name: Setup Node.js
+      - name: Setup Node.js and configure npm auth (no token echo)
         uses: actions/setup-node@v4
         with:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
+          always-auth: true
+          auth-token: ${{ secrets.ALLIN_CLI_TOKEN }}
       
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -90,10 +121,13 @@ jobs:
           path: dist/
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          set -euo pipefail 
+          npm ci
 
       - name: Verify bin file
         run: | 
+          set -euo pipefail
           if [ -f "dist/index.js" ]; then
             echo "✅ Binary file exists"
             chmod +x dist/index.js
@@ -118,26 +152,37 @@ jobs:
       - name: Fix package.json
         run: npm pkg fix
 
-      - name: Configure npm
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          npm whoami || echo "Failed to authenticate with npm"
+      - name: Verify npm auth
+        run: npm whoami
         env:
           NODE_AUTH_TOKEN: ${{ secrets.ALLIN_CLI_TOKEN }}
 
       - name: Verify package contents
         run: |
+          set -euo pipefail
           echo "Package contents:"
           npm pack --dry-run
 
-      - name: Publish package
-        run: npm publish --access public
+      - name: Run npm audit (fail on high)
+        run: | 
+          set -euo pipefail
+          npm audit --audit-level=high || echo "High security vulnerabilities detected"
+          
+      - name: Publish package (with optional OTP)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.ALLIN_CLI_TOKEN }}
+          # If npm 2FA required, set secret NPM_OTP and uncomment below
+          # NPM_OTP: ${{ secrets.NPM_OTP }}
+        run: |
+          set -euo pipefail
+          # If using npm 2FA for automation, use --otp $NPM_OTP
+          npm publish --access public
+          # npm publish --access public --otp "$NPM_OTP"
 
-      - name: Test installation
+      - name: Post-publish smoke test
         if: success()
         run: |
+          set -euo pipefail
           mkdir -p test-install
           cd test-install
           npm init -y

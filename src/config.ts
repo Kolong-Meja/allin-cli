@@ -25,6 +25,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export const __basePath = path.resolve(__dirname, '..');
 
+export const CACHE_BASE_PATH = path.join(__basePath, '.cache');
+export const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 dotenv.config({ path: path.join(__basePath, '.env') });
 
 export const __config = (() => {
