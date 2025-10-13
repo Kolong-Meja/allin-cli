@@ -6,6 +6,10 @@ export function isNull(val: unknown): val is null {
   return val === null;
 }
 
+export function hasValue(val?: string) {
+  return typeof val === 'string' && val.trim().length > 0;
+}
+
 export function isFrontend(val: unknown): val is 'frontend' {
   return val === 'frontend';
 }

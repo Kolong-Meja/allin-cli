@@ -29,7 +29,7 @@ import type {
   __UseTypescriptParams,
   Mixed,
 } from '@/types/global.js';
-import { isBackend, isUndefined } from '@/utils/guard.js';
+import { hasValue, isBackend, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import { execa } from 'execa';
@@ -149,8 +149,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     }
 
     if (
-      params.optionValues.author !== '' ||
-      params.optionValues.description !== ''
+      hasValue(params.optionValues.author) ||
+      hasValue(params.optionValues.description) ||
+      hasValue(params.optionValues.version)
     ) {
       await this.__updatePackageMetadata({
         spinner: params.spinner,
@@ -829,15 +830,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     const packageJsonFilePath = path.join(params.desPath, 'package.json');
     const packageJsonFile = await fse.readJSON(packageJsonFilePath);
-    packageJsonFile.author = isUndefined(params.optionValues.author)
-      ? ''
-      : params.optionValues.author;
-    packageJsonFile.description = isUndefined(params.optionValues.description)
-      ? ''
-      : params.optionValues.description;
-    packageJsonFile.version = isUndefined(params.optionValues.version)
-      ? '1.0.0'
-      : params.optionValues.version;
+    packageJsonFile.author = params.optionValues.author;
+    packageJsonFile.description = params.optionValues.description;
+    packageJsonFile.version = params.optionValues.version;
 
     await fse.writeJSON(packageJsonFilePath, packageJsonFile, { spaces: 2 });
 

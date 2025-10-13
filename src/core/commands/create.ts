@@ -11,7 +11,7 @@ import {
   __sanitizeProjectName,
 } from '@/utils/string.js';
 
-import { __basePath, CACHE_BASE_PATH } from '@/config.js';
+import { __basePath, __userRealName, CACHE_BASE_PATH } from '@/config.js';
 import {
   DIRTY_WORDS,
   PROJECT_TYPES,
@@ -202,6 +202,19 @@ export class CreateCommand implements CreateCommandBuilder {
         default: false,
         when: () => cachedForType.length > 0,
       });
+
+      if (!reuseChoicePrompt.reuseProject) {
+        console.log(
+          boxen(
+            `Allright ${chalk.bold((await __userRealName()).split(' ')[0])}, thanks for the confirmation.`,
+            {
+              padding: 1,
+              margin: 1,
+              borderColor: 'blue',
+            },
+          ),
+        );
+      }
 
       switch (userProjectType) {
         case 'backend':

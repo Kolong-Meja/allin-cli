@@ -67,10 +67,6 @@ export const FASTIFY_DEPENDENCIES: __BackendPackagesProps = {
       originName: 'winston',
     },
     {
-      name: 'socket.io',
-      originName: 'socket.io',
-    },
-    {
       name: 'nodemon',
       originName: 'nodemon',
     },
@@ -117,16 +113,8 @@ export const NEST_DEPENDENCIES: __BackendPackagesProps = {
       originName: 'winston',
     },
     {
-      name: 'bcrypt',
-      originName: 'bcrypt',
-    },
-    {
       name: 'cookie-parser',
       originName: 'cookie-parser',
-    },
-    {
-      name: 'socket.io',
-      originName: 'socket.io',
     },
     {
       name: 'helmet',
@@ -179,28 +167,12 @@ export const NODE_DEPENDENCIES: __BackendPackagesProps = {
       originName: 'winston',
     },
     {
-      name: 'bcrypt',
-      originName: 'bcrypt',
-    },
-    {
-      name: 'socket.io',
-      originName: 'socket.io',
-    },
-    {
       name: '@apollo/server',
       originName: '@apollo/server',
     },
     {
-      name: 'graphql',
-      originName: 'graphql',
-    },
-    {
       name: 'ioredis',
       originName: 'ioredis',
-    },
-    {
-      name: 'redis',
-      originName: 'redis',
     },
     {
       name: 'connect-redis',
@@ -283,10 +255,6 @@ export const KOA_DEPENDENCIES: __BackendPackagesProps = {
     {
       name: '@apollo/server',
       originName: '@apollo/server',
-    },
-    {
-      name: 'graphql',
-      originName: 'graphql',
     },
     {
       name: 'nodemon',

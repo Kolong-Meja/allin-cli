@@ -1,4 +1,4 @@
-import { __basePath, CACHE_BASE_PATH } from '@/config.js';
+import { __basePath, __userRealName, CACHE_BASE_PATH } from '@/config.js';
 import { FRONTEND_FRAMEWORKS, templatesMap } from '@/constants/global.js';
 import {
   PathNotFoundError,
@@ -225,6 +225,19 @@ export class FrontendGenerator implements GeneratorBuilder {
 
       const selectedFrontendDependencies =
         selectDependenciesQuestion[selectedFrontendFramework.promptKey];
+
+      if (selectedFrontendDependencies < 1) {
+        console.log(
+          boxen(
+            `To be honest, you can install the dependencies later, right ${chalk.bold((await __userRealName()).split(' ')[0])}?`,
+            {
+              padding: 1,
+              margin: 1,
+              borderColor: 'blue',
+            },
+          ),
+        );
+      }
 
       await microGenerator.setupInstallation({
         spinner: params.spinner,
