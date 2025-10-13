@@ -204,12 +204,12 @@ describe('generateProgram()', () => {
 
     await createCb('myapp', './dir', 'backend', { foo: 'bar' });
 
-    expect(mockCreateCommand).toHaveBeenCalledWith(
-      'myapp',
-      './dir',
-      'backend',
-      { foo: 'bar' },
-    );
+    expect(mockCreateCommand).toHaveBeenCalledWith({
+      projectName: 'myapp',
+      projectDir: './dir',
+      projectType: 'backend',
+      options: { foo: 'bar' },
+    });
   });
 
   it('configures global helpOption, helpCommand and invokes parse()', async () => {
