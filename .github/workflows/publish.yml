@@ -70,10 +70,14 @@ jobs:
       - name: Scan for secrets and sensitive files
         run: |
           set -euo pipefail
-          if grep -R --exclude-dir=dist -nE "AWS_SECRET_ACCESS_KEY|PRIVATE_KEY|BEGIN RSA PRIVATE KEY|----BEGIN PRIVATE KEY" .; then
+          if grep -R --binary-files=without-match -nE \
+            --exclude-dir={dist,node_modules,.git,.github} \
+            --include='*.js' --include='*.ts' --include='*.json' --include='*.env' \
+            --include='*.yml' --include='*.yaml' --include='*.sh' \
+            "AWS_SECRET_ACCESS_KEY|PRIVATE_KEY|BEGIN RSA PRIVATE KEY|----BEGIN PRIVATE KEY" .; then
             echo "Potential secret found in repo. Aborting."
             exit 1
-          fi || true
+          fi
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
