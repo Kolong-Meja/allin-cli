@@ -23,7 +23,9 @@ export interface FrameworkConfig extends FrameworkMeta {
 }
 
 export interface MicroGeneratorBuilder {
-  setupProject(params: __SetupProjectParams): Promise<() => Promise<void>>;
+  setupProject(
+    params: __SetupProjectParams,
+  ): Promise<(() => Promise<void>) | undefined>;
   setupDocker(params: __SetupDockerParams): Promise<void>;
   setupOthers(params: __SetupOthersParams): Promise<void>;
   setupInstallation(params: __SetupInstallationParams): Promise<void>;

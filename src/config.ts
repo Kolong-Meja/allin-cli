@@ -46,7 +46,7 @@ export const __config = (() => {
         : 'Faisal Ramadhan';
     },
     get appVersion() {
-      return process.env.APP_VERSION ? process.env.APP_VERSION : '1.0.17';
+      return process.env.APP_VERSION ? process.env.APP_VERSION : '1.0.21';
     },
     get appLicense() {
       return process.env.APP_LICENSE ? process.env.APP_LICENSE : 'MIT License';

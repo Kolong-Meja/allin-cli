@@ -190,6 +190,7 @@ export class CreateCommand implements CreateCommandBuilder {
       const userProjectDir = resolveProjectDir();
       __pathNotFound(userProjectDir);
 
+      // ini akar masalahnya
       const cachedForType = await this.microGenerator.__listCachedProjects(
         CACHE_BASE_PATH,
         userProjectType,
@@ -203,7 +204,10 @@ export class CreateCommand implements CreateCommandBuilder {
         when: () => cachedForType.length > 0,
       });
 
-      if (!reuseChoicePrompt.reuseProject) {
+      if (
+        !reuseChoicePrompt.reuseProject &&
+        typeof reuseChoicePrompt.reuseProject !== 'undefined'
+      ) {
         console.log(
           boxen(
             `Allright ${chalk.bold((await __userRealName()).split(' ')[0])}, thanks for the confirmation.`,
@@ -315,6 +319,12 @@ export class CreateCommand implements CreateCommandBuilder {
   }
 
   private async __removeUnusedProject(tempPath: string) {
+    const isPathExist = await fse.pathExists(tempPath);
+
+    if (!isPathExist) {
+      await fse.ensureDir(tempPath);
+    }
+
     const tempSubFolders = await fse.readdir(tempPath, { withFileTypes: true });
 
     for (const folder of tempSubFolders) {
@@ -337,6 +347,4 @@ export class CreateCommand implements CreateCommandBuilder {
       }
     }
   }
-
-  private async __generateProjectNonCache() {}
 }
