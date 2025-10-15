@@ -73,8 +73,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       }
     }
 
-    const tempDir = path.join(__basePath, 'templates/temp', params.projectName);
-
+    const tempDir = path.join(
+      __basePath,
+      'templates',
+      'temp',
+      params.projectName,
+    );
+    await fse.ensureDir(tempDir);
     await fse.copy(params.sourcePath, tempDir);
 
     return async () => {
@@ -853,7 +858,11 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     cacheBasePath: string,
     cacheTtlMs: number,
   ): Promise<void> {
-    if (!fse.existsSync(cacheBasePath)) return;
+    const isPathExist = await fse.pathExists(cacheBasePath);
+
+    if (!isPathExist) {
+      await fse.ensureDir(cacheBasePath);
+    }
 
     const types = await fse.readdir(cacheBasePath);
     const now = Date.now();
@@ -893,7 +902,6 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     await this.__ensureCacheReady(cacheBasePath, cacheTtlMs);
 
     const typeDir = path.join(cacheBasePath, projectType);
-
     await fse.ensureDir(typeDir);
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -909,11 +917,16 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     cacheBasePath: string,
     projectType: string,
   ): Promise<CachedEntry[]> {
-    if (!cacheBasePath || !projectType) return [];
+    const isPathExist = await fse.pathExists(cacheBasePath);
+
+    if (!isPathExist) {
+      await fse.ensureDir(cacheBasePath);
+    }
+
+    if (!projectType) return [];
 
     const typeDir = path.join(cacheBasePath, projectType);
-
-    if (!fse.existsSync(typeDir)) return [];
+    await fse.ensureDir(typeDir);
 
     const names = await fse.readdir(typeDir);
     const result = await Promise.all(
@@ -954,13 +967,10 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     desPath: string,
   ): Promise<void> {
     const entryPath = path.join(cacheBasePath, projectType, cacheName);
-
-    if (!fse.existsSync(entryPath)) {
-      const errorMessage = `Cache not found: ${entryPath}`;
-
+    await fse.ensureDir(entryPath).catch((error: Mixed) => {
       console.error(
-        boxen(errorMessage, {
-          title: 'Cache Not Found',
+        boxen(error.message, {
+          title: error.name,
           titleAlignment: 'center',
           padding: 1,
           margin: 1,
@@ -969,7 +979,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       );
 
       process.exit(0);
-    }
+    });
 
     await fse.copy(entryPath, desPath);
   }

@@ -37,7 +37,10 @@ export class BackendGenerator implements GeneratorBuilder {
   }
 
   public async generate(params: __GenerateProjectParams) {
-    if (params.isUsingCacheProject !== false) {
+    if (
+      params.isUsingCacheProject !== false &&
+      params.cachedEntries.length > 0
+    ) {
       const cacheProjectChoices = params.cachedEntries.map((c) => c.name);
       const chosenProject = await inquirer.prompt({
         name: 'selectedCachedProject',
@@ -57,7 +60,7 @@ export class BackendGenerator implements GeneratorBuilder {
       }
 
       const desPath = path.join(params.projectDir, params.projectName);
-      const isPathExist = fs.existsSync(desPath);
+      const isPathExist = await fse.pathExists(desPath);
 
       if (isPathExist) {
         await fse.remove(desPath);
