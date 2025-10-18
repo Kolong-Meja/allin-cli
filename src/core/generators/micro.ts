@@ -1,4 +1,9 @@
-import { __basePath, CACHE_BASE_PATH, CACHE_TTL_MS } from '@/config.js';
+import {
+  __basePath,
+  CACHE_BASE_PATH,
+  CACHE_TTL_MS,
+  INSTALL_TIMEOUT_MS,
+} from '@/config.js';
 import { TYPESCRIPT_DEFAULT_DEPENDENCIES } from '@/constants/default.js';
 import {
   BACKEND_FRAMEWORKS,
@@ -29,11 +34,15 @@ import type {
   __UseTypescriptParams,
   Mixed,
 } from '@/types/global.js';
-import { hasValue, isBackend, isUndefined } from '@/utils/guard.js';
+import {
+  hasValue,
+  isBackend,
+  isEmptyString,
+  isUndefined,
+} from '@/utils/guard.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import { execa } from 'execa';
-import fs from 'fs';
 import fse from 'fs-extra';
 import inquirer from 'inquirer';
 import type { Ora } from 'ora';
@@ -53,9 +62,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   public async setupProject(params: __SetupProjectParams) {
-    await this.__ensureCacheReady(CACHE_BASE_PATH, CACHE_TTL_MS);
+    await this.__checkCacheReady(CACHE_BASE_PATH, CACHE_TTL_MS);
 
-    const isPathExist = fs.existsSync(params.desPath);
+    const isPathExist = fse.existsSync(params.desPath);
 
     if (params.optionValues.force && isPathExist) {
       const forceOverwriteProjectConfirmation = await inquirer.prompt({
@@ -87,7 +96,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       await fse.remove(tempDir);
 
       try {
-        await this.__storeProjectInCache(
+        await this.__storeCachedProject(
           CACHE_BASE_PATH,
           CACHE_TTL_MS,
           params.projectType,
@@ -132,7 +141,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     if (
       params.optionValues.packageManager &&
-      params.optionValues.packageManager !== ''
+      !isEmptyString(params.optionValues.packageManager)
     ) {
       await this.__switchPackageManager({
         spinner: params.spinner,
@@ -454,7 +463,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     await execa(executeChangingPmCommand, ['install'], {
       cwd: params.desPath,
-      stdio: 'inherit',
+      timeout: INSTALL_TIMEOUT_MS,
+      killSignal: 'SIGTERM',
+      stdio: 'pipe',
     });
   }
 
@@ -476,7 +487,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     const frameworkPath = path.join(__basePath, frameworkFile.path);
 
-    const frameworkFiles = fs.readdirSync(frameworkPath, {
+    const frameworkFiles = fse.readdirSync(frameworkPath, {
       withFileTypes: true,
     });
 
@@ -564,12 +575,12 @@ export class MicroGenerator implements MicroGeneratorBuilder {
         ];
 
     for (const [__sourcePath, __desPath] of renamePairs) {
-      if (fs.existsSync(__sourcePath)) {
+      if (fse.existsSync(__sourcePath)) {
         params.spinner.start(
           `Renaming ${chalk.bold(__sourcePath)} to ${chalk.bold(__desPath)}.`,
         );
 
-        fs.renameSync(__sourcePath, __desPath);
+        fse.renameSync(__sourcePath, __desPath);
 
         params.spinner.succeed(
           `Renamed ${chalk.bold(__sourcePath)} → ${chalk.bold(__desPath)}.`,
@@ -589,7 +600,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
     __pathNotFound(dockerTemplatesPath);
 
-    const dockerTemplates = fs.readdirSync(dockerTemplatesPath, {
+    const dockerTemplates = fse.readdirSync(dockerTemplatesPath, {
       withFileTypes: true,
     });
 
@@ -617,7 +628,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
     __pathNotFound(readmeTemplatesPath);
 
-    const readmeTemplates = fs.readdirSync(readmeTemplatesPath, {
+    const readmeTemplates = fse.readdirSync(readmeTemplatesPath, {
       withFileTypes: true,
     });
 
@@ -642,7 +653,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const envTemplatesPath = path.join(__basePath, 'templates/addons/config');
     __pathNotFound(envTemplatesPath);
 
-    const envTemplates = fs.readdirSync(envTemplatesPath, {
+    const envTemplates = fse.readdirSync(envTemplatesPath, {
       withFileTypes: true,
     });
 
@@ -679,10 +690,16 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       if (params.selectedPackageManager === 'npm') {
         await execa(executeInstallBasedOnPm, ['install', '-D', p], {
           cwd: params.desPath,
+          timeout: INSTALL_TIMEOUT_MS,
+          killSignal: 'SIGTERM',
+          stdio: 'pipe',
         });
       } else {
         await execa(executeInstallBasedOnPm, ['add', '-D', p], {
           cwd: params.desPath,
+          timeout: INSTALL_TIMEOUT_MS,
+          killSignal: 'SIGTERM',
+          stdio: 'pipe',
         });
       }
 
@@ -703,13 +720,16 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
 
     for (const p of params.selectedDependencies) {
-      params.spinner.start(`Start installing ${chalk.bold(p)} dependency.`);
+      params.spinner.start(`Start installing ${chalk.bold(p)} dependency`);
 
       await execa(executeInstallBasedOnPm, ['install', '--save', p], {
         cwd: params.desPath,
+        timeout: INSTALL_TIMEOUT_MS,
+        killSignal: 'SIGTERM',
+        stdio: 'pipe',
       });
 
-      params.spinner.succeed(`Installing ${chalk.bold(p)} dependency succeed.`);
+      params.spinner.succeed(`Installing ${chalk.bold(p)} dependency succeed`);
     }
 
     const isPrettierSelected = params.selectedDependencies.includes('prettier');
@@ -722,7 +742,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       );
       __pathNotFound(prettierTemplatesPath);
 
-      const dockerTemplates = fs.readdirSync(prettierTemplatesPath, {
+      const dockerTemplates = fse.readdirSync(prettierTemplatesPath, {
         withFileTypes: true,
       });
 
@@ -846,15 +866,15 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
   }
 
-  private async __ensureCacheReady(
+  private async __checkCacheReady(
     cacheBasePath: string,
     cacheTtlMs: number,
   ): Promise<void> {
     await fse.ensureDir(cacheBasePath);
-    await this.__removeExpiredCache(cacheBasePath, cacheTtlMs);
+    await this.__clearCache(cacheBasePath, cacheTtlMs);
   }
 
-  private async __removeExpiredCache(
+  private async __clearCache(
     cacheBasePath: string,
     cacheTtlMs: number,
   ): Promise<void> {
@@ -892,14 +912,14 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     }
   }
 
-  private async __storeProjectInCache(
+  private async __storeCachedProject(
     cacheBasePath: string,
     cacheTtlMs: number,
     projectType: string,
     srcPath: string,
     nameBase: string,
   ): Promise<string> {
-    await this.__ensureCacheReady(cacheBasePath, cacheTtlMs);
+    await this.__checkCacheReady(cacheBasePath, cacheTtlMs);
 
     const typeDir = path.join(cacheBasePath, projectType);
     await fse.ensureDir(typeDir);
@@ -913,7 +933,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     return desPath;
   }
 
-  public async __listCachedProjects(
+  public async __getListCachedProjects(
     cacheBasePath: string,
     projectType: string,
   ): Promise<CachedEntry[]> {
@@ -960,13 +980,14 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     return result.filter((x): x is CachedEntry => x !== null);
   }
 
-  public async __loadProjectFromCache(
+  public async __loadCachedProject(
     cacheBasePath: string,
     cacheName: string,
     projectType: string,
     desPath: string,
   ): Promise<void> {
     const entryPath = path.join(cacheBasePath, projectType, cacheName);
+
     await fse.ensureDir(entryPath).catch((error: Mixed) => {
       console.error(
         boxen(error.message, {

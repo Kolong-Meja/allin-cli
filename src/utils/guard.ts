@@ -6,6 +6,10 @@ export function isNull(val: unknown): val is null {
   return val === null;
 }
 
+export function isEmptyString(val: string): val is '' {
+  return val === '';
+}
+
 export function hasValue(val?: string) {
   return typeof val === 'string' && val.trim().length > 0;
 }

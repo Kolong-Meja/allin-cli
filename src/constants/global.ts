@@ -2,7 +2,6 @@ import type { FrameworkConfig, FrameworkMeta } from '@/interfaces/global.js';
 import type {
   __DefaultFrameworkProps,
   __DefaultLicenseProps,
-  Mixed,
 } from '@/types/global.js';
 import {
   EXPRESS_DEPENDENCIES,

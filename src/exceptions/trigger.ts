@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import type { OptionValues } from 'commander';
-import fs from 'fs';
+import fse from 'fs-extra';
 import {
   PathNotFoundError,
   ProjectNotExistError,
@@ -10,7 +10,7 @@ import {
 } from './error.js';
 
 export function __pathNotFound(path: string): void {
-  if (!fs.existsSync(path))
+  if (!fse.existsSync(path))
     throw new PathNotFoundError(
       `${chalk.bold('Path not found')}: ${chalk.bold(path)} path is not exist.`,
     );
@@ -36,7 +36,7 @@ export function __unableOverwriteProject(
   path: string,
   optionValues: OptionValues,
 ): void {
-  if (fs.existsSync(path) && !optionValues.force)
+  if (fse.existsSync(path) && !optionValues.force)
     throw new UnableOverwriteError(
       `${chalk.bold('Unable to overwrite')}: ${chalk.bold(
         path,
