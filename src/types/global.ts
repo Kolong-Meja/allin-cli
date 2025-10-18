@@ -1,7 +1,7 @@
 import type { CachedEntry } from '@/interfaces/global.js';
 import type { OptionValues } from 'commander';
-import fs from 'fs';
 import type { Ora } from 'ora';
+import fse from 'fs-extra';
 
 export type Mixed =
   | string
@@ -68,7 +68,7 @@ type __BaseParams = {
 export type __GenerateProjectParams = __BaseParams & {
   projectNameArg: Mixed;
   optionValues: OptionValues;
-  templatesFiles: fs.Dirent<string>[];
+  templatesFiles: fse.Dirent<string>[];
   projectName: string;
   projectType: string;
   projectDir: string;

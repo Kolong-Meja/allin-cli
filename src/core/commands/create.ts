@@ -23,7 +23,6 @@ import type { __CreateProjectParams, Mixed } from '@/types/global.js';
 import { isNull, isUndefined } from '@/utils/guard.js';
 import boxen from 'boxen';
 import chalk from 'chalk';
-import fs from 'fs';
 import fse from 'fs-extra';
 import inquirer from 'inquirer';
 import ora from 'ora';
@@ -191,7 +190,7 @@ export class CreateCommand implements CreateCommandBuilder {
       __pathNotFound(userProjectDir);
 
       // ini akar masalahnya
-      const cachedForType = await this.microGenerator.__listCachedProjects(
+      const cachedForType = await this.microGenerator.__getListCachedProjects(
         CACHE_BASE_PATH,
         userProjectType,
       );
@@ -229,7 +228,7 @@ export class CreateCommand implements CreateCommandBuilder {
           );
           __pathNotFound(backendProjectTemplateDirPath);
 
-          const backendProjectTemplateFiles = fs.readdirSync(
+          const backendProjectTemplateFiles = fse.readdirSync(
             backendProjectTemplateDirPath,
             {
               withFileTypes: true,
@@ -257,7 +256,7 @@ export class CreateCommand implements CreateCommandBuilder {
           );
           __pathNotFound(frontendProjectTemplateDirPath);
 
-          const frontendProjectTemplateFiles = fs.readdirSync(
+          const frontendProjectTemplateFiles = fse.readdirSync(
             frontendProjectTemplateDirPath,
             {
               withFileTypes: true,

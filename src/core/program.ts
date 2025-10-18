@@ -80,7 +80,7 @@ export async function generateProgram(): Promise<void> {
     )
     .summary('Action to create new project.')
     .description('Create new project.')
-    .action(async (name, directory, type, options) => {      
+    .action(async (name, directory, type, options) => {
       const command = CreateCommand.instance;
       command.create({
         projectName: name,

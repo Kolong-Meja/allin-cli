@@ -110,6 +110,7 @@ Scaffold a new project from templates.
 ```bash
 allin create [name] [directory] [type] [options]
 ```
+
 - **Arguments**:
   - `[name]`: Specify the project name.
   - `[directory]`: Target directory for the project.
@@ -120,24 +121,24 @@ allin create [name] [directory] [type] [options]
 
 ## Options
 
-| Flag                                | Description                                                               | Default                   |
-|-------------------------------------|---------------------------------------------------------------------------|---------------------------|
-| `-n, --name <name>`                 | Specify the project name to use for the initial setup.                    | —                         |
-| `-d, --dir <dir>`                   | Destination folder for the generated project.                             | Current working directory |
-| `-f, --force`                       | Overwrite the target directory if it already exists.                      | `false`                   |
-| `--au, --author <author>`           | Set the author name to include in the project metadata.                   | —                         |
-| `--desc, --description <description>` | Provide a short description for the project.                             | —                         |
-| `--ver, --version <version>`        | Set the version of the project.                                           | —                         |
-| `--backend <backend>`               | Select the backend framework to use for the project.                      | —                         |
-| `--frontend <frontend>`             | Select the frontend framework to use for the project.                     | —                         |
-| `--pm, --package-manager <pm>`      | Choose the package manager (`npm`, `pnpm`, `bun`, `yarn`).                | `npm`                     |
-| `--li, --license <license>`         | Add a LICENSE file to the project.                                        | —                         |
-| `--readme`                          | Add a README file to the project.                                         | `false`                   |
-| `--ts, --typescript`                | Initialize the project with TypeScript configuration and typings.         | `false`                   |
-| `--dk, --docker`                    | Include Docker configuration files for containerized setup.               | `false`                   |
-| `--git`                             | Automatically initialize a Git repository and make the first commit.      | `false`                   |
-| `-h, --help`                        | Display help for a specific command.                                      | —                         |
-| `-v, --version`                     | Display the CLI version and exit. 
+| Flag                                  | Description                                                          | Default                   |
+| ------------------------------------- | -------------------------------------------------------------------- | ------------------------- |
+| `-n, --name <name>`                   | Specify the project name to use for the initial setup.               | —                         |
+| `-d, --dir <dir>`                     | Destination folder for the generated project.                        | Current working directory |
+| `-f, --force`                         | Overwrite the target directory if it already exists.                 | `false`                   |
+| `--au, --author <author>`             | Set the author name to include in the project metadata.              | —                         |
+| `--desc, --description <description>` | Provide a short description for the project.                         | —                         |
+| `--ver, --version <version>`          | Set the version of the project.                                      | —                         |
+| `--backend <backend>`                 | Select the backend framework to use for the project.                 | —                         |
+| `--frontend <frontend>`               | Select the frontend framework to use for the project.                | —                         |
+| `--pm, --package-manager <pm>`        | Choose the package manager (`npm`, `pnpm`, `bun`, `yarn`).           | `npm`                     |
+| `--li, --license <license>`           | Add a LICENSE file to the project.                                   | —                         |
+| `--readme`                            | Add a README file to the project.                                    | `false`                   |
+| `--ts, --typescript`                  | Initialize the project with TypeScript configuration and typings.    | `false`                   |
+| `--dk, --docker`                      | Include Docker configuration files for containerized setup.          | `false`                   |
+| `--git`                               | Automatically initialize a Git repository and make the first commit. | `false`                   |
+| `-h, --help`                          | Display help for a specific command.                                 | —                         |
+| `-v, --version`                       | Display the CLI version and exit.                                    |
 
 ## Examples
 
@@ -156,7 +157,7 @@ allin create
 ### Framework Options (`--backend`, `--frontend`)
 
 | Framework  | Value     |
-|------------|-----------|
+| ---------- | --------- |
 | Express.js | `express` |
 | Koa.js     | `koa`     |
 | NestJS     | `nest`    |
@@ -170,16 +171,16 @@ allin create
 
 ### License Options (`--li`, `--license`)
 
-| License                                   | Value          |
-|-------------------------------------------|----------------|
-| Apache 2.0 License                        | `apache-2`     |
-| BSD 2-Clause License                      | `bsd-2-clause` |
-| BSD 3-Clause License                      | `bsd-3-clause` |
-| GNU General Public License v3.0           | `gpl-3.0`      |
-| ISC License                               | `isc`          |
-| GNU Lesser General Public License v3.0    | `lgpl-3.0`     |
-| MIT License                               | `mit`          |
-| Unlicense                                 | `unlicense`    |
+| License                                | Value          |
+| -------------------------------------- | -------------- |
+| Apache 2.0 License                     | `apache-2`     |
+| BSD 2-Clause License                   | `bsd-2-clause` |
+| BSD 3-Clause License                   | `bsd-3-clause` |
+| GNU General Public License v3.0        | `gpl-3.0`      |
+| ISC License                            | `isc`          |
+| GNU Lesser General Public License v3.0 | `lgpl-3.0`     |
+| MIT License                            | `mit`          |
+| Unlicense                              | `unlicense`    |
 
 ## Creator & Collaboration
 
