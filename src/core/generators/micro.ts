@@ -223,6 +223,78 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     });
   }
 
+  public async __getListCachedProjects(
+    cacheBasePath: string,
+    projectType: string,
+  ): Promise<CachedEntry[]> {
+    const isPathExist = await fse.pathExists(cacheBasePath);
+
+    if (!isPathExist) {
+      await fse.ensureDir(cacheBasePath);
+    }
+
+    if (!projectType) return [];
+
+    const typeDir = path.join(cacheBasePath, projectType);
+    await fse.ensureDir(typeDir);
+
+    const names = await fse.readdir(typeDir);
+    const result = await Promise.all(
+      names.map(async (name) => {
+        if (!name) return null;
+
+        const projectPath = path.join(typeDir, name);
+
+        try {
+          const stat = await fse.stat(projectPath);
+
+          return {
+            name: name,
+            path: projectPath,
+            createdMs: stat.birthtimeMs,
+          } as CachedEntry;
+        } catch (error: Mixed) {
+          console.error(
+            boxen(error.message, {
+              title: error.name,
+              titleAlignment: 'center',
+              padding: 1,
+              margin: 1,
+              borderColor: 'red',
+            }),
+          );
+        }
+      }),
+    );
+
+    return result.filter((x): x is CachedEntry => x !== null);
+  }
+
+  public async __loadCachedProject(
+    cacheBasePath: string,
+    cacheName: string,
+    projectType: string,
+    desPath: string,
+  ): Promise<void> {
+    const entryPath = path.join(cacheBasePath, projectType, cacheName);
+
+    await fse.ensureDir(entryPath).catch((error: Mixed) => {
+      console.error(
+        boxen(error.message, {
+          title: error.name,
+          titleAlignment: 'center',
+          padding: 1,
+          margin: 1,
+          borderColor: 'red',
+        }),
+      );
+
+      process.exit(0);
+    });
+
+    await fse.copy(entryPath, desPath);
+  }
+
   private async __addDocker(params: __AddDockerParams) {
     const dockerComposeSrc = this.__getDockerPaths(
       'compose.yml',
@@ -734,82 +806,95 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     const isPrettierSelected = params.selectedDependencies.includes('prettier');
     const isEsLintSelected = params.selectedDependencies.includes('eslint');
+    const isWinstonSelected = params.selectedDependencies.includes('winston');
 
     if (isPrettierSelected) {
-      const prettierTemplatesPath = path.join(
-        __basePath,
-        'templates/addons/config',
-      );
-      __pathNotFound(prettierTemplatesPath);
-
-      const dockerTemplates = fse.readdirSync(prettierTemplatesPath, {
-        withFileTypes: true,
-      });
-
-      const prettierFile = dockerTemplates.find(
-        (f) => f.name === '.prettierrc',
-      );
-
-      if (!prettierFile) {
-        throw new UnidentifiedTemplateError(
-          `${chalk.bold('Unidentified template')}: ${chalk.bold('.prettierrc')} file template is not defined.`,
-        );
-      }
-
-      const prettierFileSrcPath = path.join(
-        prettierFile.parentPath,
-        prettierFile.name,
-      );
-      const prettierFileDesPath = path.join(params.desPath, prettierFile.name);
-
-      params.spinner.start(`Initializing ${chalk.bold('.prettierrc')} file.`);
-
-      await fse.copy(prettierFileSrcPath, prettierFileDesPath);
-
-      params.spinner.succeed(
-        `Adding ${chalk.bold('.prettierrc')} configuration completed.`,
-      );
+      this.__installPrettier(params);
     }
 
     if (isEsLintSelected) {
-      const executeInstallBasedOnPm = {
-        npm: 'npx',
-        pnpm: 'pnpx',
-        bun: 'bunx',
-      }[params.selectedPackageManager];
+      this.__installEsLint(params);
+    }
 
-      const initializeEsLintQuestion = await inquirer.prompt({
-        name: 'addESLintConfig',
-        type: 'confirm',
-        message: `Do you want us to execute ${chalk.bold(
-          `${executeInstallBasedOnPm} eslint --init`,
-        )} in your project? (optional)`,
-        default: false,
-      });
-
-      if (!initializeEsLintQuestion.addESLintConfig) {
-        console.warn(
-          boxen(
-            `You can execute ${chalk.bold(`${executeInstallBasedOnPm} eslint --init`)} later.`,
-            {
-              title: 'Warning Information',
-              titleAlignment: 'center',
-              padding: 1,
-              margin: 1,
-              borderColor: 'yellow',
-            },
-          ),
-        );
-      }
-
-      await execa(`${executeInstallBasedOnPm}`, ['@eslint/create-config'], {
-        cwd: params.desPath,
-        stdio: 'inherit',
-      });
+    if (isWinstonSelected) {
+      this.__installWinston(params);
     }
 
     params.spinner.succeed(`Installing all dependencies succeed.`);
   }
+
+  private async __installPrettier(params: __InstallDependenciesParams) {
+    const prettierTemplatesPath = path.join(
+      __basePath,
+      'templates/addons/config',
+    );
+    __pathNotFound(prettierTemplatesPath);
+
+    const dockerTemplates = fse.readdirSync(prettierTemplatesPath, {
+      withFileTypes: true,
+    });
+
+    const prettierFile = dockerTemplates.find((f) => f.name === '.prettierrc');
+
+    if (!prettierFile) {
+      throw new UnidentifiedTemplateError(
+        `${chalk.bold('Unidentified template')}: ${chalk.bold('.prettierrc')} file template is not defined.`,
+      );
+    }
+
+    const prettierFileSrcPath = path.join(
+      prettierFile.parentPath,
+      prettierFile.name,
+    );
+    const prettierFileDesPath = path.join(params.desPath, prettierFile.name);
+
+    params.spinner.start(`Initializing ${chalk.bold('.prettierrc')} file.`);
+
+    await fse.copy(prettierFileSrcPath, prettierFileDesPath);
+
+    params.spinner.succeed(
+      `Adding ${chalk.bold('.prettierrc')} configuration completed.`,
+    );
+  }
+
+  private async __installEsLint(params: __InstallDependenciesParams) {
+    const executeInstallBasedOnPm = {
+      npm: 'npx',
+      pnpm: 'pnpx',
+      bun: 'bunx',
+    }[params.selectedPackageManager];
+
+    const initializeEsLintQuestion = await inquirer.prompt({
+      name: 'addESLintConfig',
+      type: 'confirm',
+      message: `Do you want us to execute ${chalk.bold(
+        `${executeInstallBasedOnPm} eslint --init`,
+      )} in your project? (optional)`,
+      default: false,
+    });
+
+    if (!initializeEsLintQuestion.addESLintConfig) {
+      console.warn(
+        boxen(
+          `You can execute ${chalk.bold(`${executeInstallBasedOnPm} eslint --init`)} later.`,
+          {
+            title: 'Warning Information',
+            titleAlignment: 'center',
+            padding: 1,
+            margin: 1,
+            borderColor: 'yellow',
+          },
+        ),
+      );
+    }
+
+    await execa(`${executeInstallBasedOnPm}`, ['@eslint/create-config'], {
+      cwd: params.desPath,
+      stdio: 'inherit',
+    });
+  }
+
+  private async __installWinston(params: __InstallDependenciesParams) {}
 
   private async __updateDependencies(params: __UpdateDependenciesParams) {
     const updateDependenciesQuestion = await inquirer.prompt({
@@ -931,77 +1016,5 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     await fse.copy(srcPath, desPath);
     return desPath;
-  }
-
-  public async __getListCachedProjects(
-    cacheBasePath: string,
-    projectType: string,
-  ): Promise<CachedEntry[]> {
-    const isPathExist = await fse.pathExists(cacheBasePath);
-
-    if (!isPathExist) {
-      await fse.ensureDir(cacheBasePath);
-    }
-
-    if (!projectType) return [];
-
-    const typeDir = path.join(cacheBasePath, projectType);
-    await fse.ensureDir(typeDir);
-
-    const names = await fse.readdir(typeDir);
-    const result = await Promise.all(
-      names.map(async (name) => {
-        if (!name) return null;
-
-        const projectPath = path.join(typeDir, name);
-
-        try {
-          const stat = await fse.stat(projectPath);
-
-          return {
-            name: name,
-            path: projectPath,
-            createdMs: stat.birthtimeMs,
-          } as CachedEntry;
-        } catch (error: Mixed) {
-          console.error(
-            boxen(error.message, {
-              title: error.name,
-              titleAlignment: 'center',
-              padding: 1,
-              margin: 1,
-              borderColor: 'red',
-            }),
-          );
-        }
-      }),
-    );
-
-    return result.filter((x): x is CachedEntry => x !== null);
-  }
-
-  public async __loadCachedProject(
-    cacheBasePath: string,
-    cacheName: string,
-    projectType: string,
-    desPath: string,
-  ): Promise<void> {
-    const entryPath = path.join(cacheBasePath, projectType, cacheName);
-
-    await fse.ensureDir(entryPath).catch((error: Mixed) => {
-      console.error(
-        boxen(error.message, {
-          title: error.name,
-          titleAlignment: 'center',
-          padding: 1,
-          margin: 1,
-          borderColor: 'red',
-        }),
-      );
-
-      process.exit(0);
-    });
-
-    await fse.copy(entryPath, desPath);
   }
 }

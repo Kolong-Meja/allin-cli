@@ -35,12 +35,18 @@ export class BackendGenerator implements GeneratorBuilder {
     return BackendGenerator.#instance;
   }
 
+  // --------------------------------------------------------------------------
+  // MAIN ENTRY
+  // --------------------------------------------------------------------------
   public async generate(params: __GenerateProjectParams) {
     if (params.isUsingCacheProject !== false && params.cachedEntries.length > 0)
       await this.__generateCachedProject(params);
     else await this.__generateNonCachedProject(params);
   }
 
+  // --------------------------------------------------------------------------
+  // CACHED PROJECT GENERATION
+  // --------------------------------------------------------------------------
   private async __generateCachedProject(params: __GenerateProjectParams) {
     const cacheProjectChoices = params.cachedEntries.map((c) => c.name);
     const chosenProject = await inquirer.prompt({
@@ -61,9 +67,7 @@ export class BackendGenerator implements GeneratorBuilder {
     }
 
     const desPath = path.join(params.projectDir, params.projectName);
-    const isPathExist = await fse.pathExists(desPath);
-
-    if (isPathExist) {
+    if (await fse.pathExists(desPath)) {
       await fse.remove(desPath);
     }
 
@@ -75,16 +79,17 @@ export class BackendGenerator implements GeneratorBuilder {
     );
   }
 
+  // --------------------------------------------------------------------------
+  // NON-CACHED PROJECT GENERATION
+  // --------------------------------------------------------------------------
   private async __generateNonCachedProject(params: __GenerateProjectParams) {
-    const chooseBackendFrameworkQuestion = await inquirer.prompt([
+    const { backendFramework } = await inquirer.prompt([
       {
         name: 'backendFramework',
         type: 'list',
         message: 'Which backend framework do you want to use:',
         choices: BACKEND_FRAMEWORKS.frameworks
-          .sort((i, e) =>
-            i.name.toLowerCase().localeCompare(e.name.toLowerCase(), 'en-US'),
-          )
+          .sort((a, b) => a.name.localeCompare(b.name, 'en-US'))
           .map((f) => f.name),
         default: 'express',
         loop: false,
@@ -93,9 +98,7 @@ export class BackendGenerator implements GeneratorBuilder {
     ]);
 
     const backendFrameworkResource = isUndefined(params.optionValues.template)
-      ? BACKEND_FRAMEWORKS.frameworks.find(
-          (f) => f.name === chooseBackendFrameworkQuestion.backendFramework,
-        )
+      ? BACKEND_FRAMEWORKS.frameworks.find((f) => f.name === backendFramework)
       : BACKEND_FRAMEWORKS.frameworks.find(
           (f) => f.name === params.optionValues.template,
         );
@@ -117,25 +120,22 @@ export class BackendGenerator implements GeneratorBuilder {
       );
     }
 
-    const backendFrameworkTemplateSrcPath = path.join(
+    // DEFINE TEMPLATES PATHS
+    const srcPath = path.join(
       backendFrameworkTemplateFolder.parentPath,
       backendFrameworkTemplateFolder.name,
     );
-    const backendFrameworkTemplateDesPath = path.join(
+    const destPath = path.join(
       params.projectDir,
       params.projectName ?? params.projectNameArg,
     );
-    __unableOverwriteProject(
-      backendFrameworkTemplateDesPath,
-      params.optionValues,
-    );
+    __unableOverwriteProject(destPath, params.optionValues);
 
-    const isPathExist = fse.existsSync(backendFrameworkTemplateDesPath);
-
-    if (params.optionValues.force && !isPathExist) {
+    const destPathExists = fse.existsSync(destPath);
+    if (params.optionValues.force && !destPathExists) {
       console.warn(
         boxen(
-          '-f, --force option will be not use, because project is not exist.',
+          '-f, --force option will not be used because project does not exist.',
           {
             title: 'Warning Information',
             titleAlignment: 'center',
@@ -147,40 +147,37 @@ export class BackendGenerator implements GeneratorBuilder {
       );
     }
 
-    const selectedBackendFramework = isUndefined(params.optionValues.template)
-      ? templatesMap(
-          backendFrameworkTemplateSrcPath,
-          backendFrameworkTemplateDesPath,
-        ).get(chooseBackendFrameworkQuestion.backendFramework)
-      : templatesMap(
-          backendFrameworkTemplateSrcPath,
-          backendFrameworkTemplateDesPath,
-        ).get(params.optionValues.template);
+    // GET SELECTED FRAMEWORK
+    const selectedFramework = isUndefined(params.optionValues.template)
+      ? templatesMap(srcPath, destPath).get(backendFramework)
+      : templatesMap(srcPath, destPath).get(params.optionValues.template);
 
-    if (!selectedBackendFramework) {
-      const errorMessage = isUndefined(params.optionValues.template)
-        ? `Unsupported framework: ${chooseBackendFrameworkQuestion.backendFramework}`
+    if (!selectedFramework) {
+      const errorMsg = isUndefined(params.optionValues.template)
+        ? `Unsupported framework: ${backendFramework}`
         : `Unsupported framework: ${params.optionValues.template}`;
-
-      throw new Error(errorMessage);
+      throw new Error(errorMsg);
     }
 
+    // SETUP PROJECT BASE STRUCTURE
     const microGenerator = MicroGenerator.instance;
-
-    const setupProjectExecutor = await microGenerator.setupProject({
+    const setupExecutor = await microGenerator.setupProject({
       spinner: params.spinner,
       projectName: params.projectName ?? params.projectNameArg,
       projectType: params.projectType,
-      selectedFramework: selectedBackendFramework.actualName,
-      sourcePath: selectedBackendFramework.templateSource,
-      desPath: selectedBackendFramework.templateDest,
+      selectedFramework: selectedFramework.actualName,
+      sourcePath: selectedFramework.templateSource,
+      desPath: selectedFramework.templateDest,
       optionValues: params.optionValues,
     });
 
     const tempDir = path.join(__basePath, 'templates/temp', params.projectName);
 
+    // ------------------------------------------------------------------------
+    // OPTIONAL DOCKER SETUP
+    // ------------------------------------------------------------------------
     if (params.optionValues.docker) {
-      const isAddingDockerQuestion = await inquirer.prompt([
+      const { addDocker, addDockerBake } = await inquirer.prompt([
         {
           name: 'addDocker',
           type: 'confirm',
@@ -196,73 +193,71 @@ export class BackendGenerator implements GeneratorBuilder {
         },
       ]);
 
-      if (isAddingDockerQuestion.addDocker) {
+      if (addDocker) {
         await microGenerator.setupDocker({
           spinner: params.spinner,
-          isAddingDocker: isAddingDockerQuestion.addDocker,
-          isAddingBake: isAddingDockerQuestion.addDockerBake,
+          isAddingDocker: addDocker,
+          isAddingBake: addDockerBake,
           selectedPackageManager: params.optionValues.packageManager,
           desPath: tempDir,
         });
       }
     }
 
-    const selectDependenciesQuestion = await inquirer.prompt([
+    // ------------------------------------------------------------------------
+    // DEPENDENCIES INSTALLATION
+    // ------------------------------------------------------------------------
+    const dependencyPrompt = await inquirer.prompt([
       {
-        name: selectedBackendFramework.promptKey,
+        name: selectedFramework.promptKey,
         type: 'checkbox',
         message: 'Select dependencies to include in your project:',
-        choices: selectedBackendFramework.packages
-          .sort((i, e) =>
-            i.name.toLowerCase().localeCompare(e.name.toLowerCase(), 'en-US'),
-          )
+        choices: selectedFramework.packages
+          .sort((a, b) => a.name.localeCompare(b.name, 'en-US'))
           .map((p) => p.originName),
         loop: false,
       },
     ]);
 
-    const selectedBackendDependencies =
-      selectDependenciesQuestion[selectedBackendFramework.promptKey];
+    const selectedDeps = dependencyPrompt[selectedFramework.promptKey];
 
-    if (selectedBackendDependencies < 1) {
+    if (selectedDeps.length < 1) {
       console.log(
         boxen(
           `To be honest, you can install the dependencies later, right ${chalk.bold((await __userRealName()).split(' ')[0])}?`,
-          {
-            padding: 1,
-            margin: 1,
-            borderColor: 'blue',
-          },
+          { padding: 1, margin: 1, borderColor: 'blue' },
         ),
       );
     }
 
     await microGenerator.setupInstallation({
       spinner: params.spinner,
-      selectedDependencies: selectedBackendDependencies,
+      selectedDependencies: selectedDeps,
       selectedPackageManager: params.optionValues.packageManager,
       projectName: params.projectName ?? params.projectNameArg,
       desPath: tempDir,
     });
 
+    // ------------------------------------------------------------------------
+    // POST-SETUP CUSTOMIZATION
+    // ------------------------------------------------------------------------
     await microGenerator.setupOthers({
       spinner: params.spinner,
       optionValues: params.optionValues,
       projectType: params.projectType,
       projectName: params.projectName ?? params.projectNameArg,
-      selectedFramework: selectedBackendFramework.name,
+      selectedFramework: selectedFramework.name,
       desPath: tempDir,
     });
 
-    if (setupProjectExecutor) {
-      await setupProjectExecutor();
-    }
+    if (setupExecutor) await setupExecutor();
 
+    // ------------------------------------------------------------------------
+    // SUMMARY INFORMATION
+    // ------------------------------------------------------------------------
     console.log(
       boxen(
-        `You can check the project on ${chalk.bold(
-          selectedBackendFramework.templateDest,
-        )}`,
+        `You can check the project at ${chalk.bold(selectedFramework.templateDest)}`,
         {
           title: 'Project Information',
           titleAlignment: 'center',
