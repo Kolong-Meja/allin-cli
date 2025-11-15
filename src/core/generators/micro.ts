@@ -1,5 +1,5 @@
 import {
-  __basePath,
+  BASE_PATH,
   CACHE_BASE_PATH,
   CACHE_TTL_MS,
   INSTALL_TIMEOUT_MS,
@@ -83,7 +83,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     }
 
     const tempDir = path.join(
-      __basePath,
+      BASE_PATH,
       'templates',
       'temp',
       params.projectName,
@@ -444,7 +444,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       )} file into ${chalk.bold(params.projectName)}.`,
     );
 
-    const licenseSrcPath = path.join(__basePath, licenseFile.path);
+    const licenseSrcPath = path.join(BASE_PATH, licenseFile.path);
 
     await fse.copy(licenseSrcPath, params.desPath);
 
@@ -557,7 +557,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       );
     }
 
-    const frameworkPath = path.join(__basePath, frameworkFile.path);
+    const frameworkPath = path.join(BASE_PATH, frameworkFile.path);
 
     const frameworkFiles = fse.readdirSync(frameworkPath, {
       withFileTypes: true,
@@ -598,9 +598,8 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const initializeTsQuestion = await inquirer.prompt({
       name: 'addTsConfig',
       type: 'confirm',
-      message: `Do you want us to execute ${chalk.bold(
-        `${executeConditioningPmCommand} tsc --init`,
-      )} in your project? (optional)`,
+      message: `Do you want us to execute
+        ${executeConditioningPmCommand} tsc --init in your project? (optional)`,
       default: false,
     });
 
@@ -666,10 +665,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private __getDockerPaths(filename: string, desPath: string) {
-    const dockerTemplatesPath = path.join(
-      __basePath,
-      'templates/addons/docker',
-    );
+    const dockerTemplatesPath = path.join(BASE_PATH, 'templates/addons/docker');
     __pathNotFound(dockerTemplatesPath);
 
     const dockerTemplates = fse.readdirSync(dockerTemplatesPath, {
@@ -694,10 +690,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private __getReadmePaths(filename: string, desPath: string) {
-    const readmeTemplatesPath = path.join(
-      __basePath,
-      'templates/addons/others',
-    );
+    const readmeTemplatesPath = path.join(BASE_PATH, 'templates/addons/others');
     __pathNotFound(readmeTemplatesPath);
 
     const readmeTemplates = fse.readdirSync(readmeTemplatesPath, {
@@ -722,7 +715,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private __getEnvPaths(filename: string, desPath: string) {
-    const envTemplatesPath = path.join(__basePath, 'templates/addons/config');
+    const envTemplatesPath = path.join(BASE_PATH, 'templates/addons/config');
     __pathNotFound(envTemplatesPath);
 
     const envTemplates = fse.readdirSync(envTemplatesPath, {
@@ -791,33 +784,31 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Installing ${chalk.bold(params.selectedDependencies.join(', '))}, please wait for a moment.`,
     );
 
-    for (const p of params.selectedDependencies) {
-      params.spinner.start(`Start installing ${chalk.bold(p)} dependency`);
-
-      await execa(executeInstallBasedOnPm, ['install', '--save', p], {
+    await execa(
+      executeInstallBasedOnPm,
+      ['install', '--save', ...params.selectedDependencies],
+      {
         cwd: params.desPath,
         timeout: INSTALL_TIMEOUT_MS,
         killSignal: 'SIGTERM',
         stdio: 'pipe',
-      });
-
-      params.spinner.succeed(`Installing ${chalk.bold(p)} dependency succeed`);
-    }
+      },
+    );
 
     const isPrettierSelected = params.selectedDependencies.includes('prettier');
     const isEsLintSelected = params.selectedDependencies.includes('eslint');
     const isWinstonSelected = params.selectedDependencies.includes('winston');
 
     if (isPrettierSelected) {
-      this.__installPrettier(params);
+      await this.__installPrettier(params);
     }
 
     if (isEsLintSelected) {
-      this.__installEsLint(params);
+      await this.__installEsLint(params);
     }
 
     if (isWinstonSelected) {
-      this.__installWinston(params);
+      await this.__installWinston(params);
     }
 
     params.spinner.succeed(`Installing all dependencies succeed.`);
@@ -825,7 +816,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
   private async __installPrettier(params: __InstallDependenciesParams) {
     const prettierTemplatesPath = path.join(
-      __basePath,
+      BASE_PATH,
       'templates/addons/config',
     );
     __pathNotFound(prettierTemplatesPath);
@@ -867,9 +858,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const initializeEsLintQuestion = await inquirer.prompt({
       name: 'addESLintConfig',
       type: 'confirm',
-      message: `Do you want us to execute ${chalk.bold(
-        `${executeInstallBasedOnPm} eslint --init`,
-      )} in your project? (optional)`,
+      message: `Do you want us to execute ${`${executeInstallBasedOnPm}`} eslint --init in your project? (optional)`,
       default: false,
     });
 
@@ -900,7 +889,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const updateDependenciesQuestion = await inquirer.prompt({
       name: 'updatePackages',
       type: 'confirm',
-      message: `Do you want us to run ${chalk.bold(`${params.selectedPackageManager} update`)}? (optional)`,
+      message: `Do you want us to run ${params.selectedPackageManager} update? (optional)`,
       default: false,
     });
 

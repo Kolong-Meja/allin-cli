@@ -11,7 +11,7 @@ import {
   __sanitizeProjectName,
 } from '@/utils/string.js';
 
-import { __basePath, __userRealName, CACHE_BASE_PATH } from '@/config.js';
+import { BASE_PATH, __getUserRealName, CACHE_BASE_PATH } from '@/config.js';
 import {
   DIRTY_WORDS,
   PROJECT_TYPES,
@@ -208,7 +208,7 @@ export class CreateCommand implements CreateCommandBuilder {
       ) {
         console.log(
           boxen(
-            `Allright ${chalk.bold((await __userRealName()).split(' ')[0])}, thanks for the confirmation.`,
+            `Allright ${chalk.bold((await __getUserRealName()).split(' ')[0])}, thanks for the confirmation.`,
             {
               padding: 1,
               margin: 1,
@@ -270,7 +270,7 @@ export class CreateCommand implements CreateCommandBuilder {
         errorMessage = error.message;
       }
 
-      const tempPath = path.join(__basePath, 'templates', 'temp');
+      const tempPath = path.join(BASE_PATH, 'templates', 'temp');
       this.__removeUnusedProject(tempPath);
 
       console.error(
@@ -326,7 +326,7 @@ export class CreateCommand implements CreateCommandBuilder {
     isReuseProject: boolean,
     cachedForType: CachedEntry[],
   ) {
-    const templateDir = path.join(__basePath, 'templates', projectType);
+    const templateDir = path.join(BASE_PATH, 'templates', projectType);
     __pathNotFound(templateDir);
 
     const templateFiles = fse.readdirSync(templateDir, { withFileTypes: true });
@@ -355,7 +355,7 @@ export class CreateCommand implements CreateCommandBuilder {
     isReuseProject: boolean,
     cachedForType: CachedEntry[],
   ) {
-    const templateDir = path.join(__basePath, 'templates', projectType);
+    const templateDir = path.join(BASE_PATH, 'templates', projectType);
     __pathNotFound(templateDir);
 
     const templateFiles = fse.readdirSync(templateDir, { withFileTypes: true });

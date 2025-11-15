@@ -9,12 +9,15 @@ import {
   UnidentifiedTemplateError,
 } from './error.js';
 
+// CHECK MEMBERSHIP UTIL
+const __ensureIncluded = (val: string, list: string[]) => list.includes(val);
+
 export function __pathNotFound(path: string): void {
-  if (!fse.existsSync(path))
+  if (!fse.existsSync(path)) {
     throw new PathNotFoundError(
-      `${chalk.bold('Path not found')}: ${chalk.bold(path)} path is not exist.`,
+      `${chalk.bold('Path not found')}: ${chalk.bold(path)} path does not exist.`,
     );
-  return;
+  }
 }
 
 export function __projectNotExist(
@@ -22,57 +25,55 @@ export function __projectNotExist(
   model: 'backend' | 'frontend',
   projects: string[],
 ): void {
-  if (!projects.includes(template)) {
+  if (!__ensureIncluded(template, projects)) {
     throw new ProjectNotExistError(
-      `${chalk.bold(
-        'Project not exist',
-      )}: ${template} project is not exist for ${model} template.`,
+      `${chalk.bold('Project not exist')}: ${template} project is not available for ${model} template.`,
     );
   }
-  return;
 }
 
 export function __unableOverwriteProject(
   path: string,
   optionValues: OptionValues,
 ): void {
-  if (fse.existsSync(path) && !optionValues.force)
+  const exists = fse.existsSync(path);
+  const force = optionValues.force === true;
+
+  if (exists && !force) {
     throw new UnableOverwriteError(
       `${chalk.bold('Unable to overwrite')}: ${chalk.bold(
         path,
-      )} is exist and cannot be overwritten. \n\n${chalk.bold(
+      )} already exists and cannot be overwritten.\n\n${chalk.bold(
         'Tips',
-      )}: \nUse ${chalk.bold('-f, --force')} option when doing ${chalk.bold(
+      )}:\nUse ${chalk.bold('-f, --force')} when running the ${chalk.bold(
         'create',
-      )} command to force overwrite.`,
+      )} command to allow overwriting.`,
     );
-  return;
+  }
 }
 
 export function __unidentifiedProjectTemplate(
   template: string,
   templates: string[],
 ): void {
-  if (!templates.includes(template)) {
+  if (!__ensureIncluded(template, templates)) {
     throw new UnidentifiedTemplateError(
       `${chalk.bold('Unidentified template model')}: ${chalk.bold(
         template,
-      )} template model is not found.`,
+      )} template model is not recognized.`,
     );
   }
-  return;
 }
 
 export function __unidentifiedFramework(
   project: string,
   projects: string[],
 ): void {
-  if (!projects.includes(project)) {
+  if (!__ensureIncluded(project, projects)) {
     throw new UnidentifiedFrameworkError(
       `${chalk.bold('Unidentified framework project')}: ${chalk.bold(
         project,
-      )} framework project is not found.`,
+      )} framework project is not recognized.`,
     );
   }
-  return;
 }

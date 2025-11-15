@@ -1,4 +1,4 @@
-import { __basePath, __userRealName, CACHE_BASE_PATH } from '@/config.js';
+import { BASE_PATH, __getUserRealName, CACHE_BASE_PATH } from '@/config.js';
 import { FRONTEND_FRAMEWORKS, templatesMap } from '@/constants/global.js';
 import {
   PathNotFoundError,
@@ -173,7 +173,7 @@ export class FrontendGenerator implements GeneratorBuilder {
       optionValues: params.optionValues,
     });
 
-    const tempDir = path.join(__basePath, 'templates/temp', params.projectName);
+    const tempDir = path.join(BASE_PATH, 'templates/temp', params.projectName);
 
     // ------------------------------------------------------------------------
     // OPTIONAL DOCKER SETUP
@@ -226,7 +226,7 @@ export class FrontendGenerator implements GeneratorBuilder {
     if (selectedDeps.length < 1) {
       console.log(
         boxen(
-          `To be honest, you can install the dependencies later, right ${chalk.bold((await __userRealName()).split(' ')[0])}?`,
+          `To be honest, you can install the dependencies later, right ${chalk.bold((await __getUserRealName()).split(' ')[0])}?`,
           { padding: 1, margin: 1, borderColor: 'blue' },
         ),
       );
