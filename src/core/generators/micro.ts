@@ -883,7 +883,43 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     });
   }
 
-  private async __installWinston(params: __InstallDependenciesParams) {}
+  private async __installWinston(params: __InstallDependenciesParams) {
+    params.spinner.start('Configuring Winston logger...');
+
+    const isUsingTypeScript = fse.existsSync(
+      path.join(params.desPath, 'tsconfig.json'),
+    );
+
+    const snipperSrcPath = path.join(
+      BASE_PATH,
+      'templates',
+      'addons',
+      'config',
+      'winston',
+      isUsingTypeScript ? 'logger.ts' : 'logger.js',
+    );
+
+    const projectSrcDir = path.join(params.desPath, 'src');
+    const loggerTargetFile = path.join(
+      projectSrcDir,
+      isUsingTypeScript ? 'logger.ts' : 'logger.js',
+    );
+
+    fse.ensureDirSync(projectSrcDir);
+
+    // READ SNIPPET.
+    let fileContent = fse.readFileSync(snipperSrcPath, 'utf-8');
+
+    // REMOVE LEADING "//" EACH LINE
+    const uncommented = fileContent
+      .split('\n')
+      .map((line) => line.replace(/^\/\/\s?/, ''))
+      .join('\n');
+
+    fse.writeFileSync(loggerTargetFile, uncommented, 'utf-8');
+
+    params.spinner.succeed('Winston successfully configured!');
+  }
 
   private async __updateDependencies(params: __UpdateDependenciesParams) {
     const updateDependenciesQuestion = await inquirer.prompt({
