@@ -223,6 +223,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     });
   }
 
+  // --------------------------------------------------------------------------
+  // CACHE / LISTING
+  // --------------------------------------------------------------------------
   public async __getListCachedProjects(
     cacheBasePath: string,
     projectType: string,
@@ -295,57 +298,20 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     await fse.copy(entryPath, desPath);
   }
 
+  // --------------------------------------------------------------------------
+  // DOCKER / BAKE
+  // --------------------------------------------------------------------------
   private async __addDocker(params: __AddDockerParams) {
-    const dockerComposeSrc = this.__getDockerPaths(
-      'compose.yml',
-      params.desPath,
-    );
-
-    params.spinner.start(
-      `Copying ${chalk.bold('docker compose file')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
-    );
-
-    await fse.copy(dockerComposeSrc.sourcePath, dockerComposeSrc.desPath);
-
-    params.spinner.succeed(
-      `Copying ${chalk.bold('docker compose file')} succeed.`,
-    );
-
-    const dockerFileBasedOnPm =
-      params.selectedPackageManager === 'npm'
-        ? 'npm.Dockerfile'
-        : params.selectedPackageManager === 'pnpm'
-          ? 'pnpm.Dockerfile'
-          : 'bun.Dockerfile';
-
-    const dockerFileSrc = this.__getDockerPaths(
-      dockerFileBasedOnPm,
-      params.desPath,
-    );
-
-    params.spinner.start(
-      `Copying ${chalk.bold('dockerfile')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
-    );
-
-    await fse.copy(dockerFileSrc.sourcePath, dockerFileSrc.desPath);
-
-    params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed.`);
-  }
-
-  private async __addDockerBake(params: __AddDockerBakeParams) {
     const dockerComposePaths = this.__getDockerPaths(
       'compose.yml',
       params.desPath,
     );
 
-    params.spinner.start(
-      `Copying ${chalk.bold('docker compose file')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
-    );
-
-    await fse.copy(dockerComposePaths.sourcePath, dockerComposePaths.desPath);
-
-    params.spinner.succeed(
-      `Copying ${chalk.bold('docker compose file')} succeed.`,
+    await this.__copyWithSpinner(
+      params.spinner,
+      'docker compose file',
+      dockerComposePaths.sourcePath,
+      dockerComposePaths.desPath,
     );
 
     const dockerFileBasedOnPm =
@@ -360,30 +326,59 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       params.desPath,
     );
 
-    params.spinner.start(
-      `Copying ${chalk.bold('docker compose file')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
+    await this.__copyWithSpinner(
+      params.spinner,
+      'dockerfile',
+      dockerFilePaths.sourcePath,
+      dockerFilePaths.desPath,
+    );
+  }
+
+  private async __addDockerBake(params: __AddDockerBakeParams) {
+    const composePaths = this.__getDockerPaths('compose.yml', params.desPath);
+
+    await this.__copyWithSpinner(
+      params.spinner,
+      'docker compose file',
+      composePaths.sourcePath,
+      composePaths.desPath,
     );
 
-    await fse.copy(dockerFilePaths.sourcePath, dockerFilePaths.desPath);
+    const dockerFileBasedOnPm =
+      params.selectedPackageManager === 'npm'
+        ? 'npm.Dockerfile'
+        : params.selectedPackageManager === 'pnpm'
+          ? 'pnpm.Dockerfile'
+          : 'bun.Dockerfile';
 
-    params.spinner.succeed(`Copying ${chalk.bold('dockerfile')} succeed.`);
+    const dockerFilePaths = this.__getDockerPaths(
+      dockerFileBasedOnPm,
+      params.desPath,
+    );
+
+    await this.__copyWithSpinner(
+      params.spinner,
+      'dockerfile',
+      dockerFilePaths.sourcePath,
+      dockerFilePaths.desPath,
+    );
 
     const dockerBakePaths = this.__getDockerPaths(
       'docker-bake.hcl',
       params.desPath,
     );
 
-    params.spinner.start(
-      `Copying ${chalk.bold('docker bake file')} into ${chalk.bold(params.desPath)}, please wait for a moment.`,
-    );
-
-    await fse.copy(dockerBakePaths.sourcePath, dockerBakePaths.desPath);
-
-    params.spinner.succeed(
-      `Copying ${chalk.bold('docker bake file')} succeed.`,
+    await this.__copyWithSpinner(
+      params.spinner,
+      'docker bake file',
+      dockerBakePaths.sourcePath,
+      dockerBakePaths.desPath,
     );
   }
 
+  // --------------------------------------------------------------------------
+  // GIT / LICENSE / README / ENV
+  // --------------------------------------------------------------------------
   private async __addGit(spinner: Ora, desPath: string) {
     const initializeGitQuestion = await inquirer.prompt({
       name: 'addGit',
@@ -456,29 +451,28 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private async __addReadme(params: __AddReadmeParams) {
-    const backendReadmePaths = this.__getReadmePaths(
+    const backendReadme = this.__getReadmePaths(
       'BACKEND_README.md',
       params.desPath,
     );
-    const frontendReadmePaths = this.__getReadmePaths(
+    const frontendReadme = this.__getReadmePaths(
       'FRONTEND_README.md',
       params.desPath,
     );
 
-    params.spinner.start(
-      `Copying ${chalk.bold('readme')} file into ${chalk.bold(params.desPath)}, please wait for a moment.`,
-    );
-
     const readmeSourcePath =
       params.projectType !== 'backend'
-        ? frontendReadmePaths.sourcePath
-        : backendReadmePaths.sourcePath;
+        ? frontendReadme.sourcePath
+        : backendReadme.sourcePath;
 
     const readmeTargetPath = path.join(params.desPath, 'README.md');
 
-    await fse.copy(readmeSourcePath, readmeTargetPath);
-
-    params.spinner.succeed(`Copying ${chalk.bold('readme')} file succeed.`);
+    await this.__copyWithSpinner(
+      params.spinner,
+      'readme',
+      readmeSourcePath,
+      readmeTargetPath,
+    );
   }
 
   private async __addEnv(params: __AddEnvParams) {
@@ -488,10 +482,6 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       params.desPath,
     );
 
-    params.spinner.start(
-      `Copying ${chalk.bold('.env')} file into ${chalk.bold(params.desPath)}, please wait for a moment.`,
-    );
-
     const envSourcePath =
       params.projectType !== 'backend'
         ? frontendEnvPaths.sourcePath
@@ -499,11 +489,17 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     const envTargetPath = path.join(params.desPath, '.env');
 
-    await fse.copy(envSourcePath, envTargetPath);
-
-    params.spinner.succeed(`Copying ${chalk.bold('.env')} file succeed.`);
+    await this.__copyWithSpinner(
+      params.spinner,
+      '.env',
+      envSourcePath,
+      envTargetPath,
+    );
   }
 
+  // --------------------------------------------------------------------------
+  // PACKAGE MANAGER / TYPESCRIPT
+  // --------------------------------------------------------------------------
   private async __switchPackageManager(params: __SwitchPackageManagerParams) {
     const __lockFiles = [
       'package-lock.json',
@@ -526,12 +522,10 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       await fse.remove(nodeModulePath);
     }
 
-    const executeChangingPmCommand =
-      params.selectedPackageManager === 'npm'
-        ? 'npm'
-        : params.selectedPackageManager === 'pnpm'
-          ? 'pnpm'
-          : 'bun';
+    const executeChangingPmCommand = this.__choosePackageManagerCommand(
+      params.selectedPackageManager,
+      true,
+    );
 
     await execa(executeChangingPmCommand, ['install'], {
       cwd: params.desPath,
@@ -588,12 +582,10 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       desPath: params.desPath,
     });
 
-    const executeConditioningPmCommand =
-      params.selectedPackageManager === 'npm'
-        ? 'npx'
-        : params.selectedPackageManager === 'pnpm'
-          ? 'pnpm'
-          : 'bunx';
+    const executeConditioningPmCommand = this.__choosePackageManagerCommand(
+      params.selectedPackageManager,
+      false,
+    );
 
     const initializeTsQuestion = await inquirer.prompt({
       name: 'addTsConfig',
@@ -664,92 +656,20 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
   }
 
-  private __getDockerPaths(filename: string, desPath: string) {
-    const dockerTemplatesPath = path.join(BASE_PATH, 'templates/addons/docker');
-    __pathNotFound(dockerTemplatesPath);
-
-    const dockerTemplates = fse.readdirSync(dockerTemplatesPath, {
-      withFileTypes: true,
-    });
-
-    const dockerFile = dockerTemplates.find((f) => f.name === filename);
-
-    if (!dockerFile) {
-      throw new UnidentifiedTemplateError(
-        `${chalk.bold('Unidentified template')}: ${chalk.bold(filename)} file template is not defined.`,
-      );
-    }
-
-    const dockerFileSrcPath = path.join(dockerFile.parentPath, dockerFile.name);
-    const dockerFileDesPath = path.join(desPath, dockerFile.name);
-
-    return {
-      sourcePath: dockerFileSrcPath,
-      desPath: dockerFileDesPath,
-    };
-  }
-
-  private __getReadmePaths(filename: string, desPath: string) {
-    const readmeTemplatesPath = path.join(BASE_PATH, 'templates/addons/others');
-    __pathNotFound(readmeTemplatesPath);
-
-    const readmeTemplates = fse.readdirSync(readmeTemplatesPath, {
-      withFileTypes: true,
-    });
-
-    const readmeFile = readmeTemplates.find((f) => f.name === filename);
-
-    if (!readmeFile) {
-      throw new UnidentifiedTemplateError(
-        `${chalk.bold('Unidentified template')}: ${chalk.bold(filename)} file template is not defined.`,
-      );
-    }
-
-    const readmeFileSrcPath = path.join(readmeFile.parentPath, readmeFile.name);
-    const readmeFileDesPath = path.join(desPath, readmeFile.name);
-
-    return {
-      sourcePath: readmeFileSrcPath,
-      desPath: readmeFileDesPath,
-    };
-  }
-
-  private __getEnvPaths(filename: string, desPath: string) {
-    const envTemplatesPath = path.join(BASE_PATH, 'templates/addons/config');
-    __pathNotFound(envTemplatesPath);
-
-    const envTemplates = fse.readdirSync(envTemplatesPath, {
-      withFileTypes: true,
-    });
-
-    const envFile = envTemplates.find((f) => f.name === filename);
-
-    if (!envFile) {
-      throw new UnidentifiedTemplateError(
-        `${chalk.bold('Unidentified template')}: ${chalk.bold(filename)} file template is not defined.`,
-      );
-    }
-
-    const envFileSrcPath = path.join(envFile.parentPath, envFile.name);
-    const envFileDesPath = path.join(desPath, envFile.name);
-
-    return {
-      sourcePath: envFileSrcPath,
-      desPath: envFileDesPath,
-    };
-  }
-
+  // --------------------------------------------------------------------------
+  // INSTALLATIONS / CONFIGS
+  // --------------------------------------------------------------------------
   private async __installTypescript(params: __InstallTypescriptParams) {
-    const executeInstallBasedOnPm =
-      params.selectedPackageManager === 'npm'
-        ? 'npm'
-        : params.selectedPackageManager === 'pnpm'
-          ? 'pnpm'
-          : 'bun';
+    const executeInstallBasedOnPm = this.__choosePackageManagerCommand(
+      params.selectedPackageManager,
+      true,
+    );
+    const deps =
+      TYPESCRIPT_DEFAULT_DEPENDENCIES[params.projectType][
+        params.selectedFramework
+      ] ?? [];
 
-    for (const p of TYPESCRIPT_DEFAULT_DEPENDENCIES[params.projectType][
-      params.selectedFramework
-    ]) {
+    for (const p of deps) {
       params.spinner.start(`Start installing ${chalk.bold(p)} package.`);
 
       if (params.selectedPackageManager === 'npm') {
@@ -773,12 +693,10 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private async __installDependencies(params: __InstallDependenciesParams) {
-    const executeInstallBasedOnPm =
-      params.selectedPackageManager === 'npm'
-        ? 'npm'
-        : params.selectedPackageManager === 'pnpm'
-          ? 'pnpm'
-          : 'bun';
+    const executeInstallBasedOnPm = this.__choosePackageManagerCommand(
+      params.selectedPackageManager,
+      true,
+    );
 
     params.spinner.start(
       `Installing ${chalk.bold(params.selectedDependencies.join(', '))}, please wait for a moment.`,
@@ -819,29 +737,15 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       BASE_PATH,
       'templates/addons/config',
     );
-    __pathNotFound(prettierTemplatesPath);
-
-    const dockerTemplates = fse.readdirSync(prettierTemplatesPath, {
-      withFileTypes: true,
-    });
-
-    const prettierFile = dockerTemplates.find((f) => f.name === '.prettierrc');
-
-    if (!prettierFile) {
-      throw new UnidentifiedTemplateError(
-        `${chalk.bold('Unidentified template')}: ${chalk.bold('.prettierrc')} file template is not defined.`,
-      );
-    }
-
-    const prettierFileSrcPath = path.join(
-      prettierFile.parentPath,
-      prettierFile.name,
+    const { sourcePath } = this.__findTemplate(
+      prettierTemplatesPath,
+      '.prettierrc',
     );
-    const prettierFileDesPath = path.join(params.desPath, prettierFile.name);
+    const prettierFileDesPath = path.join(params.desPath, '.prettierrc');
 
     params.spinner.start(`Initializing ${chalk.bold('.prettierrc')} file.`);
 
-    await fse.copy(prettierFileSrcPath, prettierFileDesPath);
+    await fse.copy(sourcePath, prettierFileDesPath);
 
     params.spinner.succeed(
       `Adding ${chalk.bold('.prettierrc')} configuration completed.`,
@@ -849,11 +753,10 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   }
 
   private async __installEsLint(params: __InstallDependenciesParams) {
-    const executeInstallBasedOnPm = {
-      npm: 'npx',
-      pnpm: 'pnpx',
-      bun: 'bunx',
-    }[params.selectedPackageManager];
+    const executeInstallBasedOnPm = this.__choosePackageManagerCommand(
+      params.selectedPackageManager,
+      false,
+    );
 
     const initializeEsLintQuestion = await inquirer.prompt({
       name: 'addESLintConfig',
@@ -976,6 +879,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     );
   }
 
+  // ------------------------------------------------------------------------
+  // CACHE HELPERS
+  // ------------------------------------------------------------------------
   private async __checkCacheReady(
     cacheBasePath: string,
     cacheTtlMs: number,
@@ -1041,5 +947,90 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     await fse.copy(srcPath, desPath);
     return desPath;
+  }
+
+  private __findTemplate(basePath: string, filename: string) {
+    __pathNotFound(basePath);
+
+    const entries = fse.readdirSync(basePath, { withFileTypes: true });
+    const file = entries.find((f) => f.name === filename);
+
+    if (!file) {
+      throw new UnidentifiedTemplateError(
+        `${chalk.bold('Unidentified template')}: ${chalk.bold(
+          filename,
+        )} file template is not defined.`,
+      );
+    }
+
+    return {
+      sourcePath: path.join(basePath, file.name),
+      name: file.name,
+    };
+  }
+
+  private async __copyWithSpinner(
+    spinner: Ora,
+    label: string,
+    sourcePath: string,
+    targetPath: string,
+  ) {
+    spinner.start(
+      `Copying ${chalk.bold(label)} into ${chalk.bold(targetPath)}...`,
+    );
+    await fse.copy(sourcePath, targetPath);
+    spinner.succeed(`Copying ${chalk.bold(label)} succeed.`);
+  }
+
+  private __choosePackageManagerCommand(
+    packageManager: string,
+    forInstall: boolean = true,
+  ) {
+    if (forInstall) {
+      return packageManager === 'npm'
+        ? 'npm'
+        : packageManager === 'pnpm'
+          ? 'pnpm'
+          : 'bun';
+    }
+
+    return packageManager === 'npm'
+      ? 'npx'
+      : packageManager === 'pnpm'
+        ? 'pnpx'
+        : 'bunx';
+  }
+
+  // ------------------------------------------------------------------------
+  // TEMPLATE PATH GETTERS
+  // ------------------------------------------------------------------------
+  private __getDockerPaths(filename: string, desPath: string) {
+    const dockerTemplatesPath = path.join(BASE_PATH, 'templates/addons/docker');
+    const { sourcePath } = this.__findTemplate(dockerTemplatesPath, filename);
+
+    return {
+      sourcePath,
+      desPath: path.join(desPath, filename),
+    };
+  }
+
+  private __getReadmePaths(filename: string, desPath: string) {
+    const readmeTemplatesPath = path.join(BASE_PATH, 'templates/addons/others');
+    const { sourcePath } = this.__findTemplate(readmeTemplatesPath, filename);
+
+    return {
+      sourcePath,
+      desPath: path.join(desPath, filename),
+    };
+  }
+
+  private __getEnvPaths(filename: string, desPath: string) {
+    const envTemplatesPath = path.join(BASE_PATH, 'templates/addons/config');
+    const { sourcePath } = this.__findTemplate(envTemplatesPath, filename);
+
+    return {
+      sourcePath,
+      desPath: path.join(desPath, filename),
+    };
   }
 }
