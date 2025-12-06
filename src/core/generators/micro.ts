@@ -40,7 +40,7 @@ import {
   isEmptyString,
   isUndefined,
 } from '@/utils/guard.js';
-import boxen from 'boxen';
+import { errorBox, warnBox } from '@/utils/info-box.js';
 import chalk from 'chalk';
 import { execa } from 'execa';
 import fse from 'fs-extra';
@@ -50,6 +50,8 @@ import path from 'path';
 
 export class MicroGenerator implements MicroGeneratorBuilder {
   static #instance: MicroGenerator;
+
+  #templateCache = new Map<string, string[]>();
 
   private constructor() {}
 
@@ -104,15 +106,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
           params.projectName,
         );
       } catch (error: Mixed) {
-        console.error(
-          boxen(error.message, {
-            title: error.name,
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'red',
-          }),
-        );
+        errorBox(error);
       }
     };
   }
@@ -257,15 +251,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
             createdMs: stat.birthtimeMs,
           } as CachedEntry;
         } catch (error: Mixed) {
-          console.error(
-            boxen(error.message, {
-              title: error.name,
-              titleAlignment: 'center',
-              padding: 1,
-              margin: 1,
-              borderColor: 'red',
-            }),
-          );
+          errorBox(error);
         }
       }),
     );
@@ -282,16 +268,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const entryPath = path.join(cacheBasePath, projectType, cacheName);
 
     await fse.ensureDir(entryPath).catch((error: Mixed) => {
-      console.error(
-        boxen(error.message, {
-          title: error.name,
-          titleAlignment: 'center',
-          padding: 1,
-          margin: 1,
-          borderColor: 'red',
-        }),
-      );
-
+      errorBox(error);
       process.exit(0);
     });
 
@@ -388,14 +365,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     });
 
     if (!initializeGitQuestion.addGit) {
-      console.warn(
-        boxen(`You can run ${chalk.bold('git init')} later.`, {
-          title: 'Warning Information',
-          titleAlignment: 'center',
-          padding: 1,
-          margin: 1,
-          borderColor: 'yellow',
-        }),
+      warnBox(
+        'Warning Information',
+        `You can run ${chalk.bold('git init')} later.`,
       );
     }
 
@@ -560,17 +532,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const tsConfigFile = frameworkFiles.find((f) => f.name === 'tsconfig.json');
 
     if (!isUndefined(tsConfigFile)) {
-      console.warn(
-        boxen(
-          `${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(params.projectName)}, means that ${chalk.bold('Typescript')} already installed.`,
-          {
-            title: 'Warning Information',
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'yellow',
-          },
-        ),
+      warnBox(
+        'Warning Information',
+        `${chalk.bold('tsconfig.json')} is exist on ${chalk.bold(params.projectName)}, means that ${chalk.bold('Typescript')} already installed.`,
       );
     }
 
@@ -596,14 +560,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     });
 
     if (!initializeTsQuestion.addTsConfig) {
-      console.warn(
-        boxen(`You can initialize ${chalk.bold('Typescript')} later.`, {
-          title: 'Warning Information',
-          titleAlignment: 'center',
-          padding: 1,
-          margin: 1,
-          borderColor: 'yellow',
-        }),
+      warnBox(
+        'Warning Information',
+        `You can initialize ${chalk.bold('Typescript')} later.`,
       );
     }
 
@@ -766,17 +725,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     });
 
     if (!initializeEsLintQuestion.addESLintConfig) {
-      console.warn(
-        boxen(
-          `You can execute ${chalk.bold(`${executeInstallBasedOnPm} eslint --init`)} later.`,
-          {
-            title: 'Warning Information',
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'yellow',
-          },
-        ),
+      warnBox(
+        'Warning Information',
+        `You can execute ${chalk.bold(`${executeInstallBasedOnPm} eslint --init`)} later.`,
       );
     }
 
@@ -833,15 +784,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     });
 
     if (!updateDependenciesQuestion.updatePackages) {
-      console.warn(
-        boxen('You can update the dependencies later.', {
-          title: 'Warning Information',
-          titleAlignment: 'center',
-          padding: 1,
-          margin: 1,
-          borderColor: 'yellow',
-        }),
-      );
+      warnBox('Warning Information', 'You can update the dependencies later.');
     }
 
     params.spinner.start(
@@ -952,10 +895,10 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   private __findTemplate(basePath: string, filename: string) {
     __pathNotFound(basePath);
 
-    const entries = fse.readdirSync(basePath, { withFileTypes: true });
-    const file = entries.find((f) => f.name === filename);
+    const names = this.readDirCached(basePath);
+    const found = names.find((name) => name === filename);
 
-    if (!file) {
+    if (!found) {
       throw new UnidentifiedTemplateError(
         `${chalk.bold('Unidentified template')}: ${chalk.bold(
           filename,
@@ -964,8 +907,8 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     }
 
     return {
-      sourcePath: path.join(basePath, file.name),
-      name: file.name,
+      sourcePath: path.join(basePath, found),
+      name: found,
     };
   }
 
@@ -1032,5 +975,19 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       sourcePath,
       desPath: path.join(desPath, filename),
     };
+  }
+
+  // ------------------------------------------------------------------------
+  // MICRO HELPERS
+  // ------------------------------------------------------------------------
+  private readDirCached(dir: string): string[] {
+    const cached = this.#templateCache.get(dir);
+
+    if (cached) return cached;
+
+    const entries = fse.readdirSync(dir);
+    this.#templateCache.set(dir, entries);
+
+    return entries;
   }
 }

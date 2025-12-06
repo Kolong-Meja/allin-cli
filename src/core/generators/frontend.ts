@@ -1,4 +1,4 @@
-import { BASE_PATH, __getUserRealName, CACHE_BASE_PATH } from '@/config.js';
+import { __getUserRealName, BASE_PATH, CACHE_BASE_PATH } from '@/config.js';
 import { FRONTEND_FRAMEWORKS, templatesMap } from '@/constants/global.js';
 import {
   PathNotFoundError,
@@ -9,7 +9,7 @@ import { __unableOverwriteProject } from '@/exceptions/trigger.js';
 import type { GeneratorBuilder } from '@/interfaces/global.js';
 import type { __GenerateProjectParams } from '@/types/global.js';
 import { isUndefined } from '@/utils/guard.js';
-import boxen from 'boxen';
+import { infoBox, warnBox } from '@/utils/info-box.js';
 import chalk from 'chalk';
 import fse from 'fs-extra';
 import inquirer from 'inquirer';
@@ -135,17 +135,9 @@ export class FrontendGenerator implements GeneratorBuilder {
 
     const destPathExists = fse.existsSync(destPath);
     if (params.optionValues.force && !destPathExists) {
-      console.warn(
-        boxen(
-          '-f, --force option will not be used because project does not exist.',
-          {
-            title: 'Warning Information',
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'yellow',
-          },
-        ),
+      warnBox(
+        'Warning Information',
+        '-f, --force option will not be used because project does not exist.',
       );
     }
 
@@ -224,11 +216,9 @@ export class FrontendGenerator implements GeneratorBuilder {
     const selectedDeps = dependencyPrompt[selectedFramework.promptKey];
 
     if (selectedDeps.length < 1) {
-      console.log(
-        boxen(
-          `To be honest, you can install the dependencies later, right ${chalk.bold((await __getUserRealName()).split(' ')[0])}?`,
-          { padding: 1, margin: 1, borderColor: 'blue' },
-        ),
+      infoBox(
+        'Project Information',
+        `To be honest, you can install the dependencies later, right ${chalk.bold((await __getUserRealName()).split(' ')[0])}?`,
       );
     }
 
@@ -257,17 +247,9 @@ export class FrontendGenerator implements GeneratorBuilder {
     // ------------------------------------------------------------------------
     // SUMMARY INFORMATION
     // ------------------------------------------------------------------------
-    console.log(
-      boxen(
-        `You can check the project at ${chalk.bold(selectedFramework.templateDest)}`,
-        {
-          title: 'Project Information',
-          titleAlignment: 'center',
-          padding: 1,
-          margin: 1,
-          borderColor: 'blue',
-        },
-      ),
+    infoBox(
+      'Project Information',
+      `You can check the project at ${chalk.bold(selectedFramework.templateDest)}`,
     );
   }
 }

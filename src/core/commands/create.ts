@@ -11,7 +11,7 @@ import {
   __sanitizeProjectName,
 } from '@/utils/string.js';
 
-import { BASE_PATH, __getUserRealName, CACHE_BASE_PATH } from '@/config.js';
+import { __getUserRealName, BASE_PATH, CACHE_BASE_PATH } from '@/config.js';
 import {
   DIRTY_WORDS,
   PROJECT_TYPES,
@@ -21,8 +21,9 @@ import { __pathNotFound } from '@/exceptions/trigger.js';
 import type { CachedEntry, CreateCommandBuilder } from '@/interfaces/global.js';
 import type { __CreateProjectParams, Mixed } from '@/types/global.js';
 import { isNull, isUndefined } from '@/utils/guard.js';
-import boxen from 'boxen';
+import { errorBox, infoBox, warnBox } from '@/utils/info-box.js';
 import chalk from 'chalk';
+import type { OptionValues } from 'commander';
 import fse from 'fs-extra';
 import inquirer from 'inquirer';
 import ora, { type Ora } from 'ora';
@@ -30,7 +31,6 @@ import path from 'path';
 import { BackendGenerator } from '../generators/backend.js';
 import { FrontendGenerator } from '../generators/frontend.js';
 import { MicroGenerator } from '../generators/micro.js';
-import type { OptionValues } from 'commander';
 
 export class CreateCommand implements CreateCommandBuilder {
   static #instance: CreateCommand;
@@ -109,17 +109,9 @@ export class CreateCommand implements CreateCommandBuilder {
 
       // WARN IF PROJECT TYPE MANUALLY SET BUT AUTO DETECTED
       if (!isNull(isProjectTypeDetected) && !isUndefined(params.projectType)) {
-        console.warn(
-          boxen(
-            'The [type] argument will not be used, as the system detects the project type from the project name.',
-            {
-              title: 'Warning Information',
-              titleAlignment: 'center',
-              padding: 1,
-              margin: 1,
-              borderColor: 'yellow',
-            },
-          ),
+        warnBox(
+          'Warning Information',
+          'The [type] argument will not be used, as the system detects the project type from the project name.',
         );
       }
 
@@ -206,15 +198,9 @@ export class CreateCommand implements CreateCommandBuilder {
         !reuseChoicePrompt.reuseProject &&
         typeof reuseChoicePrompt.reuseProject !== 'undefined'
       ) {
-        console.log(
-          boxen(
-            `Allright ${chalk.bold((await __getUserRealName()).split(' ')[0])}, thanks for the confirmation.`,
-            {
-              padding: 1,
-              margin: 1,
-              borderColor: 'blue',
-            },
-          ),
+        infoBox(
+          'Project Information',
+          `Allright ${chalk.bold((await __getUserRealName()).split(' ')[0])}, thanks for the confirmation.`,
         );
       }
 
@@ -273,15 +259,7 @@ export class CreateCommand implements CreateCommandBuilder {
       const tempPath = path.join(BASE_PATH, 'templates', 'temp');
       this.__removeUnusedProject(tempPath);
 
-      console.error(
-        boxen(errorMessage, {
-          title: error.name,
-          titleAlignment: 'center',
-          padding: 1,
-          margin: 1,
-          borderColor: 'red',
-        }),
-      );
+      errorBox(error);
     } finally {
       spinner.clear();
     }
@@ -303,15 +281,7 @@ export class CreateCommand implements CreateCommandBuilder {
       try {
         await fse.remove(itemPath);
       } catch (error: Mixed) {
-        console.error(
-          boxen(error.message, {
-            title: error.name,
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'red',
-          }),
-        );
+        errorBox(error);
       }
     }
   }
