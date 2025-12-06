@@ -11,21 +11,22 @@ import {
   __sanitizeProjectName,
 } from '@/utils/string.js';
 
-import { __basePath, __userRealName, CACHE_BASE_PATH } from '@/config.js';
+import { __getUserRealName, BASE_PATH, CACHE_BASE_PATH } from '@/config.js';
 import {
   DIRTY_WORDS,
   PROJECT_TYPES,
   TEMPLATES_META_MAP,
 } from '@/constants/global.js';
 import { __pathNotFound } from '@/exceptions/trigger.js';
-import type { CreateCommandBuilder } from '@/interfaces/global.js';
+import type { CachedEntry, CreateCommandBuilder } from '@/interfaces/global.js';
 import type { __CreateProjectParams, Mixed } from '@/types/global.js';
 import { isNull, isUndefined } from '@/utils/guard.js';
-import boxen from 'boxen';
+import { errorBox, infoBox, warnBox } from '@/utils/info-box.js';
 import chalk from 'chalk';
+import type { OptionValues } from 'commander';
 import fse from 'fs-extra';
 import inquirer from 'inquirer';
-import ora from 'ora';
+import ora, { type Ora } from 'ora';
 import path from 'path';
 import { BackendGenerator } from '../generators/backend.js';
 import { FrontendGenerator } from '../generators/frontend.js';
@@ -58,6 +59,7 @@ export class CreateCommand implements CreateCommandBuilder {
     const start = performance.now();
 
     try {
+      // VALIDATE PROJECT TYPE
       if (
         !isUndefined(params.projectType) &&
         !PROJECT_TYPES.includes(params.projectType)
@@ -67,6 +69,7 @@ export class CreateCommand implements CreateCommandBuilder {
         );
       }
 
+      // PROMPT PROJECT NAME
       const projectNameQuestion = await inquirer.prompt({
         name: 'projectName',
         type: 'input',
@@ -80,7 +83,6 @@ export class CreateCommand implements CreateCommandBuilder {
           }
 
           const sanitizedStr = __sanitizeProjectName(input);
-
           if (!__isValidProjectName(sanitizedStr)) {
             return 'Project name invalid. Use letters, digits, hyphen or underscore, start with a letter.';
           }
@@ -102,25 +104,18 @@ export class CreateCommand implements CreateCommandBuilder {
       };
 
       const userProjectName = __renewProjectName(resolveProjectName());
-
       const isProjectTypeDetected =
         __detectProjectTypeFromInput(userProjectName);
 
+      // WARN IF PROJECT TYPE MANUALLY SET BUT AUTO DETECTED
       if (!isNull(isProjectTypeDetected) && !isUndefined(params.projectType)) {
-        console.warn(
-          boxen(
-            'The [type] argument will not be used, as the system detects the project type from the project name.',
-            {
-              title: 'Warning Information',
-              titleAlignment: 'center',
-              padding: 1,
-              margin: 1,
-              borderColor: 'yellow',
-            },
-          ),
+        warnBox(
+          'Warning Information',
+          'The [type] argument will not be used, as the system detects the project type from the project name.',
         );
       }
 
+      // PROMPT PROJECT TYPE IF NOT PROVIDED
       const projectTypeQuestion = await inquirer.prompt([
         {
           name: 'projectType',
@@ -143,7 +138,6 @@ export class CreateCommand implements CreateCommandBuilder {
           const selectedTemplate = TEMPLATES_META_MAP.get(
             params.options.template,
           );
-
           if (!selectedTemplate) {
             throw new UnidentifiedTemplateError(
               `${chalk.bold('Unidentified template model')}: ${chalk.bold(
@@ -151,7 +145,6 @@ export class CreateCommand implements CreateCommandBuilder {
               )} template model is not found.`,
             );
           }
-
           return selectedTemplate.category;
         }
 
@@ -160,6 +153,7 @@ export class CreateCommand implements CreateCommandBuilder {
 
       const userProjectType = resolveProjectType();
 
+      // PROMPT PROJECT DIRECTORY
       const projectDirQuestion = await inquirer.prompt([
         {
           name: 'projectDir',
@@ -178,18 +172,15 @@ export class CreateCommand implements CreateCommandBuilder {
         },
       ]);
 
-      const resolveProjectDir = (): string => {
-        return (
-          (params.options.dir ? params.options.dir : undefined) ??
-          params.projectDir ??
-          projectDirQuestion.projectDir
-        );
-      };
+      const resolveProjectDir = (): string =>
+        params.options.dir ??
+        params.projectDir ??
+        projectDirQuestion.projectDir;
 
       const userProjectDir = resolveProjectDir();
       __pathNotFound(userProjectDir);
 
-      // ini akar masalahnya
+      // HANDLE CACHE & REUSE CONFIRMATION
       const cachedForType = await this.microGenerator.__getListCachedProjects(
         CACHE_BASE_PATH,
         userProjectType,
@@ -207,80 +198,45 @@ export class CreateCommand implements CreateCommandBuilder {
         !reuseChoicePrompt.reuseProject &&
         typeof reuseChoicePrompt.reuseProject !== 'undefined'
       ) {
-        console.log(
-          boxen(
-            `Allright ${chalk.bold((await __userRealName()).split(' ')[0])}, thanks for the confirmation.`,
-            {
-              padding: 1,
-              margin: 1,
-              borderColor: 'blue',
-            },
-          ),
+        infoBox(
+          'Project Information',
+          `Allright ${chalk.bold((await __getUserRealName()).split(' ')[0])}, thanks for the confirmation.`,
         );
       }
 
+      // RUN GENERATION PROCESS
       switch (userProjectType) {
         case 'backend':
-          const backendProjectTemplateDirPath = path.join(
-            __basePath,
-            'templates',
+          await this.__runBackendProjectGeneratingProcess(
             userProjectType,
+            params.projectName,
+            spinner,
+            params.options,
+            userProjectName,
+            userProjectDir,
+            reuseChoicePrompt.reuseProject,
+            cachedForType,
           );
-          __pathNotFound(backendProjectTemplateDirPath);
-
-          const backendProjectTemplateFiles = fse.readdirSync(
-            backendProjectTemplateDirPath,
-            {
-              withFileTypes: true,
-            },
-          );
-          const backendGenerator = BackendGenerator.instance;
-
-          await backendGenerator.generate({
-            projectNameArg: userProjectName,
-            spinner: spinner,
-            optionValues: params.options,
-            templatesFiles: backendProjectTemplateFiles,
-            projectName: userProjectName,
-            projectType: userProjectType,
-            projectDir: userProjectDir,
-            isUsingCacheProject: reuseChoicePrompt.reuseProject,
-            cachedEntries: cachedForType,
-          });
           break;
         case 'frontend':
-          const frontendProjectTemplateDirPath = path.join(
-            __basePath,
-            'templates',
+          await this.__runFrontendProjectGeneratingProcess(
             userProjectType,
+            params.projectName,
+            spinner,
+            params.options,
+            userProjectName,
+            userProjectDir,
+            reuseChoicePrompt.reuseProject,
+            cachedForType,
           );
-          __pathNotFound(frontendProjectTemplateDirPath);
-
-          const frontendProjectTemplateFiles = fse.readdirSync(
-            frontendProjectTemplateDirPath,
-            {
-              withFileTypes: true,
-            },
-          );
-          const frontendGenerator = FrontendGenerator.instance;
-
-          await frontendGenerator.generate({
-            projectNameArg: params.projectName,
-            spinner: spinner,
-            optionValues: params.options,
-            templatesFiles: frontendProjectTemplateFiles,
-            projectName: userProjectName,
-            projectType: userProjectType,
-            projectDir: userProjectDir,
-            isUsingCacheProject: reuseChoicePrompt.reuseProject,
-            cachedEntries: cachedForType,
-          });
           break;
       }
 
+      // DONE
       const end = performance.now();
+      const convertToSeconds = ((end - start) / 1000).toFixed(3);
       spinner.succeed(
-        `Your ${chalk.bold(userProjectName)} is already created. Executed for ${chalk.bold((end - start).toFixed(3))} ms`,
+        `Your ${chalk.bold(userProjectName)} is already created. Executed for ${chalk.bold(convertToSeconds)} s`,
       );
     } catch (error: Mixed) {
       spinner.fail('Failed to create project.\n');
@@ -300,33 +256,24 @@ export class CreateCommand implements CreateCommandBuilder {
         errorMessage = error.message;
       }
 
-      const tempPath = path.join(__basePath, 'templates', 'temp');
+      const tempPath = path.join(BASE_PATH, 'templates', 'temp');
       this.__removeUnusedProject(tempPath);
 
-      console.error(
-        boxen(errorMessage, {
-          title: error.name,
-          titleAlignment: 'center',
-          padding: 1,
-          margin: 1,
-          borderColor: 'red',
-        }),
-      );
+      errorBox(error);
     } finally {
       spinner.clear();
     }
   }
 
+  // --------------------------------------------------------------------------
+  // HELPER METHODS
+  // --------------------------------------------------------------------------
   private async __removeUnusedProject(tempPath: string) {
-    const isPathExist = await fse.pathExists(tempPath);
+    const exists = await fse.pathExists(tempPath);
+    if (!exists) await fse.ensureDir(tempPath);
 
-    if (!isPathExist) {
-      await fse.ensureDir(tempPath);
-    }
-
-    const tempSubFolders = await fse.readdir(tempPath, { withFileTypes: true });
-
-    for (const folder of tempSubFolders) {
+    const subFolders = await fse.readdir(tempPath, { withFileTypes: true });
+    for (const folder of subFolders) {
       if (!folder.isDirectory()) continue;
 
       const itemPath = path.join(tempPath, folder.name);
@@ -334,16 +281,66 @@ export class CreateCommand implements CreateCommandBuilder {
       try {
         await fse.remove(itemPath);
       } catch (error: Mixed) {
-        console.error(
-          boxen(error.message, {
-            title: error.name,
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'red',
-          }),
-        );
+        errorBox(error);
       }
     }
+  }
+
+  private async __runBackendProjectGeneratingProcess(
+    projectType: string,
+    projectNameArg: string,
+    spinner: Ora,
+    options: OptionValues,
+    projectName: string,
+    projectDir: string,
+    isReuseProject: boolean,
+    cachedForType: CachedEntry[],
+  ) {
+    const templateDir = path.join(BASE_PATH, 'templates', projectType);
+    __pathNotFound(templateDir);
+
+    const templateFiles = fse.readdirSync(templateDir, { withFileTypes: true });
+    const backendGenerator = BackendGenerator.instance;
+
+    await backendGenerator.generate({
+      projectNameArg: projectNameArg,
+      spinner: spinner,
+      optionValues: options,
+      templatesFiles: templateFiles,
+      projectName: projectName,
+      projectType: projectType,
+      projectDir: projectDir,
+      isUsingCacheProject: isReuseProject,
+      cachedEntries: cachedForType,
+    });
+  }
+
+  private async __runFrontendProjectGeneratingProcess(
+    projectType: string,
+    projectNameArg: string,
+    spinner: Ora,
+    options: OptionValues,
+    projectName: string,
+    projectDir: string,
+    isReuseProject: boolean,
+    cachedForType: CachedEntry[],
+  ) {
+    const templateDir = path.join(BASE_PATH, 'templates', projectType);
+    __pathNotFound(templateDir);
+
+    const templateFiles = fse.readdirSync(templateDir, { withFileTypes: true });
+    const frontendGenerator = FrontendGenerator.instance;
+
+    await frontendGenerator.generate({
+      projectNameArg: projectNameArg,
+      spinner: spinner,
+      optionValues: options,
+      templatesFiles: templateFiles,
+      projectName: projectName,
+      projectType: projectType,
+      projectDir: projectDir,
+      isUsingCacheProject: isReuseProject,
+      cachedEntries: cachedForType,
+    });
   }
 }

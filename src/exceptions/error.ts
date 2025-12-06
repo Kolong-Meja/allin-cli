@@ -1,3 +1,19 @@
+export class ContentNotFoundError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = 'ContentNotFoundError';
+    Object.setPrototypeOf(this, ContentNotFoundError.prototype);
+  }
+}
+
+export class FileNotFoundError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = 'FileNotFoundError';
+    Object.setPrototypeOf(this, FileNotFoundError.prototype);
+  }
+}
+
 export class PathNotFoundError extends Error {
   constructor(message: string | undefined) {
     super(message);

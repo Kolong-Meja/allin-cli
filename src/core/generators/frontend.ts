@@ -1,4 +1,4 @@
-import { __basePath, __userRealName, CACHE_BASE_PATH } from '@/config.js';
+import { __getUserRealName, BASE_PATH, CACHE_BASE_PATH } from '@/config.js';
 import { FRONTEND_FRAMEWORKS, templatesMap } from '@/constants/global.js';
 import {
   PathNotFoundError,
@@ -9,7 +9,7 @@ import { __unableOverwriteProject } from '@/exceptions/trigger.js';
 import type { GeneratorBuilder } from '@/interfaces/global.js';
 import type { __GenerateProjectParams } from '@/types/global.js';
 import { isUndefined } from '@/utils/guard.js';
-import boxen from 'boxen';
+import { infoBox, warnBox } from '@/utils/info-box.js';
 import chalk from 'chalk';
 import fse from 'fs-extra';
 import inquirer from 'inquirer';
@@ -35,12 +35,18 @@ export class FrontendGenerator implements GeneratorBuilder {
     return FrontendGenerator.#instance;
   }
 
+  // --------------------------------------------------------------------------
+  // MAIN ENTRY
+  // --------------------------------------------------------------------------
   public async generate(params: __GenerateProjectParams) {
     if (params.isUsingCacheProject !== false && params.cachedEntries.length > 0)
       await this.__generateCachedProject(params);
     else await this.__generateNonCachedProject(params);
   }
 
+  // --------------------------------------------------------------------------
+  // CACHED PROJECT GENERATION
+  // --------------------------------------------------------------------------
   private async __generateCachedProject(params: __GenerateProjectParams) {
     const cacheProjectChoices = params.cachedEntries.map((c) => c.name);
     const chosenProject = await inquirer.prompt({
@@ -61,9 +67,7 @@ export class FrontendGenerator implements GeneratorBuilder {
     }
 
     const desPath = path.join(params.projectDir, params.projectName);
-    const isPathExist = fse.existsSync(desPath);
-
-    if (isPathExist) {
+    if (await fse.pathExists(desPath)) {
       await fse.remove(desPath);
     }
 
@@ -75,8 +79,11 @@ export class FrontendGenerator implements GeneratorBuilder {
     );
   }
 
+  // --------------------------------------------------------------------------
+  // NON-CACHED PROJECT GENERATION
+  // --------------------------------------------------------------------------
   private async __generateNonCachedProject(params: __GenerateProjectParams) {
-    const chooseFrontendFrameworkQuestion = await inquirer.prompt([
+    const { frontendFramework } = await inquirer.prompt([
       {
         name: 'frontendFramework',
         type: 'list',
@@ -93,9 +100,7 @@ export class FrontendGenerator implements GeneratorBuilder {
     ]);
 
     const frontendFrameworkResource = isUndefined(params.optionValues.template)
-      ? FRONTEND_FRAMEWORKS.frameworks.find(
-          (f) => f.name === chooseFrontendFrameworkQuestion.frontendFramework,
-        )
+      ? FRONTEND_FRAMEWORKS.frameworks.find((f) => f.name === frontendFramework)
       : FRONTEND_FRAMEWORKS.frameworks.find(
           (f) => f.name === params.optionValues.template,
         );
@@ -117,70 +122,56 @@ export class FrontendGenerator implements GeneratorBuilder {
       );
     }
 
-    const frontendFrameworkTemplateSrcPath = path.join(
+    // DEFINE TEMPLATES PATHS
+    const srcPath = path.join(
       frontendFrameworkFolder.parentPath,
       frontendFrameworkFolder.name,
     );
-    const frontendFrameworkTemplateDesPath = path.join(
+    const destPath = path.join(
       params.projectDir,
       params.projectName ?? params.projectNameArg,
     );
-    __unableOverwriteProject(
-      frontendFrameworkTemplateDesPath,
-      params.optionValues,
-    );
+    __unableOverwriteProject(destPath, params.optionValues);
 
-    const isPathExist = fse.existsSync(frontendFrameworkTemplateDesPath);
-
-    if (params.optionValues.force && !isPathExist) {
-      console.warn(
-        boxen(
-          '-f, --force option will be not use, because project is not exist.',
-          {
-            title: 'Warning Information',
-            titleAlignment: 'center',
-            padding: 1,
-            margin: 1,
-            borderColor: 'yellow',
-          },
-        ),
+    const destPathExists = fse.existsSync(destPath);
+    if (params.optionValues.force && !destPathExists) {
+      warnBox(
+        'Warning Information',
+        '-f, --force option will not be used because project does not exist.',
       );
     }
 
-    const selectedFrontendFramework = isUndefined(params.optionValues.template)
-      ? templatesMap(
-          frontendFrameworkTemplateSrcPath,
-          frontendFrameworkTemplateDesPath,
-        ).get(chooseFrontendFrameworkQuestion.frontendFramework)
-      : templatesMap(
-          frontendFrameworkTemplateSrcPath,
-          frontendFrameworkTemplateDesPath,
-        ).get(params.optionValues.template);
+    // GET SELECTED FRAMEWORK
+    const selectedFramework = isUndefined(params.optionValues.template)
+      ? templatesMap(srcPath, destPath).get(frontendFramework)
+      : templatesMap(srcPath, destPath).get(params.optionValues.template);
 
-    if (!selectedFrontendFramework) {
-      const errorMessage = isUndefined(params.optionValues.template)
-        ? `Unsupported framework: ${chooseFrontendFrameworkQuestion.frontendFramework}`
+    if (!selectedFramework) {
+      const errorMsg = isUndefined(params.optionValues.template)
+        ? `Unsupported framework: ${frontendFramework}`
         : `Unsupported framework: ${params.optionValues.template}`;
-
-      throw new Error(errorMessage);
+      throw new Error(errorMsg);
     }
 
+    // SETUP PROJECT BASE STRUCTURE
     const microGenerator = MicroGenerator.instance;
-
-    const setupProjectExecutor = await microGenerator.setupProject({
+    const setupExecutor = await microGenerator.setupProject({
       spinner: params.spinner,
       projectName: params.projectName ?? params.projectNameArg,
       projectType: params.projectType,
-      selectedFramework: selectedFrontendFramework.actualName,
-      sourcePath: selectedFrontendFramework.templateSource,
-      desPath: selectedFrontendFramework.templateDest,
+      selectedFramework: selectedFramework.actualName,
+      sourcePath: selectedFramework.templateSource,
+      desPath: selectedFramework.templateDest,
       optionValues: params.optionValues,
     });
 
-    const tempDir = path.join(__basePath, 'templates/temp', params.projectName);
+    const tempDir = path.join(BASE_PATH, 'templates/temp', params.projectName);
 
+    // ------------------------------------------------------------------------
+    // OPTIONAL DOCKER SETUP
+    // ------------------------------------------------------------------------
     if (params.optionValues.docker) {
-      const isAddingDockerQuestion = await inquirer.prompt([
+      const { addDocker, addDockerBake } = await inquirer.prompt([
         {
           name: 'addDocker',
           type: 'confirm',
@@ -196,81 +187,69 @@ export class FrontendGenerator implements GeneratorBuilder {
         },
       ]);
 
-      if (isAddingDockerQuestion.addDocker) {
+      if (addDocker) {
         await microGenerator.setupDocker({
           spinner: params.spinner,
-          isAddingDocker: isAddingDockerQuestion.addDocker,
-          isAddingBake: isAddingDockerQuestion.addDockerBake,
+          isAddingDocker: addDocker,
+          isAddingBake: addDockerBake,
           selectedPackageManager: params.optionValues.packageManager,
           desPath: tempDir,
         });
       }
     }
 
-    const selectDependenciesQuestion = await inquirer.prompt([
+    // ------------------------------------------------------------------------
+    // DEPENDENCIES INSTALLATION
+    // ------------------------------------------------------------------------
+    const dependencyPrompt = await inquirer.prompt([
       {
-        name: selectedFrontendFramework.promptKey,
+        name: selectedFramework.promptKey,
         type: 'checkbox',
         message: 'Select dependencies to include in your project:',
-        choices: selectedFrontendFramework.packages
-          .sort((i, e) =>
-            i.name.toLowerCase().localeCompare(e.name.toLowerCase(), 'en-US'),
-          )
+        choices: selectedFramework.packages
+          .sort((a, b) => a.name.localeCompare(b.name, 'en-US'))
           .map((p) => p.originName),
         loop: false,
       },
     ]);
 
-    const selectedFrontendDependencies =
-      selectDependenciesQuestion[selectedFrontendFramework.promptKey];
+    const selectedDeps = dependencyPrompt[selectedFramework.promptKey];
 
-    if (selectedFrontendDependencies < 1) {
-      console.log(
-        boxen(
-          `To be honest, you can install the dependencies later, right ${chalk.bold((await __userRealName()).split(' ')[0])}?`,
-          {
-            padding: 1,
-            margin: 1,
-            borderColor: 'blue',
-          },
-        ),
+    if (selectedDeps.length < 1) {
+      infoBox(
+        'Project Information',
+        `To be honest, you can install the dependencies later, right ${chalk.bold((await __getUserRealName()).split(' ')[0])}?`,
       );
     }
 
     await microGenerator.setupInstallation({
       spinner: params.spinner,
-      selectedDependencies: selectedFrontendDependencies,
+      selectedDependencies: selectedDeps,
       selectedPackageManager: params.optionValues.packageManager,
       projectName: params.projectName ?? params.projectNameArg,
       desPath: tempDir,
     });
 
+    // ------------------------------------------------------------------------
+    // POST-SETUP CUSTOMIZATION
+    // ------------------------------------------------------------------------
     await microGenerator.setupOthers({
       spinner: params.spinner,
       optionValues: params.optionValues,
       projectType: params.projectType,
       projectName: params.projectName ?? params.projectNameArg,
-      selectedFramework: selectedFrontendFramework.name,
+      selectedFramework: selectedFramework.name,
       desPath: tempDir,
     });
 
-    if (setupProjectExecutor) {
-      await setupProjectExecutor();
-    }
+    if (setupExecutor) await setupExecutor();
 
-    console.log(
-      boxen(
-        `You can check the project on ${chalk.bold(
-          selectedFrontendFramework.templateDest,
-        )}`,
-        {
-          title: 'Project Information',
-          titleAlignment: 'center',
-          padding: 1,
-          margin: 1,
-          borderColor: 'blue',
-        },
-      ),
+    // ------------------------------------------------------------------------
+    // SUMMARY INFORMATION
+    // ------------------------------------------------------------------------
+    infoBox(
+      'Project Information',
+      `You can check the project at ${chalk.bold(selectedFramework.templateDest)}`,
     );
   }
 }
