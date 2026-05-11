@@ -8,7 +8,6 @@ import {
 import { __unableOverwriteProject } from '@/exceptions/trigger.js';
 import type { GeneratorBuilder } from '@/interfaces/global.js';
 import type { __GenerateProjectParams } from '@/types/global.js';
-import { isUndefined } from '@/utils/guard.js';
 import { infoBox, warnBox } from '@/utils/info-box.js';
 import chalk from 'chalk';
 import fse from 'fs-extra';
@@ -17,7 +16,7 @@ import path from 'path';
 import { MicroGenerator } from './micro.js';
 
 export class BackendGenerator implements GeneratorBuilder {
-  static #instance: BackendGenerator;
+  static #instance?: BackendGenerator; // Gunakan optional tipe
 
   public readonly microGenerator: MicroGenerator;
 
@@ -26,22 +25,23 @@ export class BackendGenerator implements GeneratorBuilder {
   }
 
   public static get instance(): BackendGenerator {
-    if (!BackendGenerator.#instance) {
-      BackendGenerator.#instance = new BackendGenerator(
-        MicroGenerator.instance,
-      );
-    }
-
-    return BackendGenerator.#instance;
+    return (BackendGenerator.#instance ??= new BackendGenerator(
+      MicroGenerator.instance,
+    ));
   }
 
   // --------------------------------------------------------------------------
   // MAIN ENTRY
   // --------------------------------------------------------------------------
   public async generate(params: __GenerateProjectParams) {
-    if (params.isUsingCacheProject !== false && params.cachedEntries.length > 0)
+    if (
+      params.isUsingCacheProject !== false &&
+      params.cachedEntries.length > 0
+    ) {
       await this.__generateCachedProject(params);
-    else await this.__generateNonCachedProject(params);
+    } else {
+      await this.__generateNonCachedProject(params);
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -83,6 +83,8 @@ export class BackendGenerator implements GeneratorBuilder {
   // NON-CACHED PROJECT GENERATION
   // --------------------------------------------------------------------------
   private async __generateNonCachedProject(params: __GenerateProjectParams) {
+    const resolvedProjectName = params.projectName ?? params.projectNameArg;
+
     const { backendFramework } = await inquirer.prompt([
       {
         name: 'backendFramework',
@@ -93,15 +95,15 @@ export class BackendGenerator implements GeneratorBuilder {
           .map((f) => f.name),
         default: 'express',
         loop: false,
-        when: () => isUndefined(params.optionValues.template),
+        when: () => params.optionValues.template === undefined,
       },
     ]);
 
-    const backendFrameworkResource = isUndefined(params.optionValues.template)
-      ? BACKEND_FRAMEWORKS.frameworks.find((f) => f.name === backendFramework)
-      : BACKEND_FRAMEWORKS.frameworks.find(
-          (f) => f.name === params.optionValues.template,
-        );
+    const targetFrameworkName =
+      params.optionValues.template ?? backendFramework;
+    const backendFrameworkResource = BACKEND_FRAMEWORKS.frameworks.find(
+      (f) => f.name === targetFrameworkName,
+    );
 
     if (!backendFrameworkResource) {
       throw new UnidentifiedFrameworkError(
@@ -125,10 +127,8 @@ export class BackendGenerator implements GeneratorBuilder {
       backendFrameworkTemplateFolder.parentPath,
       backendFrameworkTemplateFolder.name,
     );
-    const destPath = path.join(
-      params.projectDir,
-      params.projectName ?? params.projectNameArg,
-    );
+    const destPath = path.join(params.projectDir, resolvedProjectName);
+
     __unableOverwriteProject(destPath, params.optionValues);
 
     const destPathExists = fse.existsSync(destPath);
@@ -139,23 +139,18 @@ export class BackendGenerator implements GeneratorBuilder {
       );
     }
 
-    // GET SELECTED FRAMEWORK
-    const selectedFramework = isUndefined(params.optionValues.template)
-      ? templatesMap(srcPath, destPath).get(backendFramework)
-      : templatesMap(srcPath, destPath).get(params.optionValues.template);
-
+    const selectedFramework = templatesMap(srcPath, destPath).get(
+      targetFrameworkName,
+    );
     if (!selectedFramework) {
-      const errorMsg = isUndefined(params.optionValues.template)
-        ? `Unsupported framework: ${backendFramework}`
-        : `Unsupported framework: ${params.optionValues.template}`;
-      throw new Error(errorMsg);
+      throw new Error(`Unsupported framework: ${targetFrameworkName}`);
     }
 
     // SETUP PROJECT BASE STRUCTURE
     const microGenerator = MicroGenerator.instance;
     const setupExecutor = await microGenerator.setupProject({
       spinner: params.spinner,
-      projectName: params.projectName ?? params.projectNameArg,
+      projectName: resolvedProjectName,
       projectType: params.projectType,
       selectedFramework: selectedFramework.actualName,
       sourcePath: selectedFramework.templateSource,
@@ -163,7 +158,7 @@ export class BackendGenerator implements GeneratorBuilder {
       optionValues: params.optionValues,
     });
 
-    const tempDir = path.join(BASE_PATH, 'templates/temp', params.projectName);
+    const tempDir = path.join(BASE_PATH, 'templates/temp', resolvedProjectName);
 
     // ------------------------------------------------------------------------
     // OPTIONAL DOCKER SETUP
@@ -214,9 +209,11 @@ export class BackendGenerator implements GeneratorBuilder {
     const selectedDeps = dependencyPrompt[selectedFramework.promptKey];
 
     if (selectedDeps.length < 1) {
+      const userRealName = await __getUserRealName();
+      const firstName = userRealName.split(' ')[0];
       infoBox(
         'Project Information',
-        `To be honest, you can install the dependencies later, right ${chalk.bold((await __getUserRealName()).split(' ')[0])}?`,
+        `To be honest, you can install the dependencies later, right ${chalk.bold(firstName)}?`,
       );
     }
 
@@ -224,7 +221,7 @@ export class BackendGenerator implements GeneratorBuilder {
       spinner: params.spinner,
       selectedDependencies: selectedDeps,
       selectedPackageManager: params.optionValues.packageManager,
-      projectName: params.projectName ?? params.projectNameArg,
+      projectName: resolvedProjectName,
       desPath: tempDir,
     });
 
@@ -235,7 +232,7 @@ export class BackendGenerator implements GeneratorBuilder {
       spinner: params.spinner,
       optionValues: params.optionValues,
       projectType: params.projectType,
-      projectName: params.projectName ?? params.projectNameArg,
+      projectName: resolvedProjectName,
       selectedFramework: selectedFramework.name,
       desPath: tempDir,
     });

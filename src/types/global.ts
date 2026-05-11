@@ -181,3 +181,14 @@ export type __CreateProjectParams = {
   projectType: Mixed;
   options: OptionValues;
 };
+
+export type __ExecuteGenerationParams = {
+  userProjectType: string;
+  projectNameArg: string;
+  spinner: Ora;
+  options: any;
+  userProjectName: string;
+  userProjectDir: string;
+  reuseProject: boolean;
+  cachedForType: CachedEntry[];
+};

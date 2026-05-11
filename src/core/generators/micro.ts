@@ -49,7 +49,7 @@ import type { Ora } from 'ora';
 import path from 'path';
 
 export class MicroGenerator implements MicroGeneratorBuilder {
-  static #instance: MicroGenerator;
+  static #instance?: MicroGenerator;
 
   #templateCache = new Map<string, string[]>();
 
@@ -57,7 +57,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
   public static get instance(): MicroGenerator {
     if (!MicroGenerator.#instance) {
-      MicroGenerator.#instance = new MicroGenerator();
+      MicroGenerator.#instance ??= new MicroGenerator();
     }
 
     return MicroGenerator.#instance;
