@@ -569,9 +569,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Initializing ${chalk.bold('Typescript')} into ${chalk.bold(params.projectName)}, please wait for a moment.`,
     );
 
-    await this.executePackageManager(executeConditioningPmCommand, ['tsc', '--init'], {
-      cwd: params.desPath,
-    });
+    await this.executePackageManager(
+      executeConditioningPmCommand,
+      ['tsc', '--init'],
+      {
+        cwd: params.desPath,
+      },
+    );
 
     params.spinner.succeed(`Initializing ${chalk.bold('Typescript')} succeed.`);
 
@@ -735,6 +739,8 @@ export class MicroGenerator implements MicroGeneratorBuilder {
         stdio: 'inherit',
       },
     );
+
+    await this.ensureJitiForTsEslintConfig(params);
   }
 
   private async __installWinston(params: __InstallDependenciesParams) {
@@ -785,6 +791,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     if (!updateDependenciesQuestion.updatePackages) {
       warnBox('Warning Information', 'You can update the dependencies later.');
+      return;
     }
 
     params.spinner.start(
@@ -998,5 +1005,58 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   ) {
     const [cmd, prefixArgs] = command;
     return execa(cmd, [...prefixArgs, ...args], options);
+  }
+
+  private async ensureJitiForTsEslintConfig(
+    params: __InstallDependenciesParams,
+  ) {
+    const tsConfigCandidates = [
+      'eslint.config.ts',
+      'eslint.config.mts',
+      'eslint.config.cts',
+    ] as const;
+
+    const hasTsConfig = tsConfigCandidates.some((filename) =>
+      fse.existsSync(path.join(params.desPath, filename)),
+    );
+
+    if (!hasTsConfig) {
+      return;
+    }
+
+    const packageJsonPath = path.join(params.desPath, 'package.json');
+    const packageJson = await fse.readJSON(packageJsonPath).catch(() => null);
+
+    const alreadyHasJiti =
+      packageJson?.dependencies?.jiti ?? packageJson?.devDependencies?.jiti;
+
+    if (alreadyHasJiti) {
+      return;
+    }
+
+    const executeInstallBasedOnPm = this.__choosePackageManagerCommand(
+      params.selectedPackageManager,
+      true,
+    );
+
+    params.spinner.start(
+      `Detected ${chalk.bold('eslint.config.ts')}, installing ${chalk.bold('jiti')} so ESLint can load it...`,
+    );
+
+    const installArgs =
+      params.selectedPackageManager === 'npm'
+        ? ['install', '-D', 'jiti']
+        : ['add', '-D', 'jiti'];
+
+    await this.executePackageManager(executeInstallBasedOnPm, installArgs, {
+      cwd: params.desPath,
+      timeout: INSTALL_TIMEOUT_MS,
+      killSignal: 'SIGTERM',
+      stdio: 'pipe',
+    });
+
+    params.spinner.succeed(
+      `${chalk.bold('jiti')} installed — ${chalk.bold('eslint.config.ts')} is now loadable.`,
+    );
   }
 }
