@@ -155,7 +155,7 @@ export class CreateCommand implements CreateCommandBuilder {
         {
           name: 'projectDir',
           type: 'input',
-          message: 'Where do you want to save your project?',
+          message: 'Where directory do you want to save your project?',
           default: process.cwd(),
           when: () =>
             isUndefined(params.options.dir) && isUndefined(params.projectDir),
@@ -173,6 +173,33 @@ export class CreateCommand implements CreateCommandBuilder {
         params.projectDir ??
         projectDirQuestion.projectDir;
       __pathNotFound(userProjectDir);
+
+      const additionalFeaturesQuestion = await inquirer.prompt([
+        {
+          name: 'additionalTools',
+          type: 'checkbox',
+          message: 'Select additional tools and features for your project:',
+          choices: [
+            { name: 'ESLint (Linter)', value: 'eslint', checked: false },
+            { name: 'Prettier (Formatter)', value: 'prettier', checked: false },
+            { name: 'Ky (HTTP client)', value: 'ky', checked: false },
+            {
+              name: 'Dotenv (Environment variables)',
+              value: 'dotenv',
+              checked: false,
+            },
+            {
+              name: 'Docker Compose (Container orchestration)',
+              value: 'docker-compose',
+            },
+            { name: 'None of these', value: '' },
+          ],
+          when: () => typeof params.options.template === 'undefined',
+        },
+      ]);
+
+      const selectedTools: string[] =
+        additionalFeaturesQuestion.additionalTools || [];
 
       // HANDLE CACHE & REUSE CONFIRMATION
       const cachedForType = await this.microGenerator.__getListCachedProjects(
@@ -215,6 +242,7 @@ export class CreateCommand implements CreateCommandBuilder {
         userProjectDir,
         reuseProject: reuseProject,
         cachedForType,
+        selectedTools,
       });
 
       // DONE

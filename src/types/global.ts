@@ -74,6 +74,7 @@ export type __GenerateProjectParams = __BaseParams & {
   projectDir: string;
   isUsingCacheProject: boolean;
   cachedEntries: CachedEntry[];
+  selectedTools?: string[];
 };
 
 export type __SetupProjectParams = __BaseParams & {
@@ -184,11 +185,12 @@ export type __CreateProjectParams = {
 
 export type __ExecuteGenerationParams = {
   userProjectType: string;
-  projectNameArg: string;
+  projectNameArg?: string;
   spinner: Ora;
   options: any;
   userProjectName: string;
   userProjectDir: string;
   reuseProject: boolean;
   cachedForType: CachedEntry[];
+  selectedTools?: string[];
 };

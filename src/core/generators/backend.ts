@@ -163,32 +163,26 @@ export class BackendGenerator implements GeneratorBuilder {
     // ------------------------------------------------------------------------
     // OPTIONAL DOCKER SETUP
     // ------------------------------------------------------------------------
-    if (params.optionValues.docker) {
-      const { addDocker, addDockerBake } = await inquirer.prompt([
-        {
-          name: 'addDocker',
-          type: 'confirm',
-          message: 'Do you want us to add docker to your project? (optional)',
-          default: false,
-        },
+    const isDockerSelected =
+      params.optionValues.docker ||
+      params.selectedTools?.includes('docker-compose');
+    if (isDockerSelected) {
+      const { addDockerBake } = await inquirer.prompt([
         {
           name: 'addDockerBake',
           type: 'confirm',
           message: 'Do you want us to add docker bake too? (optional)',
           default: false,
-          when: (a) => a.addDocker !== false,
         },
       ]);
 
-      if (addDocker) {
-        await microGenerator.setupDocker({
-          spinner: params.spinner,
-          isAddingDocker: addDocker,
-          isAddingBake: addDockerBake,
-          selectedPackageManager: params.optionValues.packageManager,
-          desPath: tempDir,
-        });
-      }
+      await microGenerator.setupDocker({
+        spinner: params.spinner,
+        isAddingDocker: true,
+        isAddingBake: addDockerBake,
+        selectedPackageManager: params.optionValues.packageManager,
+        desPath: tempDir,
+      });
     }
 
     // ------------------------------------------------------------------------
@@ -206,8 +200,26 @@ export class BackendGenerator implements GeneratorBuilder {
       },
     ]);
 
-    const selectedDeps = dependencyPrompt[selectedFramework.promptKey];
+    let selectedDeps: string[] = dependencyPrompt[selectedFramework.promptKey];
+    const globalTools = params.selectedTools || [];
 
+    if (globalTools.includes('eslint')) {
+      selectedDeps.push('eslint');
+    }
+
+    if (globalTools.includes('prettier')) {
+      selectedDeps.push('prettier');
+    }
+
+    if (globalTools.includes('ky')) {
+      selectedDeps.push('ky');
+    }
+
+    if (globalTools.includes('dotenv')) {
+      selectedDeps.push('dotenv');
+    }
+
+    selectedDeps = Array.from(new Set(selectedDeps));
     if (selectedDeps.length < 1) {
       const userRealName = await __getUserRealName();
       const firstName = userRealName.split(' ')[0];
