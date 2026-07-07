@@ -42,7 +42,7 @@ import {
 } from '@/utils/guard.js';
 import { errorBox, warnBox } from '@/utils/info-box.js';
 import chalk from 'chalk';
-import { execa } from 'execa';
+import { execa, type Options } from 'execa';
 import fse from 'fs-extra';
 import inquirer from 'inquirer';
 import type { Ora } from 'ora';
@@ -499,7 +499,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       true,
     );
 
-    await execa(executeChangingPmCommand, ['install'], {
+    await this.executePackageManager(executeChangingPmCommand, ['install'], {
       cwd: params.desPath,
       timeout: INSTALL_TIMEOUT_MS,
       killSignal: 'SIGTERM',
@@ -570,9 +570,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Initializing ${chalk.bold('Typescript')} into ${chalk.bold(params.projectName)}, please wait for a moment.`,
     );
 
-    await execa(executeConditioningPmCommand, ['tsc', '--init'], {
-      cwd: params.desPath,
-    });
+    await this.executePackageManager(
+      executeConditioningPmCommand,
+      ['tsc', '--init'],
+      {
+        cwd: params.desPath,
+      },
+    );
 
     params.spinner.succeed(`Initializing ${chalk.bold('Typescript')} succeed.`);
 
@@ -632,19 +636,27 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       params.spinner.start(`Start installing ${chalk.bold(p)} package.`);
 
       if (params.selectedPackageManager === 'npm') {
-        await execa(executeInstallBasedOnPm, ['install', '-D', p], {
-          cwd: params.desPath,
-          timeout: INSTALL_TIMEOUT_MS,
-          killSignal: 'SIGTERM',
-          stdio: 'pipe',
-        });
+        await this.executePackageManager(
+          executeInstallBasedOnPm,
+          ['install', '-D', p],
+          {
+            cwd: params.desPath,
+            timeout: INSTALL_TIMEOUT_MS,
+            killSignal: 'SIGTERM',
+            stdio: 'pipe',
+          },
+        );
       } else {
-        await execa(executeInstallBasedOnPm, ['add', '-D', p], {
-          cwd: params.desPath,
-          timeout: INSTALL_TIMEOUT_MS,
-          killSignal: 'SIGTERM',
-          stdio: 'pipe',
-        });
+        await this.executePackageManager(
+          executeInstallBasedOnPm,
+          ['add', '-D', p],
+          {
+            cwd: params.desPath,
+            timeout: INSTALL_TIMEOUT_MS,
+            killSignal: 'SIGTERM',
+            stdio: 'pipe',
+          },
+        );
       }
 
       params.spinner.succeed(`Installing ${chalk.bold(p)} package succeed.`);
@@ -661,7 +673,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Installing ${chalk.bold(params.selectedDependencies.join(', '))}, please wait for a moment.`,
     );
 
-    await execa(
+    await this.executePackageManager(
       executeInstallBasedOnPm,
       ['install', '--save', ...params.selectedDependencies],
       {
@@ -928,20 +940,20 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   private __choosePackageManagerCommand(
     packageManager: string,
     forInstall: boolean = true,
-  ) {
+  ): readonly [string, string[]] {
     if (forInstall) {
       return packageManager === 'npm'
-        ? 'npm'
+        ? (['npm', []] as const)
         : packageManager === 'pnpm'
-          ? 'pnpm'
-          : 'bun';
+          ? (['pnpm', []] as const)
+          : (['bun', []] as const);
     }
 
     return packageManager === 'npm'
-      ? 'npx'
+      ? (['npx', []] as const)
       : packageManager === 'pnpm'
-        ? 'pnpx'
-        : 'bunx';
+        ? (['pnpm', ['dlx']] as const)
+        : (['bunx', []] as const);
   }
 
   // ------------------------------------------------------------------------
@@ -989,5 +1001,14 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     this.#templateCache.set(dir, entries);
 
     return entries;
+  }
+
+  private executePackageManager(
+    command: readonly [string, string[]],
+    args: string[],
+    options: Options,
+  ) {
+    const [cmd, prefixArgs] = command;
+    return execa(cmd, [...prefixArgs, ...args], options);
   }
 }
