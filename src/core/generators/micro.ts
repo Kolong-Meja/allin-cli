@@ -554,8 +554,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const initializeTsQuestion = await inquirer.prompt({
       name: 'addTsConfig',
       type: 'confirm',
-      message: `Do you want us to execute
-        ${executeConditioningPmCommand} tsc --init in your project? (optional)`,
+      message: `Do you want us to execute ${executeConditioningPmCommand[0]} tsc --init in your project? (optional)`,
       default: false,
     });
 
@@ -570,13 +569,9 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Initializing ${chalk.bold('Typescript')} into ${chalk.bold(params.projectName)}, please wait for a moment.`,
     );
 
-    await this.executePackageManager(
-      executeConditioningPmCommand,
-      ['tsc', '--init'],
-      {
-        cwd: params.desPath,
-      },
-    );
+    await this.executePackageManager(executeConditioningPmCommand, ['tsc', '--init'], {
+      cwd: params.desPath,
+    });
 
     params.spinner.succeed(`Initializing ${chalk.bold('Typescript')} succeed.`);
 
@@ -635,29 +630,17 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     for (const p of deps) {
       params.spinner.start(`Start installing ${chalk.bold(p)} package.`);
 
-      if (params.selectedPackageManager === 'npm') {
-        await this.executePackageManager(
-          executeInstallBasedOnPm,
-          ['install', '-D', p],
-          {
-            cwd: params.desPath,
-            timeout: INSTALL_TIMEOUT_MS,
-            killSignal: 'SIGTERM',
-            stdio: 'pipe',
-          },
-        );
-      } else {
-        await this.executePackageManager(
-          executeInstallBasedOnPm,
-          ['add', '-D', p],
-          {
-            cwd: params.desPath,
-            timeout: INSTALL_TIMEOUT_MS,
-            killSignal: 'SIGTERM',
-            stdio: 'pipe',
-          },
-        );
-      }
+      const installArgs =
+        params.selectedPackageManager === 'npm'
+          ? ['install', '-D', p]
+          : ['add', '-D', p];
+
+      await this.executePackageManager(executeInstallBasedOnPm, installArgs, {
+        cwd: params.desPath,
+        timeout: INSTALL_TIMEOUT_MS,
+        killSignal: 'SIGTERM',
+        stdio: 'pipe',
+      });
 
       params.spinner.succeed(`Installing ${chalk.bold(p)} package succeed.`);
     }
@@ -732,21 +715,26 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const initializeEsLintQuestion = await inquirer.prompt({
       name: 'addESLintConfig',
       type: 'confirm',
-      message: `Do you want us to execute ${`${executeInstallBasedOnPm}`} eslint --init in your project? (optional)`,
+      message: `Do you want us to execute ${executeInstallBasedOnPm[0]} eslint --init in your project? (optional)`,
       default: false,
     });
 
     if (!initializeEsLintQuestion.addESLintConfig) {
       warnBox(
         'Warning Information',
-        `You can execute ${chalk.bold(`${executeInstallBasedOnPm} eslint --init`)} later.`,
+        `You can execute ${chalk.bold(`${executeInstallBasedOnPm[0]} eslint --init`)} later.`,
       );
+      return;
     }
 
-    await execa(`${executeInstallBasedOnPm}`, ['@eslint/create-config'], {
-      cwd: params.desPath,
-      stdio: 'inherit',
-    });
+    await this.executePackageManager(
+      executeInstallBasedOnPm,
+      ['@eslint/create-config'],
+      {
+        cwd: params.desPath,
+        stdio: 'inherit',
+      },
+    );
   }
 
   private async __installWinston(params: __InstallDependenciesParams) {
