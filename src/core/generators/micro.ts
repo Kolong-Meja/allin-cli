@@ -3,6 +3,7 @@ import {
   CACHE_BASE_PATH,
   CACHE_TTL_MS,
   INSTALL_TIMEOUT_MS,
+  PM_CHECK_TIMEOUT_MS,
 } from '@/config.js';
 import { TYPESCRIPT_DEFAULT_DEPENDENCIES } from '@/constants/default.js';
 import {
@@ -10,7 +11,10 @@ import {
   FRONTEND_FRAMEWORKS,
   LICENSES,
 } from '@/constants/global.js';
-import { UnidentifiedTemplateError } from '@/exceptions/error.js';
+import {
+  PackageManagerNotAvailableError,
+  UnidentifiedTemplateError,
+} from '@/exceptions/error.js';
 import { __pathNotFound } from '@/exceptions/trigger.js';
 import type {
   CachedEntry,
@@ -41,15 +45,16 @@ import {
   isUndefined,
 } from '@/utils/guard.js';
 import { errorBox, warnBox } from '@/utils/info-box.js';
+import { __backupIfExists } from '@/utils/rollback.js';
 import chalk from 'chalk';
-import { execa } from 'execa';
+import { execa, type Options } from 'execa';
 import fse from 'fs-extra';
 import inquirer from 'inquirer';
 import type { Ora } from 'ora';
 import path from 'path';
 
 export class MicroGenerator implements MicroGeneratorBuilder {
-  static #instance: MicroGenerator;
+  static #instance?: MicroGenerator;
 
   #templateCache = new Map<string, string[]>();
 
@@ -57,7 +62,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
   public static get instance(): MicroGenerator {
     if (!MicroGenerator.#instance) {
-      MicroGenerator.#instance = new MicroGenerator();
+      MicroGenerator.#instance ??= new MicroGenerator();
     }
 
     return MicroGenerator.#instance;
@@ -78,7 +83,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       });
 
       if (forceOverwriteProjectConfirmation.forceOverwrite) {
-        await fse.remove(params.desPath);
+        await __backupIfExists(params.desPath);
       } else {
         process.exit(0);
       }
@@ -472,6 +477,29 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   // --------------------------------------------------------------------------
   // PACKAGE MANAGER / TYPESCRIPT
   // --------------------------------------------------------------------------
+  public async __ensurePackageManagerAvailable(
+    packageManager: string,
+  ): Promise<void> {
+    try {
+      await execa(packageManager, ['--version'], {
+        stdio: 'ignore',
+        timeout: PM_CHECK_TIMEOUT_MS,
+      });
+    } catch (error: Mixed) {
+      throw new PackageManagerNotAvailableError(
+        `${chalk.bold('Package manager not available')}: ${chalk.bold(
+          packageManager,
+        )} could not be executed on your system.\n\n${chalk.bold(
+          'Tips',
+        )}:\n- Make sure ${chalk.bold(
+          packageManager,
+        )} is installed globally and available on your PATH.\n- If you're using Corepack, try running ${chalk.bold(
+          'corepack enable',
+        )} first.\n- Restart your terminal if you just installed it.`,
+      );
+    }
+  }
+
   private async __switchPackageManager(params: __SwitchPackageManagerParams) {
     const __lockFiles = [
       'package-lock.json',
@@ -499,7 +527,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       true,
     );
 
-    await execa(executeChangingPmCommand, ['install'], {
+    await this.executePackageManager(executeChangingPmCommand, ['install'], {
       cwd: params.desPath,
       timeout: INSTALL_TIMEOUT_MS,
       killSignal: 'SIGTERM',
@@ -554,8 +582,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const initializeTsQuestion = await inquirer.prompt({
       name: 'addTsConfig',
       type: 'confirm',
-      message: `Do you want us to execute
-        ${executeConditioningPmCommand} tsc --init in your project? (optional)`,
+      message: `Do you want us to execute ${executeConditioningPmCommand[0]} tsc --init in your project? (optional)`,
       default: false,
     });
 
@@ -570,9 +597,13 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Initializing ${chalk.bold('Typescript')} into ${chalk.bold(params.projectName)}, please wait for a moment.`,
     );
 
-    await execa(executeConditioningPmCommand, ['tsc', '--init'], {
-      cwd: params.desPath,
-    });
+    await this.executePackageManager(
+      executeConditioningPmCommand,
+      ['tsc', '--init'],
+      {
+        cwd: params.desPath,
+      },
+    );
 
     params.spinner.succeed(`Initializing ${chalk.bold('Typescript')} succeed.`);
 
@@ -631,21 +662,17 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     for (const p of deps) {
       params.spinner.start(`Start installing ${chalk.bold(p)} package.`);
 
-      if (params.selectedPackageManager === 'npm') {
-        await execa(executeInstallBasedOnPm, ['install', '-D', p], {
-          cwd: params.desPath,
-          timeout: INSTALL_TIMEOUT_MS,
-          killSignal: 'SIGTERM',
-          stdio: 'pipe',
-        });
-      } else {
-        await execa(executeInstallBasedOnPm, ['add', '-D', p], {
-          cwd: params.desPath,
-          timeout: INSTALL_TIMEOUT_MS,
-          killSignal: 'SIGTERM',
-          stdio: 'pipe',
-        });
-      }
+      const installArgs =
+        params.selectedPackageManager === 'npm'
+          ? ['install', '-D', p]
+          : ['add', '-D', p];
+
+      await this.executePackageManager(executeInstallBasedOnPm, installArgs, {
+        cwd: params.desPath,
+        timeout: INSTALL_TIMEOUT_MS,
+        killSignal: 'SIGTERM',
+        stdio: 'pipe',
+      });
 
       params.spinner.succeed(`Installing ${chalk.bold(p)} package succeed.`);
     }
@@ -661,7 +688,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       `Installing ${chalk.bold(params.selectedDependencies.join(', '))}, please wait for a moment.`,
     );
 
-    await execa(
+    await this.executePackageManager(
       executeInstallBasedOnPm,
       ['install', '--save', ...params.selectedDependencies],
       {
@@ -720,21 +747,28 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     const initializeEsLintQuestion = await inquirer.prompt({
       name: 'addESLintConfig',
       type: 'confirm',
-      message: `Do you want us to execute ${`${executeInstallBasedOnPm}`} eslint --init in your project? (optional)`,
+      message: `Do you want us to execute ${executeInstallBasedOnPm[0]} eslint --init in your project? (optional)`,
       default: false,
     });
 
     if (!initializeEsLintQuestion.addESLintConfig) {
       warnBox(
         'Warning Information',
-        `You can execute ${chalk.bold(`${executeInstallBasedOnPm} eslint --init`)} later.`,
+        `You can execute ${chalk.bold(`${executeInstallBasedOnPm[0]} eslint --init`)} later.`,
       );
+      return;
     }
 
-    await execa(`${executeInstallBasedOnPm}`, ['@eslint/create-config'], {
-      cwd: params.desPath,
-      stdio: 'inherit',
-    });
+    await this.executePackageManager(
+      executeInstallBasedOnPm,
+      ['@eslint/create-config'],
+      {
+        cwd: params.desPath,
+        stdio: 'inherit',
+      },
+    );
+
+    await this.ensureJitiForTsEslintConfig(params);
   }
 
   private async __installWinston(params: __InstallDependenciesParams) {
@@ -785,6 +819,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
 
     if (!updateDependenciesQuestion.updatePackages) {
       warnBox('Warning Information', 'You can update the dependencies later.');
+      return;
     }
 
     params.spinner.start(
@@ -928,20 +963,20 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   private __choosePackageManagerCommand(
     packageManager: string,
     forInstall: boolean = true,
-  ) {
+  ): readonly [string, string[]] {
     if (forInstall) {
       return packageManager === 'npm'
-        ? 'npm'
+        ? (['npm', []] as const)
         : packageManager === 'pnpm'
-          ? 'pnpm'
-          : 'bun';
+          ? (['pnpm', []] as const)
+          : (['bun', []] as const);
     }
 
     return packageManager === 'npm'
-      ? 'npx'
+      ? (['npx', []] as const)
       : packageManager === 'pnpm'
-        ? 'pnpx'
-        : 'bunx';
+        ? (['pnpm', ['dlx']] as const)
+        : (['bunx', []] as const);
   }
 
   // ------------------------------------------------------------------------
@@ -989,5 +1024,67 @@ export class MicroGenerator implements MicroGeneratorBuilder {
     this.#templateCache.set(dir, entries);
 
     return entries;
+  }
+
+  private executePackageManager(
+    command: readonly [string, string[]],
+    args: string[],
+    options: Options,
+  ) {
+    const [cmd, prefixArgs] = command;
+    return execa(cmd, [...prefixArgs, ...args], options);
+  }
+
+  private async ensureJitiForTsEslintConfig(
+    params: __InstallDependenciesParams,
+  ) {
+    const tsConfigCandidates = [
+      'eslint.config.ts',
+      'eslint.config.mts',
+      'eslint.config.cts',
+    ] as const;
+
+    const hasTsConfig = tsConfigCandidates.some((filename) =>
+      fse.existsSync(path.join(params.desPath, filename)),
+    );
+
+    if (!hasTsConfig) {
+      return;
+    }
+
+    const packageJsonPath = path.join(params.desPath, 'package.json');
+    const packageJson = await fse.readJSON(packageJsonPath).catch(() => null);
+
+    const alreadyHasJiti =
+      packageJson?.dependencies?.jiti ?? packageJson?.devDependencies?.jiti;
+
+    if (alreadyHasJiti) {
+      return;
+    }
+
+    const executeInstallBasedOnPm = this.__choosePackageManagerCommand(
+      params.selectedPackageManager,
+      true,
+    );
+
+    params.spinner.start(
+      `Detected ${chalk.bold('eslint.config.ts')}, installing ${chalk.bold('jiti')} so ESLint can load it...`,
+    );
+
+    const installArgs =
+      params.selectedPackageManager === 'npm'
+        ? ['install', '-D', 'jiti']
+        : ['add', '-D', 'jiti'];
+
+    await this.executePackageManager(executeInstallBasedOnPm, installArgs, {
+      cwd: params.desPath,
+      timeout: INSTALL_TIMEOUT_MS,
+      killSignal: 'SIGTERM',
+      stdio: 'pipe',
+    });
+
+    params.spinner.succeed(
+      `${chalk.bold('jiti')} installed — ${chalk.bold('eslint.config.ts')} is now loadable.`,
+    );
   }
 }

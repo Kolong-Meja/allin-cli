@@ -30,13 +30,16 @@ export const CACHE_BASE_PATH = path.join(BASE_PATH, '.cache');
 
 export const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 export const INSTALL_TIMEOUT_MS = 1000 * 60 * 5; // 5 minutes;
+export const PM_CHECK_TIMEOUT_MS = 1000 * 8; // 8 seconds; version check should be near-instant
+export const UPDATE_CHECK_INTERVAL_MS = 1000 * 60 * 60 * 24; // 24 hours [BARU]
+export const UPDATE_CHECK_TIMEOUT_MS = 1000 * 3; // 3 seconds [BARU]
 
 // LOAD ENV
 dotenv.config({ path: path.join(BASE_PATH, '.env') });
 
 // LOAD PACKAGE.JSON
 const __packageJsonFilePath = path.join(BASE_PATH, 'package.json');
-const __packageJsonFile = await fse.readJSON(__packageJsonFilePath);
+export const __packageJsonFile = await fse.readJSON(__packageJsonFilePath);
 
 const __envOr = (key: string, fallback: string): string => {
   return process.env[key] ?? fallback;

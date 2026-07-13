@@ -69,3 +69,11 @@ export class UnidentifiedFrameworkError extends Error {
     Object.setPrototypeOf(this, UnidentifiedFrameworkError.prototype);
   }
 }
+
+export class PackageManagerNotAvailableError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+    this.name = 'PackageManagerNotAvailableError';
+    Object.setPrototypeOf(this, PackageManagerNotAvailableError.prototype);
+  }
+}

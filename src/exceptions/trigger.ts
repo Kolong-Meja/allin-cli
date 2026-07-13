@@ -11,7 +11,6 @@ import {
 
 // CHECK MEMBERSHIP UTIL
 const __ensureIncluded = (val: string, list: string[]) => list.includes(val);
-
 export function __pathNotFound(path: string): void {
   if (!fse.existsSync(path)) {
     throw new PathNotFoundError(
