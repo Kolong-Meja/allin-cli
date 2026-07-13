@@ -34,6 +34,7 @@ import path from 'path';
 import { BackendGenerator } from '../generators/backend.js';
 import { FrontendGenerator } from '../generators/frontend.js';
 import { MicroGenerator } from '../generators/micro.js';
+import { __commitRollback, __rollback } from '@/utils/rollback.js';
 
 export class CreateCommand implements CreateCommandBuilder {
   static #instance?: CreateCommand;
@@ -55,6 +56,7 @@ export class CreateCommand implements CreateCommandBuilder {
   public async create(params: __CreateProjectParams) {
     const start = performance.now();
     let spinner;
+    let projectDesPath: string | undefined;
 
     try {
       // VALIDATE PROJECT TYPE
@@ -66,6 +68,10 @@ export class CreateCommand implements CreateCommandBuilder {
           `${params.projectType} is not found or exist. Choose between ${PROJECT_TYPES.join(', ')}`,
         );
       }
+
+      await this.microGenerator.__ensurePackageManagerAvailable(
+        params.options.packageManager,
+      );
 
       // PROMPT PROJECT NAME
       const projectNameQuestion = await inquirer.prompt({
@@ -174,6 +180,8 @@ export class CreateCommand implements CreateCommandBuilder {
         projectDirQuestion.projectDir;
       __pathNotFound(userProjectDir);
 
+      projectDesPath = path.join(userProjectDir, userProjectName);
+
       const additionalFeaturesQuestion = await inquirer.prompt([
         {
           name: 'additionalTools',
@@ -245,6 +253,8 @@ export class CreateCommand implements CreateCommandBuilder {
         selectedTools,
       });
 
+      await __commitRollback();
+
       // DONE
       const end = performance.now();
       const convertToSeconds = ((end - start) / 1000).toFixed(3);
@@ -261,18 +271,25 @@ export class CreateCommand implements CreateCommandBuilder {
           ? error.message
           : `${chalk.bold('Error')}: An unknown error occurred.`;
 
-      if (error.name === 'ExitPromptError') {
-        errorMessage = `${chalk.bold(
-          'Exit prompt error',
-        )}: User forced close the prompt.`;
-      }
-
-      if (error) {
-        errorMessage = error.message;
-      }
-
       const tempPath = path.join(BASE_PATH, 'templates', 'temp');
       this.__removeUnusedProject(tempPath);
+      
+      if (projectDesPath) {
+        try {
+          const restored = await __rollback(projectDesPath);
+          warnBox(
+            'Rollback Information',
+            restored
+              ? `Project creation failed — your previous content at ${chalk.bold(projectDesPath)} has been restored.`
+              : `Project creation failed — the partially created ${chalk.bold(projectDesPath)} folder has been removed.`,
+          );
+        } catch (rollbackError: Mixed) {
+          warnBox(
+            'Rollback Warning',
+            `Automatic rollback did not fully complete: ${rollbackError.message}`,
+          );
+        }
+      }
 
       errorBox(error);
     } finally {

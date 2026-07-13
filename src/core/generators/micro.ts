@@ -3,6 +3,7 @@ import {
   CACHE_BASE_PATH,
   CACHE_TTL_MS,
   INSTALL_TIMEOUT_MS,
+  PM_CHECK_TIMEOUT_MS,
 } from '@/config.js';
 import { TYPESCRIPT_DEFAULT_DEPENDENCIES } from '@/constants/default.js';
 import {
@@ -10,7 +11,10 @@ import {
   FRONTEND_FRAMEWORKS,
   LICENSES,
 } from '@/constants/global.js';
-import { UnidentifiedTemplateError } from '@/exceptions/error.js';
+import {
+  PackageManagerNotAvailableError,
+  UnidentifiedTemplateError,
+} from '@/exceptions/error.js';
 import { __pathNotFound } from '@/exceptions/trigger.js';
 import type {
   CachedEntry,
@@ -41,6 +45,7 @@ import {
   isUndefined,
 } from '@/utils/guard.js';
 import { errorBox, warnBox } from '@/utils/info-box.js';
+import { __backupIfExists } from '@/utils/rollback.js';
 import chalk from 'chalk';
 import { execa, type Options } from 'execa';
 import fse from 'fs-extra';
@@ -78,7 +83,7 @@ export class MicroGenerator implements MicroGeneratorBuilder {
       });
 
       if (forceOverwriteProjectConfirmation.forceOverwrite) {
-        await fse.remove(params.desPath);
+        await __backupIfExists(params.desPath);
       } else {
         process.exit(0);
       }
@@ -472,6 +477,29 @@ export class MicroGenerator implements MicroGeneratorBuilder {
   // --------------------------------------------------------------------------
   // PACKAGE MANAGER / TYPESCRIPT
   // --------------------------------------------------------------------------
+  public async __ensurePackageManagerAvailable(
+    packageManager: string,
+  ): Promise<void> {
+    try {
+      await execa(packageManager, ['--version'], {
+        stdio: 'ignore',
+        timeout: PM_CHECK_TIMEOUT_MS,
+      });
+    } catch (error: Mixed) {
+      throw new PackageManagerNotAvailableError(
+        `${chalk.bold('Package manager not available')}: ${chalk.bold(
+          packageManager,
+        )} could not be executed on your system.\n\n${chalk.bold(
+          'Tips',
+        )}:\n- Make sure ${chalk.bold(
+          packageManager,
+        )} is installed globally and available on your PATH.\n- If you're using Corepack, try running ${chalk.bold(
+          'corepack enable',
+        )} first.\n- Restart your terminal if you just installed it.`,
+      );
+    }
+  }
+
   private async __switchPackageManager(params: __SwitchPackageManagerParams) {
     const __lockFiles = [
       'package-lock.json',

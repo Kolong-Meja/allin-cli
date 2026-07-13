@@ -14,6 +14,7 @@ import fse from 'fs-extra';
 import inquirer from 'inquirer';
 import path from 'path';
 import { MicroGenerator } from './micro.js';
+import { __backupIfExists } from '@/utils/rollback.js';
 
 export class FrontendGenerator implements GeneratorBuilder {
   static #instance?: FrontendGenerator;
@@ -66,9 +67,7 @@ export class FrontendGenerator implements GeneratorBuilder {
     }
 
     const desPath = path.join(params.projectDir, params.projectName);
-    if (await fse.pathExists(desPath)) {
-      await fse.remove(desPath);
-    }
+    await __backupIfExists(desPath);
 
     await this.microGenerator.__loadCachedProject(
       CACHE_BASE_PATH,
