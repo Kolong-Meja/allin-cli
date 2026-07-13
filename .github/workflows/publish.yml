@@ -185,7 +185,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.ALLIN_CLI_TOKEN }}
           # If npm 2FA required, set secret NPM_OTP and uncomment below
-          NPM_OTP: ${{ secrets.NPM_2FA_TOKEN }}
+          # NPM_OTP: ${{ secrets.NPM_2FA_TOKEN }}
         run: |
           set -euo pipefail
           # If using npm 2FA for automation, use --otp $NPM_2FA_TOKEN
