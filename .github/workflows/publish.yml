@@ -185,12 +185,12 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.ALLIN_CLI_TOKEN }}
           # If npm 2FA required, set secret NPM_OTP and uncomment below
-          # NPM_OTP: ${{ secrets.NPM_OTP }}
+          NPM_OTP: ${{ secrets.NPM_2FA_TOKEN }}
         run: |
           set -euo pipefail
-          # If using npm 2FA for automation, use --otp $NPM_OTP
+          # If using npm 2FA for automation, use --otp $NPM_2FA_TOKEN
           npm publish --access public
-          # npm publish --access public --otp "$NPM_OTP"
+          # npm publish --access public --otp "$NPM_2FA_TOKEN"
 
       - name: Post-publish smoke test
         if: success()
