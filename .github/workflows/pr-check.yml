@@ -1,0 +1,75 @@
+name: PR Validation (→ main)
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: pr-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Lint, Build & Test
+    runs-on: ubuntu-22.04
+    if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          npm ci
+
+      - name: Run format and check
+        run: |
+          set -euo pipefail
+          npm run format && npm run check-format
+
+      - name: Build package
+        run: |
+          set -euo pipefail
+          npm run build
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+          npm test
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  secret-scan:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-22.04
+    if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

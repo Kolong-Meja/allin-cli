@@ -7,6 +7,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
@@ -79,6 +83,11 @@ jobs:
             exit 1
           fi
 
+      - name: Scan for secrets with Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -117,7 +126,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           always-auth: true
           auth-token: ${{ secrets.ALLIN_CLI_TOKEN }}
-      
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -130,7 +139,7 @@ jobs:
           npm ci
 
       - name: Verify bin file
-        run: | 
+        run: |
           set -euo pipefail
           if [ -f "dist/index.js" ]; then
             echo "✅ Binary file exists"
@@ -168,10 +177,10 @@ jobs:
           npm pack --dry-run
 
       - name: Run npm audit (fail on high)
-        run: | 
+        run: |
           set -euo pipefail
           npm audit --audit-level=high || echo "High security vulnerabilities detected"
-          
+
       - name: Publish package (with optional OTP)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.ALLIN_CLI_TOKEN }}
